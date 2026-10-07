@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@pinecall/agents':
         specifier: ^0.9.20
-        version: link:../agents-one-cli
+        version: link:../agents
       tsx:
         specifier: ^4.20.6
         version: 4.23.15
@@ -35,7 +35,7 @@ importers:
         specifier: ^0.13.35
         version: 0.13.35
 
-  ../agents-one-cli:
+  ../agents:
     dependencies:
       oxc-parser:
         specifier: ^0.148.0
