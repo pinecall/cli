@@ -1,10 +1,11 @@
 // `pinecall remember`: cases read from disk, the door it calls, and its output.
 
-import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, realpathSync, symlinkSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { type ExtractionGolden, type ExtractionRun } from "@pinecall/agents/wire";
@@ -135,6 +136,8 @@ describe("the agent the extraction reads", () => {
     mkdirSync(folder, { recursive: true });
     mkdirSync(join(root, "agents", "clinica-norte"), { recursive: true });
     writeFileSync(join(root, "agents", "clinica-norte", "agent.tsx"), "");
+    // A project that installs the framework, as the one serving the agent must: this repository's.
+    symlinkSync(fileURLToPath(new URL("../node_modules", import.meta.url)), join(root, "node_modules"));
     writeFileSync(join(folder, "alergia.json"), JSON.stringify(A_CASE));
     const started: Started[] = [];
     let stopped = 0;

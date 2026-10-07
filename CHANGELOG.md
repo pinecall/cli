@@ -6,6 +6,13 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A TypeScript agent is served only by the framework its project installs.** The serve entry was
+  resolved the way Node resolves a module, which reads `NODE_PATH` too: under pnpm that is pnpm's
+  store, so a project with no `@pinecall/agents` of its own was served by whatever the store held.
+  It is looked for in the project's `node_modules` and the folders above it, and nowhere else.
+
 ## [0.9.20] — the CLI, a package of its own
 
 ### Fixed

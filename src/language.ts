@@ -2,7 +2,7 @@
 
 import { existsSync } from "node:fs";
 import { createRequire } from "node:module";
-import { basename, extname, join } from "node:path";
+import { basename, dirname, extname, join } from "node:path";
 
 import { cannotRun } from "./cannot-run.js";
 import type { Door } from "./testing/gateway.js";
@@ -84,13 +84,15 @@ export function commandFor(language: Language, verb: Verb, args: string[], how: 
 
 /**
  * The project's own `@pinecall/agents/serve`, so the framework serving its agents is the version
- * it pinned and never this CLI's. Only resolved: the entry runs in the child, never in this process.
+ * it pinned and never this CLI's. Found in the `node_modules` of the root or a folder above it, and
+ * nowhere else: Node's resolution would also read `NODE_PATH`, which pnpm points at its own store.
+ * Only resolved: the entry runs in the child, never in this process.
  */
 export function serveEntryOf(root: string): string {
-  try {
-    return createRequire(join(root, "package.json")).resolve("@pinecall/agents/serve");
-  } catch {
-    throw cannotRun(NO_FRAMEWORK);
+  for (let folder = root; ; folder = dirname(folder)) {
+    const installed = join(folder, "node_modules", "@pinecall", "agents", "package.json");
+    if (existsSync(installed)) return createRequire(installed).resolve("@pinecall/agents/serve");
+    if (dirname(folder) === folder) throw cannotRun(NO_FRAMEWORK);
   }
 }
 
