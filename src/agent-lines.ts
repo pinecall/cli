@@ -4,6 +4,7 @@ import { type TuningAnswer, type TuningBody, type TuningRow } from "@pinecall/ag
 
 import { dayAndTime } from "./docs.js";
 import { asked, type Door } from "./testing/gateway.js";
+import { SANDBOX } from "./world.js";
 
 /** The gateway path of an agent's settings. */
 export function settingsPath(agent: string): string {
@@ -15,12 +16,29 @@ export async function readSettings(door: Door, agent: string): Promise<TuningAns
   return await asked<TuningAnswer>(door, settingsPath(agent));
 }
 
-// Must match the gateway: it writes the org's corner on `--team` OR when the key has none of its
-// own (production token, CI key). Reading `yours` there builds the full set on an empty row and
-// silently erases the corner's other fields.
-/** The row a write lands on: the team's when asked for it or when this key has no corner. */
-export function theCornerWritten<Row>(standing: { yours: Row | null; team: Row | null }, team: boolean): Row | null {
-  return team ? standing.team : (standing.yours ?? standing.team);
+/**
+ * Whether this key writes a corner of its own: a person's key in the sandbox. A server's token
+ * (`pc_test_` is the sandbox's), and every key in production, writes the org's own — the gateway's
+ * `scope_of`. A person whose corner is still empty reads `yours: null` too, which is why the
+ * answer alone cannot say.
+ */
+export function holdsACorner(door: Door): boolean {
+  return door.world === SANDBOX && !door.apiKey.startsWith("pc_test_");
+}
+
+/** The row a write lands on: the team's on `--team` or for a key with no corner, else this key's own, null until its first write. */
+export function theCornerWritten<Row>(standing: { yours: Row | null; team: Row | null }, team: boolean, door: Door): Row | null {
+  return team || !holdsACorner(door) ? standing.team : standing.yours;
+}
+
+/** The version a write is guarded by: the newest of the corner it lands on, 0 when that corner is empty. */
+export function theVersionGuarded(standing: { yours: { version: number } | null; team: { version: number } | null }, team: boolean, door: Door): number {
+  return theCornerWritten(standing, team, door)?.version ?? 0;
+}
+
+/** The row a write starts from: the team's on `--team`, else what this key reads, so the whole set travels. */
+export function theRowToStartFrom<Row>(standing: { yours: Row | null; team: Row | null }, team: boolean): Row | null {
+  return team ? standing.team : theCornerRead(standing);
 }
 
 /** Map the current config to the next one. */
@@ -28,7 +46,7 @@ export type Change = (config: TuningBody) => TuningBody;
 
 /** A corner read once, with a writer for its next version. */
 export interface TheCorner {
-  /** The row the gateway will write over, or null when this corner has never been written. */
+  /** The row the write starts from: what this key reads, or the team's on `--team`. */
   row: TuningRow | null;
   /** The whole set, with this change made, as the next version. */
   write(change: Change, note: string | null): Promise<TuningAnswer>;
@@ -40,26 +58,27 @@ export interface TheCorner {
  */
 export async function theCornerToWrite(door: Door, agent: string, team: boolean): Promise<TheCorner> {
   const standing = await readSettings(door, agent);
-  const row = theCornerWritten(standing, team);
+  const row = theRowToStartFrom(standing, team);
+  const ifVersion = theVersionGuarded(standing, team, door);
   return {
     row,
     write: async (change: Change, note: string | null) =>
       await asked<TuningAnswer>(door, settingsPath(agent), {
         method: "PUT",
-        body: { config: change(row?.config ?? {}), if_version: row?.version ?? null, note, team },
+        body: { config: change(row?.config ?? {}), if_version: ifVersion, note, team },
       }),
   };
 }
 
 /** The corner this key reads: its own if it has one, else the team's. */
 export function theCornerRead<Row>(standing: { yours: Row | null; team: Row | null }): Row | null {
-  return theCornerWritten(standing, false);
+  return standing.yours ?? standing.team;
 }
 
 /** The name of the corner a write lands on, for output. */
-export function theCornerCalled(standing: TuningAnswer, team: boolean): string {
+export function theCornerCalled(standing: TuningAnswer, team: boolean, door: Door): string {
   if (standing.world === "production") return "production";
-  return team || standing.yours === null ? "the team's corner" : "your corner";
+  return team || !holdsACorner(door) ? "the team's corner" : "your corner";
 }
 
 /** Settings fields in display order, as typed on the command line. */

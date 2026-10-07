@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 
 import { type TuningAnswer, type TuningBody } from "@pinecall/agents/wire";
 
-import { readSettings, settingsPath, theCornerWritten } from "./agent-lines.js";
+import { readSettings, settingsPath, theCornerCalled, theCornerWritten, theRowToStartFrom } from "./agent-lines.js";
 import type { Typed } from "./agent.js";
 import { asked, type Door } from "./testing/gateway.js";
 
@@ -34,7 +34,7 @@ export async function filesRun(
 // A machine key has no corner of its own, so it pulls the org's: what CI keeps in the repo.
 async function pull(door: Door, agent: string, team: boolean, out: NodeJS.WritableStream, err: NodeJS.WritableStream): Promise<number> {
   const answer = await readSettings(door, agent);
-  const row = theCornerWritten(answer, team);
+  const row = theRowToStartFrom(answer, team);
   if (row === null) {
     err.write(`nothing set for ${agent} in ${team ? "the team's" : "your"} corner of ${answer.world}\n`);
     return 1;
@@ -56,7 +56,7 @@ async function push(door: Door, agent: string, file: string | undefined, team: b
     method: "PUT",
     body: { config, if_version: null, note: `pushed from ${file}`, team },
   });
-  const row = theCornerWritten(answer, team);
-  out.write(`${agent} · ${answer.world} · ${team ? "the team's corner" : "your corner"} v${row?.version ?? "?"} from ${file}\n`);
+  const row = theCornerWritten(answer, team, door);
+  out.write(`${agent} · ${answer.world} · ${theCornerCalled(answer, team, door)} v${row?.version ?? "?"} from ${file}\n`);
   return 0;
 }

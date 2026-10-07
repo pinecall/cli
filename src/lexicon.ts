@@ -4,7 +4,7 @@ import { parseArgs } from "node:util";
 
 import { type LexiconAnswer, type LexiconBody, type LexiconHistory, type LexiconRow } from "@pinecall/agents/wire";
 
-import { theCornerRead, theCornerWritten } from "./agent-lines.js";
+import { theCornerRead, theRowToStartFrom, theVersionGuarded } from "./agent-lines.js";
 import { theDoor } from "./env.js";
 import type { Group } from "./groups.js";
 import { dayAndTime } from "./docs.js";
@@ -117,12 +117,12 @@ function bodyOf(words: Words): LexiconBody {
 // Read-modify-write of the whole row, guarded by the version it was read at.
 async function changed(door: Door, lexicon: string, team: boolean, note: string | undefined, change: (words: Words) => Words): Promise<LexiconAnswer> {
   const standing = await asked<LexiconAnswer>(door, lexicon);
-  // Row and version must come from the same corner, or keys without a corner of their own send
-  // no version and concurrent saves overwrite each other silently.
-  const row = theCornerWritten(standing, team);
+  // The words start from what this key reads; the guard is the version of the corner the gateway
+  // writes, or two saves at once overwrite each other, or a person's first one is refused.
+  const row = theRowToStartFrom(standing, team);
   return await asked<LexiconAnswer>(door, lexicon, {
     method: "PUT",
-    body: { lexicon: bodyOf(change(wordsOf(row?.lexicon))), if_version: row?.version ?? null, note: note ?? null, team },
+    body: { lexicon: bodyOf(change(wordsOf(row?.lexicon))), if_version: theVersionGuarded(standing, team, door), note: note ?? null, team },
   });
 }
 

@@ -15,10 +15,8 @@ export interface Attaching {
 }
 
 /** Output lines for `attach` and `detach`. */
-const ATTACHED = (agent: string, base: string, answer: TuningAnswer, team: boolean): string =>
-  `${agent} · ${base} attached · ${cornerLine(answer, team)}`;
-const DETACHED = (agent: string, base: string, answer: TuningAnswer, team: boolean): string =>
-  `${agent} · ${base} detached · ${cornerLine(answer, team)}`;
+const ATTACHED = (agent: string, base: string, landed: string): string => `${agent} · ${base} attached · ${landed}`;
+const DETACHED = (agent: string, base: string, landed: string): string => `${agent} · ${base} detached · ${landed}`;
 export const NOT_ATTACHED = (agent: string, base: string): string => `${base} is not attached to ${agent}`;
 
 /** Attach a base in this corner as a new settings version; an existing entry for it is replaced. */
@@ -32,7 +30,7 @@ export async function attach(door: Door, agent: string, base: string, how: Attac
     (config) => ({ ...config, bases: [...(config.bases ?? []).filter((one) => one.base !== base), docs] }),
     `attached ${base}`,
   );
-  out.write(`${ATTACHED(agent, base, answer, team)}\n`);
+  out.write(`${ATTACHED(agent, base, cornerLine(answer, team, door))}\n`);
   return 0;
 }
 
@@ -48,7 +46,7 @@ export async function detach(door: Door, agent: string, base: string, team: bool
     (config) => ({ ...config, bases: (config.bases ?? []).filter((one) => one.base !== base) }),
     `detached ${base}`,
   );
-  out.write(`${DETACHED(agent, base, answer, team)}\n`);
+  out.write(`${DETACHED(agent, base, cornerLine(answer, team, door))}\n`);
   return 0;
 }
 
@@ -84,8 +82,8 @@ export function attachingOf(values: { k?: string; mode?: string; "min-score"?: s
 }
 
 // Name the corner the gateway actually wrote, which differs from the flag for a key with no corner.
-function cornerLine(answer: TuningAnswer, team: boolean): string {
-  const row = theCornerWritten(answer, team);
-  const corner = theCornerCalled(answer, team);
+function cornerLine(answer: TuningAnswer, team: boolean, door: Door): string {
+  const row = theCornerWritten(answer, team, door);
+  const corner = theCornerCalled(answer, team, door);
   return row === null ? corner : `${corner} v${row.version}`;
 }

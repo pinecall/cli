@@ -14,6 +14,8 @@ import { written } from "./said.js";
 const A_KEY = "pc_test_the_orgs_own_key";
 // The same org's production server token, used by --prod.
 const A_LIVE_KEY = "pc_live_the_orgs_own_key";
+// A person's key: in the sandbox it writes a corner of its own.
+const A_PERSONS_KEY = "pc_live_ana_s_key";
 const AGENT = "clinica-norte";
 const SETTINGS = `/v1/agents/${AGENT}/settings`;
 
@@ -58,7 +60,7 @@ class FakeGateway {
     const world = request.headers["pinecall-env"];
     const heard: Heard = { method: request.method ?? "", path: request.url ?? "", body: text === "" ? null : JSON.parse(text), world: typeof world === "string" ? world : undefined };
     this.heard.push(heard);
-    if (![A_KEY, A_LIVE_KEY].some((key) => request.headers.authorization === `Bearer ${key}`)) return this.#said(response, 401, { detail: "this door takes an API key" });
+    if (![A_KEY, A_LIVE_KEY, A_PERSONS_KEY].some((key) => request.headers.authorization === `Bearer ${key}`)) return this.#said(response, 401, { detail: "this door takes an API key" });
     if (heard.path === "/v1/knowledge/attached") return this.#said(response, 200, { bases: [{ base: "clinica", agents: [AGENT, "clinica-sur"] }, { base: "tarifas", agents: ["clinica-sur"] }] });
     if (heard.path === SETTINGS && heard.method === "GET") return this.#said(response, 200, { world: "sandbox", yours: this.yours, team: TEAM, production: TEAM, declared: null });
     if (heard.path === SETTINGS && heard.method === "PUT") {
@@ -94,7 +96,8 @@ describe("attaching a base", () => {
   it("adds the base to your corner's list with how a turn reads it, sent with the version it was read at", async () => {
     const out = written();
 
-    expect(await run(["attach", "clinica", "--k", "3", "--mode", "tool", "--min-score", "0.4", "--agent", AGENT], { out: out.stream, env })).toBe(0);
+    const persons = pointingAt(gateway.url, A_PERSONS_KEY);
+    expect(await run(["attach", "clinica", "--k", "3", "--mode", "tool", "--min-score", "0.4", "--agent", AGENT], { out: out.stream, env: persons })).toBe(0);
 
     expect(gateway.written).toEqual({
       config: { voice: "amelia", bases: [{ base: "clinica", k: 3, mode: "tool", min_score: 0.4 }] },
@@ -127,6 +130,18 @@ describe("attaching a base", () => {
       note: "attached tarifas",
       team: false,
     });
+  });
+
+  // Their corner is empty, so they read the team's: the write still lands on theirs, at v0, and the
+  // line names it — not the team's corner it was read through.
+  it("names a person's own corner on their first attach, guarded at its version 0", async () => {
+    gateway.yours = null;
+    const out = written();
+
+    await run(["attach", "tarifas", "--agent", AGENT], { out: out.stream, env: pointingAt(gateway.url, A_PERSONS_KEY) });
+
+    expect(gateway.written).toMatchObject({ if_version: 0, team: false });
+    expect(out.text()).toBe(`${AGENT} · tarifas attached · your corner v1\n`);
   });
 
   it("names production when --prod does, on the read and on the write", async () => {

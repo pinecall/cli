@@ -1,7 +1,5 @@
 // `pinecall agent`: the three corners, set, clear, history and processes.
 
-import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
-import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { linesOf } from "../src/agent-lines.js";
@@ -9,90 +7,13 @@ import { changes } from "../src/agent-versions.js";
 import { run } from "../src/agent.js";
 import { inTheWorld } from "../src/world.js";
 import { pointingAt } from "./home.js";
+import { FakeGateway, PROCESS, TEAM, YOURS } from "./fakes/settings-gateway.js";
 import { written } from "./said.js";
 
 const A_KEY = "pc_test_the_orgs_key";
+// A person's key: in the sandbox it writes a corner of its own, `yours`.
+const A_PERSONS_KEY = "pc_live_ana_s_key";
 const AGENT = "clinica-norte";
-
-const TEAM = {
-  holder: "",
-  version: 11,
-  author: "m_bruno",
-  note: "cleaner on the phone",
-  set_at: 1758300000,
-  config: { voice: "carolina", llm: "anthropic/claude-haiku-4-5", language: "es", greeting: { say: "Clínica Norte, buenas." }, memory: { remember: ["allergies"], forget: [] } },
-};
-const YOURS = { holder: "m_ana", version: 3, author: "m_ana", note: null, set_at: 1758310000, config: { voice: "amelia" } };
-
-const PROCESS = {
-  app: "app_7",
-  agents: [AGENT, "clinica-norte-sales"],
-  env: "production",
-  host: "web-1",
-  address: "34.1.2.3",
-  sdk: "pinecall/0.5.1",
-  holder: null,
-  connected_at: 1758300000,
-};
-
-/** One request as the gateway received it. */
-interface Heard {
-  method: string;
-  path: string;
-  body: unknown;
-  /** The world the request named (`--prod`), if any. */
-  world: string | undefined;
-}
-
-/** A gateway with the settings doors that answers the three corners and records every write. */
-class FakeGateway {
-  readonly heard: Heard[] = [];
-  yours: typeof YOURS | null = YOURS;
-  team: typeof TEAM | null = TEAM;
-  refuse: { status: number; detail: string } | undefined;
-  #server!: Server;
-  url = "";
-
-  async open(): Promise<void> {
-    this.#server = createServer((request, response) => void this.#answer(request, response));
-    await new Promise<void>((bound) => this.#server.listen(0, "127.0.0.1", bound));
-    this.url = `http://127.0.0.1:${(this.#server.address() as AddressInfo).port}`;
-  }
-
-  async close(): Promise<void> {
-    this.#server.closeAllConnections();
-    await new Promise<void>((closed) => this.#server.close(() => closed()));
-  }
-
-  get written(): Record<string, unknown> {
-    const put = this.heard.filter((one) => one.method === "PUT" || one.method === "POST").at(-1);
-    return (put?.body ?? {}) as Record<string, unknown>;
-  }
-
-  async #answer(request: IncomingMessage, response: ServerResponse): Promise<void> {
-    const chunks: Buffer[] = [];
-    for await (const chunk of request) chunks.push(chunk as Buffer);
-    const text = Buffer.concat(chunks).toString("utf8");
-    const world = request.headers["pinecall-env"];
-    const heard: Heard = {
-      method: request.method ?? "",
-      path: request.url ?? "",
-      body: text === "" ? null : JSON.parse(text),
-      world: typeof world === "string" ? world : undefined,
-    };
-    this.heard.push(heard);
-    const answer = (status: number, body: unknown): void => {
-      response.writeHead(status, { "content-type": "application/json" });
-      response.end(JSON.stringify(body));
-    };
-    if (this.refuse !== undefined && heard.method !== "GET") return answer(this.refuse.status, { detail: this.refuse.detail });
-    if (heard.path === "/v1/apps") return answer(200, { apps: [PROCESS] });
-    if (heard.path.endsWith("/stop")) return answer(200, { app: "app_7", stopped: true });
-    if (heard.path.endsWith("/history?team=true")) return answer(200, { world: "sandbox", holder: "", rows: [TEAM, { ...TEAM, version: 10, note: null, config: { voice: "carolina" } }] });
-    if (heard.path.includes("/diff")) return answer(200, { ours: YOURS, theirs: TEAM, changed: ["voice", "llm"] });
-    return answer(200, { world: "sandbox", yours: this.yours, team: this.team, production: null });
-  }
-}
 
 let gateway: FakeGateway;
 
@@ -105,7 +26,7 @@ afterEach(async () => {
   await gateway.close();
 });
 
-function environment(key: string = A_KEY): NodeJS.ProcessEnv {
+function environment(key: string = A_PERSONS_KEY): NodeJS.ProcessEnv {
   return pointingAt(gateway.url, key);
 }
 
@@ -201,27 +122,40 @@ describe("setting", () => {
     expect(body.config["llm"]).toBe("anthropic/claude-haiku-4-5");
   });
 
-  it("starts a corner from nothing when no corner has anything, with no version to check", async () => {
+  it("starts a corner from nothing when no corner has anything, guarded at version 0", async () => {
     gateway.yours = null;
     gateway.team = null;
 
     await run(["set", "--agent", AGENT, "--voice", "mateo", "--endpointing-ms", "300"], { out: written().stream, env: environment() });
 
-    expect(gateway.written).toEqual({ config: { voice: "mateo", turn: { endpointing_ms: 300 } }, if_version: null, note: null, team: false });
+    expect(gateway.written).toEqual({ config: { voice: "mateo", turn: { endpointing_ms: 300 } }, if_version: 0, note: null, team: false });
   });
 
-  // A production token has no corner of its own; the gateway writes the org's. Reading `yours`
+  // A server's token has no corner of its own; the gateway writes the org's. Reading `yours`
   // there built each set on an empty row, so every write erased the previous one.
   it("carries the team's row when the key holds no corner of its own, so a set erases nothing", async () => {
     gateway.yours = null;
 
-    await run(["set", "--agent", AGENT, "--voice", "mateo"], { out: written().stream, env: environment() });
+    await run(["set", "--agent", AGENT, "--voice", "mateo"], { out: written().stream, env: environment(A_KEY) });
 
     const body = gateway.written as { config: Record<string, unknown>; if_version: number | null; team: boolean };
     expect(body.config["voice"]).toBe("mateo");
     expect(body.config["llm"]).toBe("anthropic/claude-haiku-4-5");
     expect(body.config["memory"]).toEqual({ remember: ["allergies"], forget: [] });
     expect(body.if_version).toBe(11);
+    expect(body.team).toBe(false);
+  });
+
+  // A person whose own corner is still empty reads the team's, and the gateway writes theirs, at v0:
+  // the guard is that corner's version, never the team's it was read through.
+  it("writes a person's first set over the team's row, guarded at their own empty corner", async () => {
+    gateway.yours = null;
+    await run(["set", "--agent", AGENT, "--language", "en"], { out: written().stream, env: environment() });
+
+    const body = gateway.written as { config: Record<string, unknown>; if_version: number | null; team: boolean };
+    expect(body.config["language"]).toBe("en");
+    expect(body.config["llm"]).toBe("anthropic/claude-haiku-4-5");
+    expect(body.if_version).toBe(0);
     expect(body.team).toBe(false);
   });
 
@@ -280,7 +214,7 @@ describe("the versions", () => {
 
     await run(["set", "--agent", AGENT, "--eot-threshold", "0.85", "--eager-eot-threshold", "0.4"], { out: written().stream, env: environment() });
 
-    expect(gateway.written).toEqual({ config: { turn: { eot_threshold: 0.85, eager_eot_threshold: 0.4 } }, if_version: null, note: null, team: false });
+    expect(gateway.written).toEqual({ config: { turn: { eot_threshold: 0.85, eager_eot_threshold: 0.4 } }, if_version: 0, note: null, team: false });
   });
 
   it("refuses a confidence that is not one, before anything is written", async () => {
@@ -299,7 +233,7 @@ describe("the versions", () => {
 
     await run(["set", "--agent", AGENT, "--record", "off"], { out: written().stream, env: environment() });
 
-    expect(gateway.written).toEqual({ config: { record: false }, if_version: null, note: null, team: false });
+    expect(gateway.written).toEqual({ config: { record: false }, if_version: 0, note: null, team: false });
   });
 
   it("refuses anything but on or off, before anything is written", async () => {
@@ -317,14 +251,14 @@ describe("the versions", () => {
 
     await run(["set", "--agent", AGENT, "--max-duration", "15"], { out: written().stream, env: environment() });
 
-    expect(gateway.written).toEqual({ config: { max_duration_s: 900 }, if_version: null, note: null, team: false });
+    expect(gateway.written).toEqual({ config: { max_duration_s: 900 }, if_version: 0, note: null, team: false });
   });
 
   it("takes off for no limit, and refuses a minute count outside 1 to 60 before anything is written", async () => {
     gateway.yours = null;
     gateway.team = null;
     await run(["set", "--agent", AGENT, "--max-duration", "off"], { out: written().stream, env: environment() });
-    expect(gateway.written).toEqual({ config: { max_duration_s: 0 }, if_version: null, note: null, team: false });
+    expect(gateway.written).toEqual({ config: { max_duration_s: 0 }, if_version: 0, note: null, team: false });
 
     const said = written();
     const code = await run(["set", "--agent", AGENT, "--max-duration", "90"], { out: written().stream, err: said.stream, env: environment() });
@@ -336,7 +270,7 @@ describe("the versions", () => {
     gateway.yours = null;
     gateway.team = null;
     await run(["set", "--agent", AGENT, "--language", "pt-BR"], { out: written().stream, env: environment() });
-    expect(gateway.written).toEqual({ config: { language: "pt-BR" }, if_version: null, note: null, team: false });
+    expect(gateway.written).toEqual({ config: { language: "pt-BR" }, if_version: 0, note: null, team: false });
 
     const said = written();
     const code = await run(["set", "--agent", AGENT, "--language", " "], { out: written().stream, err: said.stream, env: environment() });

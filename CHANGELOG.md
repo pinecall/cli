@@ -6,6 +6,15 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **A member's first `agent set` (and `lexicon`, `agent knowledge edit`, `docs attach`) is no
+  longer refused with "this corner is at v0 now".** The write was guarded by the version of the
+  team's corner it was read through, while the gateway writes the person's own, still empty. The
+  guard is now the version of the corner the write lands on (0 when it is empty): a person's own
+  in the sandbox, the org's for a server's token and in production. The line that follows names
+  that corner, "your corner", where it said "the team's corner".
+
 ### Changed
 
 - **Breaking: the CLI is a package of its own.** `pinecall` on npm is the CLI alone, and the

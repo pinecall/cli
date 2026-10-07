@@ -7,7 +7,7 @@ import { join } from "node:path";
 
 import { type TuningAnswer, type TuningBody, type TuningRow } from "@pinecall/agents/wire";
 
-import { readSettings, theCornerCalled, theCornerToWrite, theCornerWritten } from "./agent-lines.js";
+import { readSettings, theCornerCalled, theCornerToWrite, theCornerWritten, theRowToStartFrom } from "./agent-lines.js";
 import { asked, type Door } from "./testing/gateway.js";
 
 /** Opens the text for editing and returns the result: $EDITOR, or a stub in tests. */
@@ -36,8 +36,8 @@ export async function knowledgeRun(
 ): Promise<number> {
   const team = flags.team === true;
   const standing = await readSettings(door, agent);
-  const row = theCornerWritten(standing, team);
-  const corner = theCornerCalled(standing, team);
+  const row = theRowToStartFrom(standing, team);
+  const corner = theCornerCalled(standing, team, door);
   const text = row?.config.knowledge ?? undefined;
   if (verb === undefined) {
     if (text === undefined) {
@@ -58,7 +58,7 @@ export async function knowledgeRun(
   }
   const writing = await theCornerToWrite(door, agent, team);
   const answer = await writing.write((config) => kept(config, written), flags.note ?? "knowledge");
-  const now = theCornerWritten(answer, team);
+  const now = theCornerWritten(answer, team, door);
   out.write(`${agent} · knowledge ${written.trim() === "" ? "taken out" : `${written.length.toLocaleString("en-US")} chars`} · ${corner} v${now?.version ?? "?"}\n`);
   return 0;
 }
