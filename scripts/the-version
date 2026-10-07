@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# La versión que este repo declara, y la única condición que no se puede arreglar después de
+# publicar: ninguna dependencia puede salir como `workspace:` ni `file:`, porque `pnpm publish` la
+# reescribe a la versión de un checkout que el registro no tiene. Imprime la versión, o el motivo.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+version=$(node -p "require('./package.json').version")
+
+linked=$(node -e '
+const p = require("./package.json");
+const fields = ["dependencies", "optionalDependencies", "peerDependencies"];
+const bad = fields.flatMap((f) =>
+  Object.entries(p[f] ?? {}).filter(([, r]) => /^(workspace|file|link):/.test(r))
+    .map(([n, r]) => `${f}.${n} = ${r}`));
+console.log(bad.join("\n"));
+')
+if [ -n "$linked" ]; then
+  echo "hay dependencias atadas a un checkout, que el registro no tiene:" >&2
+  echo "$linked" >&2
+  exit 1
+fi
+echo "$version"

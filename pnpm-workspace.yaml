@@ -1,0 +1,11 @@
+# The framework is the repository next door, linked rather than installed whenever its version
+# satisfies the range package.json asks for: the CLI is tested against the @pinecall/agents of the
+# same checkout and published depending on a version npm has. Until the one-cli cut lands in
+# agents' main, that checkout is the worktree ../agents-one-cli.
+packages:
+  - "../agents-one-cli"
+
+linkWorkspacePackages: true
+
+allowBuilds:
+  esbuild: true

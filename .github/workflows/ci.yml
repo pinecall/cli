@@ -1,0 +1,48 @@
+# The gate: build, lint, test, on every push and every pull request. The CLI is tested against the
+# framework's main, checked out beside it where pnpm-workspace.yaml links it from.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+  # release.yml runs THIS file as its gate: the release's gate and every push's are the same one.
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: cli
+      - uses: actions/checkout@v4
+        with:
+          repository: pinecall/agents
+          path: agents
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.2.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: cli/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: cli
+
+      # build, then lint, then test — the order matters and scripts/check is where it is written.
+      - run: scripts/check
+        working-directory: cli

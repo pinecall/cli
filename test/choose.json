@@ -1,0 +1,18 @@
+[
+  {
+    "state": {
+      "patient": { "id": "p1", "name": "Ana García", "cita": "jueves 10:00", "doctor": "Dra. Vidal" },
+      "slots": []
+    },
+    "input": "¿tiene algo el martes?",
+    "expect": { "tools": ["freeSlots"] }
+  },
+  {
+    "state": {
+      "patient": { "id": "p1", "name": "Ana García", "cita": "jueves 10:00", "doctor": "Dra. Vidal" },
+      "slots": [{ "when": "martes 16:00", "doctor": "Dra. Vidal" }]
+    },
+    "input": "la de las cuatro me viene bien",
+    "expect": { "not": ["book"] }
+  }
+]

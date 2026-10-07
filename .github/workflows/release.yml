@@ -1,0 +1,97 @@
+# The tag IS the publication: `git push origin vX.Y.Z` and this publishes `pinecall` on npm.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+  # A rehearsal that burns no number: guard and gates run, publish is skipped for not being a tag.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # An npm version is immutable. Three questions before the registry is touched: does the tag say
+  # the tree's number, is nothing tied to a checkout, and is the framework this CLI asks for on npm.
+  guard:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.declared.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Two lines, not one: `echo "version=$(scripts/the-version)"` swallows the script's exit code.
+      - id: declared
+        run: |
+          version=$(scripts/the-version)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: the tag and the declared version are the same number
+        if: github.ref_type == 'tag'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          declared="${{ steps.declared.outputs.version }}"
+          if [ "$tag" != "$declared" ]; then
+            echo "the tag says $tag and the tree declares $declared — one of them is wrong" >&2
+            exit 1
+          fi
+      # Published before it, or every install of this version fails to resolve.
+      - name: the framework it depends on is on npm
+        run: |
+          range=$(node -p "require('./package.json').dependencies['@pinecall/agents']")
+          if [ -z "$(npm view "@pinecall/agents@$range" version 2>/dev/null)" ]; then
+            echo "no @pinecall/agents on npm satisfies $range: release the framework first" >&2
+            exit 1
+          fi
+
+  gates:
+    uses: ./.github/workflows/ci.yml
+
+  # Trusted Publishing does not work inside a reusable workflow: the publish stays up here.
+  publish-npm:
+    needs: [guard, gates]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      id-token: write   # OIDC, no stored token anywhere
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: cli
+      - uses: actions/checkout@v4
+        with:
+          repository: pinecall/agents
+          path: agents
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.2.2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      # setup-node's npm does not know the registry's OIDC exchange and falls back, silently, to an
+      # anonymous publish: a 404 on the PUT after saying it signed the provenance.
+      - run: npm install -g npm@latest
+      - run: pnpm install --frozen-lockfile
+        working-directory: cli
+      - run: scripts/build
+        working-directory: cli
+      # pnpm packs because `npm pack` does not apply publishConfig (the bin would be the checkout's
+      # bin/pinecall.js, which `files` does not ship); npm publishes because npm speaks OIDC.
+      - run: pnpm pack --pack-destination /tmp/pkg
+        working-directory: cli
+      - name: publish, unless this version is already on npm
+        working-directory: cli
+        run: |
+          version="${{ needs.guard.outputs.version }}"
+          if npm view "pinecall@$version" version >/dev/null 2>&1; then
+            echo "pinecall@$version is already on npm: nothing to publish, the tag records it"
+            exit 0
+          fi
+          npm publish --provenance --access public /tmp/pkg/*.tgz
