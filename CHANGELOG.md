@@ -6,6 +6,8 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.21] — the serve entry is the project's own framework
+
 ### Fixed
 
 - **A TypeScript agent is served only by the framework its project installs.** The serve entry was

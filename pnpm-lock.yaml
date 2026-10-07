@@ -10,7 +10,7 @@ importers:
     dependencies:
       '@pinecall/agents':
         specifier: ^0.9.20
-        version: link:../agents
+        version: 0.9.20
       tsx:
         specifier: ^4.20.6
         version: 4.23.15
@@ -62,6 +62,10 @@ importers:
       vitest:
         specifier: ^5.0.0
         version: 5.0.3(@types/node@26.6.4)(vite@8.3.3(@types/node@26.6.4)(esbuild@0.28.2)(tsx@4.23.15))
+    optionalDependencies:
+      '@livekit/rtc-node':
+        specifier: ^0.13.35
+        version: 0.13.35
 
 packages:
 
@@ -410,6 +414,10 @@ packages:
 
   '@oxc-project/types@0.152.0':
     resolution: {integrity: sha512-oM/5rLBm2tPkg0iBgkH/FOeR3PCDpY19GTgAZjMFM8h9WI9VW7cLgzp6nwtarYKmovavIQZ+Fe/RKX/8C8O/Rw==}
+
+  '@pinecall/agents@0.9.20':
+    resolution: {integrity: sha512-J+v2j2Ke0J5CFbptDv07QBX73NyP3QKekGWjjfwW7FyyfV4FSn7gDq18yABQ4Kilvfsa5XEsQSz9C+vu+522qQ==}
+    engines: {node: '>=24'}
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
@@ -1235,6 +1243,16 @@ snapshots:
   '@oxc-project/types@0.148.0': {}
 
   '@oxc-project/types@0.152.0': {}
+
+  '@pinecall/agents@0.9.20':
+    dependencies:
+      oxc-parser: 0.148.0
+      tsx: 4.23.15
+      ws: 8.22.0
+      zod: 4.6.5
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@pinojs/redact@0.4.0':
     optional: true

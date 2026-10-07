@@ -8,3 +8,6 @@ linkWorkspacePackages: true
 
 allowBuilds:
   esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@pinecall/agents@0.9.20'
