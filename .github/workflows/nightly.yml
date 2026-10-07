@@ -49,11 +49,13 @@ jobs:
         with:
           repository: pinecall/agents
           path: agents
-      # The Ruby SDK, for its example: the same agent and the same goldens, served by the gem.
+      # The Ruby SDK, for its example: the same agent and the same goldens, served by the gem. Its
+      # repository is private, so it is read with a read-only deploy key of its own.
       - uses: actions/checkout@v4
         with:
           repository: pinecall/ruby
           path: ruby
+          ssh-key: ${{ secrets.RUBY_DEPLOY_KEY }}
 
       # Without the key every verb below stops on "no PINECALL_KEY" three steps later. Said here,
       # first, in the words of what is missing.
