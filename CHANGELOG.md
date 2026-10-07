@@ -6,6 +6,8 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.20] — the CLI, a package of its own
+
 ### Fixed
 
 - **A member's first `agent set` (and `lexicon`, `agent knowledge edit`, `docs attach`) is no

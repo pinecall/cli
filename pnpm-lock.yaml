@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@pinecall/agents':
-        specifier: ^0.9.19
+        specifier: ^0.9.20
         version: link:../agents-one-cli
       tsx:
         specifier: ^4.20.6
