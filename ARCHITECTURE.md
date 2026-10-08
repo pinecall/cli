@@ -60,16 +60,18 @@ It reaches the framework in two ways only, and `test/the-imports.test.ts` holds 
 | `judges.ts` | the agent's own judges — a question about its job, asked of its calls at hang-up beside the runtime's panel — listed, written and dropped at the agent's door; the agent is the project's one, or `--agent` |
 | `login.ts` · `pairing.ts` · `browser.ts` · `whoami.ts` · `secret.ts` | the browser dance that signs this machine in — `pairing.ts` is it as data (a one-use word asked for, its link, the key collected once, verified and kept for `link` to mint from, never run on) and `login.ts` the terminal's front that prints the link and opens it — how a URL is put in front of a person, which key a verb would use and whether it acts in production, and the one place a terminal is read |
 | `testing/` | what those verbs need: the gateway's eval doors, goldens off disk, latency, the matrix, the model a short name means, for `test --model` and for `agent set --llm` alike (`models.ts`), the progress screen, the score, the voice door, the callers as the gateway keeps them (`personas.ts`) and the files a project pushed them from, read once (`caller.ts`) |
+| `mcp/` | `pinecall mcp`, the same CLI as an MCP server (`docs/the-mcp.md`): `server.ts` registers every tool of `tools/` on one stdio connection and turns each answer and refusal into scrubbed text (`scrubbed.ts`); `tool.ts` is a tool (name, sentence, zod schema, the manual `instructions.ts` assembles, a handler over a core of `src/`); `session.ts` is one server's state — the project folder, its door, whether production was allowed; `install/` writes the server into every assistant's config, one entry and nothing else. **Nothing it reaches starts a process**: `test/the-mcp-starts-nothing.test.ts` walks its imports, static and dynamic, and the MCP SDK and zod are imported under `mcp/` alone |
+| `version.ts` | the CLI's version, from its own `package.json`: `pinecall --version` and the MCP server's handshake |
 | `ui/` | what `pinecall start`'s companion answers a console with, by the wire's verb (`doors.ts`, one module per verb family: a chat, a simulation, a suite, the docs and memory goldens, a promotion, drift, a reproduction). Node modules: the page is `../console`, and it never imports them — it asks the gateway, and the gateway asks this process |
 
 Beside `src/`:
 
 | | |
 |---|---|
-| `test/` | mirrors `src/`, plus the rules: `the-tree` (400 lines, a first line, no near-twin names) and `the-imports`; `test/clinic` and `test/bidfire` are projects the verbs run against |
+| `test/` | mirrors `src/`, plus the rules: `the-tree` (400 lines, a first line, no near-twin names), `the-imports` and `the-mcp-starts-nothing`; `test/clinic` and `test/bidfire` are projects the verbs run against |
 | `bin/pinecall.js` | the bin of a checkout: the CLI from source through tsx. npm installs `dist/index.js` instead |
 | `scripts/build`, `scripts/check`, `scripts/the-version` | what is published, what CI runs, and the version a tag must equal |
-| `docs/` | `the-cli.md`, every verb; `deploying.md`, `pinecall deploy` |
+| `docs/` | `the-cli.md`, every verb; `the-mcp.md`, the MCP server; `quickstart.md`; `deploying.md` points at the site |
 
 ## 3. The verbs
 

@@ -2,14 +2,15 @@
 /** `pinecall <group> [args]`: the tenant CLI entry point and group dispatcher. */
 
 import { CannotRun } from "./cannot-run.js";
-import { readFileSync, realpathSync } from "node:fs";
+import { realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { helpFor, PLANNED, plannedGroup, type Group } from "./groups.js";
+import { version } from "./version.js";
 import { inTheWorld, withoutTheWorldFlag } from "./world.js";
 
 // Order is the help order: first-day verbs first.
-const BUILT = ["new", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "login", "whoami"] as const;
+const BUILT = ["new", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "login", "whoami", "mcp"] as const;
 
 /** Every group name, built and planned, in help order. */
 export function groupNames(): string[] {
@@ -66,6 +67,7 @@ export async function main(
 // Lazy imports keep light verbs like `prompt` from loading the websocket client.
 export async function groupFor(name: string, out: NodeJS.WritableStream = process.stdout): Promise<Group | undefined> {
   if (name === "new") return (await import("./new.js")).group;
+  if (name === "mcp") return (await import("./mcp/index.js")).group;
   if (name === "link") return (await import("./linking.js")).group;
   if (name === "start") return (await import("./start.js")).group;
   if (name === "console") return (await import("./console.js")).group;
@@ -98,12 +100,6 @@ export async function groupFor(name: string, out: NodeJS.WritableStream = proces
   if (name === "whoami") return (await import("./whoami.js")).group;
   const planned = PLANNED[name];
   return planned === undefined ? undefined : plannedGroup(name, planned, out);
-}
-
-/** The version this CLI was published as: its own package.json's. */
-export function version(): string {
-  const ours = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string };
-  return ours.version;
 }
 
 /** Top-level help listing every group. */
@@ -142,6 +138,7 @@ export function usage(): string {
     "  secrets   list | set | rm the values the org's hosted apps are started with",
     "  login     sign this machine in through a browser; `link` asks for it when it is needed",
     "  whoami    which gateway, which org, whether you act in production, and where the key came from",
+    "  mcp       the MCP server an assistant runs this CLI as; `mcp install` adds it to every assistant here",
     "",
     "  --prod on any verb runs it in production, if your org lets you act there.",
     "",

@@ -11,9 +11,13 @@ const SRC = fileURLToPath(new URL("../src", import.meta.url));
 /**
  * The packages src/ may import, besides node's own. A class runs in its language's serve entry,
  * so `@pinecall/agents` bare (the class) and `@pinecall/agents/serve` are never here. `tsx` loads a
- * project's legacy persona files and `@livekit/rtc-node` is `simulate --listen`'s; both lazily.
+ * project's legacy persona files and `@livekit/rtc-node` is `simulate --listen`'s; both lazily. The
+ * MCP SDK and zod are the `mcp` group's alone.
  */
-const MAY_IMPORT = ["@pinecall/agents/client", "@pinecall/agents/wire", "ws", "tsx", "@livekit/rtc-node"];
+const MAY_IMPORT = ["@pinecall/agents/client", "@pinecall/agents/wire", "ws", "tsx", "@livekit/rtc-node", "@modelcontextprotocol/sdk", "zod"];
+
+/** The MCP server's own packages: imported under src/mcp/ and nowhere else, so no verb pays for them. */
+const THE_MCPS = ["@modelcontextprotocol/sdk", "zod"];
 
 // Matched after comments are stripped. The third alternative catches dynamic `import("x")`.
 const SPECIFIER = /^(?:import|export)[\s\S]*?from\s+"([^"]+)"|^import\s+"([^"]+)"|\bimport\("([^"]+)"\)/gm;
@@ -48,6 +52,12 @@ describe("the CLI's imports", () => {
     const broken = packages().filter(({ spec }) => !allowed(spec)).map(({ file, spec }) => `src/${file}: ${spec}`);
 
     expect(broken).toEqual([]);
+  });
+
+  it("keep the MCP server's packages under src/mcp/", () => {
+    const outside = packages().filter(({ file, spec }) => THE_MCPS.some((one) => spec === one || spec.startsWith(`${one}/`)) && !file.startsWith("mcp/"));
+
+    expect(outside.map(({ file, spec }) => `src/${file}: ${spec}`)).toEqual([]);
   });
 
   it("name nothing src/ does not actually import", () => {

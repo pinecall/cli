@@ -27,7 +27,8 @@ pinecall prompt      # the prompt the model reads, offline; --state <golden> for
 pinecall chat        # talk to the agent in this terminal
 pinecall test        # run the goldens
 pinecall start       # run the agent: the process you deploy
-pinecall deploy      # or let Pinecall's box run it
+pinecall deploy      # or let Pinecall run it
+pinecall mcp install # or do all of it from Claude Code, Codex, Cursor…
 ```
 
 Every verb acts in the sandbox unless `--prod` is given. The CLI reads `PINECALL_KEY` and
@@ -37,6 +38,7 @@ Every verb acts in the sandbox unless `--prod` is given. The CLI reads `PINECALL
 |---|---|
 | [docs/quickstart.md](docs/quickstart.md) | nothing to an agent that answers, in ten minutes |
 | [docs/the-cli.md](docs/the-cli.md) | every verb |
+| [docs/the-mcp.md](docs/the-mcp.md) | `pinecall mcp`: the same CLI as an assistant's MCP server, and `mcp install` |
 | [Deploy to Pinecall](https://docs.pinecall.io/guides/deploy/) | `pinecall deploy`: Pinecall installs and runs your project |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | the CLI file by file |
 

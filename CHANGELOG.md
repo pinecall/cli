@@ -6,6 +6,10 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `pinecall mcp`: the CLI as an MCP server for Claude Code, Claude Desktop, Codex, Cursor, Windsurf, Antigravity and Gemini CLI, with its first tools — `whoami`, `login`, `link`, `project` — acting in the sandbox, starting no process, and scrubbing every key from what they answer. `pinecall mcp install` writes it into every assistant on the machine (`--list`, `--remove`, `--prod`).
+
 ## [0.9.24] — `pipeline` reads talk_share as a share
 
 ### Fixed

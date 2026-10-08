@@ -22,9 +22,11 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@pinecall/agents": "^0.9.20",
     "tsx": "^4.20.6",
-    "ws": "^8.21.3"
+    "ws": "^8.21.3",
+    "zod": "^4.6.5"
   },
   "optionalDependencies": {
     "@livekit/rtc-node": "^0.13.35"

@@ -62,6 +62,7 @@ path end to end, with every output under it.
 | [`secrets`](#secrets) | the values the org's hosted apps are started with: list, set, rm — never read back | yes |
 | [`login`](#login) | sign this machine in through a browser; `link` asks for it when it is needed | yes |
 | [`whoami`](#whoami) | which gateway, which org, which environments the key opens, and where the key came from | yes |
+| [`mcp`](#mcp) | the MCP server an assistant runs this CLI as; `mcp install` adds it to every assistant here | the tools do |
 
 `--prod` is no verb's and every verb's: anywhere on the line, it runs that one command in
 production ([below](#where-the-gateway-and-the-key-come-from)) — and a verb that asks no gateway
@@ -1390,6 +1391,21 @@ gateway https://cloud.pinecall.io · key from .env · sandbox
   org clinica · key k_4f2a1d9c66b30e17 · sandbox · ana-macbook · production: yes
   a person's key: the sandbox without --prod, production with it
 ```
+
+## `mcp`
+
+```
+pinecall mcp [--prod]
+pinecall mcp install [--list | --remove] [--prod]
+```
+
+With nothing after it, the MCP server on stdin and stdout, for an assistant to launch. Its tools
+sign this machine in, link a project and write a new one; they act in the sandbox, and in
+production only on a server started with `--prod`. It starts no process of its own, and no answer
+carries a key. `install` writes `npx -y pinecall mcp` into every assistant installed here, copying
+each file to `.bak` first and leaving every other entry and comment as it was; `--list` changes
+nothing, `--remove` takes it out. Every tool, and every assistant's file:
+[the-mcp.md](the-mcp.md).
 
 ---
 
