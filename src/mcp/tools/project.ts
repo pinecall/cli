@@ -27,7 +27,7 @@ export const project = tool({
     agent: z.string().optional().describe("`generate golden`: whose golden; the project's only agent when left out"),
   },
   manual:
-    "`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; the person then installs its dependencies (`npm install`, or `bundle install` for Ruby) before the agent can run. `generate` adds to the open project, never over a file: `agent` a second agent from the same templates (its class, its test, one golden), `golden` a conversation in `test/<agent>/goldens/` from the caller's lines and the tools that must be called — then `test run` holds the agent to it.",
+    "`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; a TypeScript one runs at once on the framework this server lends it until `npm install` pins its own, a Ruby one after `bundle install`. `generate` adds to the open project, never over a file: `agent` a second agent from the same templates (its class, its test, one golden), `golden` a conversation in `test/<agent>/goldens/` from the caller's lines and the tools that must be called — then `test run` holds the agent to it.",
   handler: async (args, session) => {
     if (args.action === "open") return shown(session, session.open(needed(args.path, "path")));
     if (args.action === "new") return written(session, needed(args.name, "name"), args.path, args.language ?? "typescript");
@@ -51,8 +51,11 @@ function written(session: Session, name: string, path: string | undefined, langu
   const parent = path === undefined ? (session.root === undefined ? process.cwd() : dirname(session.root)) : resolve(path);
   const root = scaffold(join(parent, name), name, language);
   session.open(root);
-  const install = language === "ruby" ? "bundle install" : "npm install";
-  return { ...shown(session, root), next: `${install} in ${root}, then \`link\` writes its key` };
+  const next =
+    language === "ruby"
+      ? `bundle install in ${root}, then \`link\` writes its key`
+      : `\`link\` writes its key, and \`start\` runs it on the framework this server lends it; npm install in ${root} pins the project's own`;
+  return { ...shown(session, root), next };
 }
 
 // The agents as every verb finds them: `agents/<name>/agent.(tsx|ts|rb|py)`, the folder's name their slug.

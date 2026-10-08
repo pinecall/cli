@@ -34,6 +34,8 @@ export interface Starting {
   root: string;
   /** Node's `--inspect…` flags, passed on to a TypeScript entry as they were typed. */
   inspect?: string[];
+  /** A TypeScript serve entry to run instead of the project's own: the one `pinecall mcp` lends a project that installed none. */
+  serve?: string;
 }
 
 /** The language of an agent file, by its name. */
@@ -64,9 +66,9 @@ export interface AgentOfTheProject {
  * The serve entry holding one agent, its lines on stdout: a console's process, which takes no call
  * it did not open, unless the calls it serves arrive naming no app (a spoken one, from a worker).
  */
-export function servingOne(door: Door, agent: AgentOfTheProject, how: { console: boolean; inspect?: string[] }): Started {
+export function servingOne(door: Door, agent: AgentOfTheProject, how: { console: boolean; inspect?: string[]; serve?: string }): Started {
   const args = ["--file", agent.file, "--slug", agent.name, ...(how.console ? ["--console"] : []), "--events"];
-  return startedWith(door, agent.file, "start", args, { root: agent.root, ...(how.inspect === undefined ? {} : { inspect: how.inspect }) });
+  return startedWith(door, agent.file, "start", args, { root: agent.root, ...(how.inspect === undefined ? {} : { inspect: how.inspect }), ...(how.serve === undefined ? {} : { serve: how.serve }) });
 }
 
 /** The command that runs a verb of a language's serve entry. */
@@ -78,7 +80,7 @@ export function commandFor(language: Language, verb: Verb, args: string[], how: 
     const ruby = ["ruby", "-r", "pinecall", "-e", "exit Pinecall::Serve.main(ARGV)", "--", verb, ...args];
     return existsSync(join(how.root, "Gemfile")) ? ["bundle", "exec", ...ruby] : ruby;
   }
-  const serve = serveEntryOf(how.root);
+  const serve = how.serve ?? serveEntryOf(how.root);
   return [process.execPath, ...inspect, ...theLoaderFor(serve), serve, verb, ...args];
 }
 

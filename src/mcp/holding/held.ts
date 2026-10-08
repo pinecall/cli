@@ -13,6 +13,7 @@ import { languageOf, servingOne } from "../../language.js";
 import type { Serving } from "../../serving.js";
 import { asked } from "../../testing/gateway.js";
 import { Refused } from "../tool.js";
+import { lentTo, type Lent } from "./framework.js";
 import { Logs, threadServing, type Thread } from "./thread.js";
 
 // A save is a burst of writes: one reload after it settles.
@@ -106,6 +107,11 @@ export class Held {
     return app;
   }
 
+  /** The framework lent to the version answering now, when the project installed none: an install pins its own on the next save. */
+  lent(): Lent | undefined {
+    return this.thread?.lent;
+  }
+
   /** Drain the thread and stop watching — a save still settling is dropped, a reload in flight finished first; an attached process is left as it was. */
   async stop(): Promise<void> {
     this.watcher?.close();
@@ -155,7 +161,9 @@ export class Held {
   }
 
   private async started(): Promise<Thread> {
-    const thread = threadServing(servingOne(this.door, this.home, { console: false }), this.logs);
+    // A project nobody installed yet runs on the framework this server ships, until an install pins its own.
+    const lent = lentTo(this.home.root);
+    const thread = threadServing(servingOne(this.door, this.home, { console: false, ...(lent === undefined ? {} : { serve: lent.entry }) }), this.logs, undefined, lent);
     try {
       await thread.registered(this.home.name);
       return thread;

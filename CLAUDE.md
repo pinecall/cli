@@ -67,7 +67,9 @@ Before committing a rename: `grep -rn '<the old name>' ARCHITECTURE.md README.md
   `PINECALL_ENV`): an argv is read by every process on the machine.
 - **A TypeScript agent is served by the project's own `@pinecall/agents`**, resolved from the
   project's root, never by a copy this CLI carries: the framework that runs is the one the project
-  pinned. A project without it is refused by name.
+  pinned. A project without it is refused by name — by every verb; `pinecall mcp` alone lends its
+  own to the agent's thread, never as a link in the project's `node_modules`: npm adopts a link into
+  the lockfile a deploy installs from (`src/mcp/holding/framework.ts`).
 - **The child is detached, and its stdin ending means drain.** The first SIGINT/SIGTERM is passed on
   once, as SIGTERM; a second, or 40 s, kills it. A process manager's kill timeout is 45 s.
 - `pinecall test --voice` is ring 2: the same goldens to `POST /v1/evals/run` with `voice: true`;

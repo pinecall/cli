@@ -6,6 +6,21 @@ import { Worker } from "node:worker_threads";
 
 import type { Started } from "../../language.js";
 import { servingFrom, type Serving } from "../../serving.js";
+import type { Lent } from "./framework.js";
+
+// A project that installed no framework is answered `@pinecall/agents` from the server's own, in this
+// thread alone; whatever the project does install is asked first.
+const LENDING = `
+let from;
+export function initialize(lent) { from = lent; }
+export async function resolve(specifier, context, next) {
+  try {
+    return await next(specifier, context);
+  } catch (failed) {
+    if (specifier !== "@pinecall/agents" && !specifier.startsWith("@pinecall/agents/")) throw failed;
+    return await next(specifier, { ...context, parentURL: from });
+  }
+}`;
 
 // A thread is not a process: same pid, own module cache, ended with terminate(). Its stdin ending is
 // the order to drain, as for the CLI's child; tsx is registered first when the entry is a checkout's .ts.
@@ -13,6 +28,7 @@ const ENTRY = `
 const { workerData } = require("node:worker_threads");
 const { EventEmitter } = require("node:events");
 (async () => {
+  if (workerData.lent !== undefined) require("node:module").register(workerData.lending, { data: workerData.lent });
   if (workerData.tsx !== undefined) (await import(workerData.tsx)).register();
   const { main } = await import(workerData.entry);
   process.exitCode = await main(workerData.argv, { out: process.stdout, err: process.stderr, env: process.env, input: process.stdin, signals: new EventEmitter() });
@@ -46,6 +62,8 @@ export class Logs {
 
 /** A serve entry this server started in a thread. */
 export interface Thread extends Serving {
+  /** The framework the server lent it, when the project installed none. */
+  lent: Lent | undefined;
   /** Resolves with the exit code when the thread is gone; the sentence it died with is in the logs. */
   exited: Promise<number>;
   /** Ask it to drain and leave; terminated if it has not within the grace. Resolves when it is gone. */
@@ -60,13 +78,10 @@ export function threadArgs(started: Started): { entry: string; argv: string[] } 
 }
 
 /** Start the serve entry in a thread and read its lines; its stderr and its non-entry lines go to the logs. */
-export function threadServing(started: Started, logs: Logs, registersWithinMs?: number): Thread {
-  const { entry, argv } = threadArgs(started);
-  const tsx = entry.endsWith(".ts") ? import.meta.resolve("tsx/esm/api") : undefined;
+export function threadServing(started: Started, logs: Logs, registersWithinMs?: number, lent?: Lent): Thread {
   const worker = new Worker(ENTRY, {
     eval: true,
-    workerData: { entry: pathToFileURL(entry).href, argv, tsx },
-    env: started.env,
+    ...onTheThread(started, lent),
     stdin: true,
     stdout: true,
     stderr: true,
@@ -95,6 +110,7 @@ export function threadServing(started: Started, logs: Logs, registersWithinMs?: 
   };
   return {
     ...serving,
+    lent,
     registered: (slug) =>
       Promise.race([
         serving.registered(slug),
@@ -106,10 +122,8 @@ export function threadServing(started: Started, logs: Logs, registersWithinMs?: 
 }
 
 /** Run a serve entry's one-shot verb (`prompt`) in a thread to its end, and answer what it printed. */
-export async function threadOnce(started: Started): Promise<{ code: number; out: string; err: string }> {
-  const { entry, argv } = threadArgs(started);
-  const tsx = entry.endsWith(".ts") ? import.meta.resolve("tsx/esm/api") : undefined;
-  const worker = new Worker(ENTRY, { eval: true, workerData: { entry: pathToFileURL(entry).href, argv, tsx }, env: started.env, stdout: true, stderr: true });
+export async function threadOnce(started: Started, lent?: Lent): Promise<{ code: number; out: string; err: string }> {
+  const worker = new Worker(ENTRY, { eval: true, ...onTheThread(started, lent), stdout: true, stderr: true });
   let out = "";
   let err = "";
   worker.stdout.on("data", (chunk: Buffer) => (out += chunk.toString()));
@@ -119,4 +133,16 @@ export async function threadOnce(started: Started): Promise<{ code: number; out:
     worker.once("exit", done);
   });
   return { code, out, err };
+}
+
+// What the thread starts with: the entry and its argv, tsx for a checkout's .ts, and a lent framework's resolver and tsconfig.
+function onTheThread(started: Started, lent: Lent | undefined): { workerData: Record<string, unknown>; env: Record<string, string | undefined> } {
+  const { entry, argv } = threadArgs(started);
+  const tsx = entry.endsWith(".ts") ? import.meta.resolve("tsx/esm/api") : undefined;
+  const lending = lent === undefined ? {} : { lent: lent.from, lending: `data:text/javascript,${encodeURIComponent(LENDING)}` };
+  return {
+    workerData: { entry: pathToFileURL(entry).href, argv, tsx, ...lending },
+    // The project's tsconfig extends the framework it does not have: tsx reads the framework's own instead.
+    env: lent === undefined ? started.env : { ...started.env, TSX_TSCONFIG_PATH: lent.tsconfig },
+  };
 }

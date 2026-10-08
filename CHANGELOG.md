@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.36] — an assistant's agent runs before anything is installed
+
+### Added
+
+- `pinecall mcp`: a TypeScript project with nothing installed runs anyway. `start` and `prompt` lend the agent's thread the `@pinecall/agents` the server ships — nothing is written into the project — until `npm install` pins the project's own; `status` says `framework` while it is lent. So an assistant goes from an empty folder to an agent answering without a terminal. Every CLI verb still refuses such a project by name.
+
 ## [0.9.35] — no Claude Haiku 4.5 left
 
 ### Changed

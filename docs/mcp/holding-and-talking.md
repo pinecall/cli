@@ -7,7 +7,7 @@ tool's own schema, as the assistant sees it — and one real call, answered by P
 
 Hold the project's agent so it answers calls: in a thread of this server, reloaded on every save, or attached to a process already holding it.
 
-`start` holds the agent the way `pinecall start` does: it answers written calls (`chat`), spoken ones from the console, and a phone ring when a number points at it. A TypeScript agent runs inside this server and reloads on every save; a save that does not load keeps the version before answering, and `status` says why. A Ruby agent is held by `pinecall start --watch` in a terminal: `start` then attaches to it. Already held on this machine (a terminal, another window), it attaches instead of fighting for the line. The console's screens reach the agent held here, through a companion this server keeps beside the thread.
+`start` holds the agent the way `pinecall start` does: it answers written calls (`chat`), spoken ones from the console, and a phone ring when a number points at it. A TypeScript agent runs inside this server and reloads on every save; a project with nothing installed runs on the framework this server ships, lent to its thread alone — nothing is written into the project — until `npm install` pins its own, and `status` says so; a save that does not load keeps the version before answering, and `status` says why. A Ruby agent is held by `pinecall start --watch` in a terminal: `start` then attaches to it. Already held on this machine (a terminal, another window), it attaches instead of fighting for the line. The console's screens reach the agent held here, through a companion this server keeps beside the thread.
 
 | parameter | takes | | what it is |
 |---|---|---|---|
@@ -52,7 +52,7 @@ Stop holding the agent: its thread drains its live calls and leaves.
 
 What this server holds: each agent, how (thread or attached), its app, the version answering, and why the newest save did not load.
 
-`status` leads with what is wrong, if anything: the sentence a save that does not load was refused with. Otherwise each agent held, its app id and the version answering.
+`status` leads with what is wrong, if anything: the sentence a save that does not load was refused with. Otherwise each agent held, its app id and the version answering, and `framework` when the agent runs on the one this server lent the project.
 
 It takes nothing.
 

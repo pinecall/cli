@@ -3,6 +3,7 @@
 import { z } from "zod";
 
 import { languageOf, startedWith } from "../../language.js";
+import { lentTo } from "../holding/framework.js";
 import { threadOnce } from "../holding/thread.js";
 import { Refused, tool } from "../tool.js";
 
@@ -21,7 +22,8 @@ export const prompt = tool({
     if (languageOf(home.file) !== "typescript") throw new Refused("a Ruby agent's prompt is printed by Ruby: `pinecall prompt` in a terminal");
     const states = Object.entries(args.state ?? {}).flatMap(([field, value]) => ["--state", `${field}=${JSON.stringify(value)}`]);
     const flags = ["--file", home.file, "--slug", home.name, ...states, ...(args.channel === undefined ? [] : ["--channel", args.channel])];
-    const printed = await threadOnce(startedWith(undefined, home.file, "prompt", flags, { root: home.root }));
+    const lent = lentTo(home.root);
+    const printed = await threadOnce(startedWith(undefined, home.file, "prompt", flags, { root: home.root, ...(lent === undefined ? {} : { serve: lent.entry }) }), lent);
     if (printed.code !== 0) throw new Refused(printed.err.trim() || `the prompt could not be printed (exit ${printed.code})`);
     return { agent: home.name, prompt: printed.out };
   },
