@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.26] — mcp install names the newest CLI
+
+### Fixed
+
+- `pinecall mcp install` writes `npx -y pinecall@latest mcp`: inside a project that pinned an older `pinecall`, the bare name ran that copy, which has no `mcp`, and the assistant only saw the connection close.
+
 ## [0.9.25] — the CLI as an MCP server
 
 ### Added

@@ -6,6 +6,9 @@ import { dirname, join } from "node:path";
 
 export const SERVER = "pinecall";
 
+/** The package an assistant launches: always the newest published one. */
+export const PACKAGE = "pinecall@latest";
+
 /** One assistant's config file. */
 export interface Host {
   name: string;
@@ -55,11 +58,12 @@ export function installed(host: Host): boolean {
 }
 
 /**
- * What the assistant launches. `npx -y pinecall mcp` runs the published CLI — inside a project that
- * pins `pinecall`, its own version. No key is ever written here: the server reads the project's.
+ * What the assistant launches: the newest published CLI, by name. Not the bare name — inside a project
+ * that pins an older `pinecall`, npx would run that one, which has no `mcp`, and the assistant
+ * would only see the connection close. No key is ever written here: the server reads the project's.
  */
 export function entryFor(host: Host, production: boolean): Entry {
-  const args = ["-y", "pinecall", "mcp", ...(production ? ["--prod"] : [])];
+  const args = ["-y", PACKAGE, "mcp", ...(production ? ["--prod"] : [])];
   const beside = join(dirname(process.execPath), process.platform === "win32" ? "npx.cmd" : "npx");
   return { command: host.desktop === true && existsSync(beside) ? beside : "npx", args };
 }

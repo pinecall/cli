@@ -9,7 +9,7 @@ import { inJson, inToml } from "../../src/mcp/install/configs.js";
 import { entryFor, hosts } from "../../src/mcp/install/hosts.js";
 import { installEverywhere, listed } from "../../src/mcp/install/installing.js";
 
-const ENTRY = { command: "npx", args: ["-y", "pinecall", "mcp"] };
+const ENTRY = { command: "npx", args: ["-y", "pinecall@latest", "mcp"] };
 
 describe("a JSON config", () => {
   it("gains Pinecall beside the servers and settings already there", () => {
@@ -44,7 +44,7 @@ describe("a TOML config", () => {
     const after = inToml(BEFORE, "mcp_servers", ENTRY);
 
     expect(after.startsWith(BEFORE.trimEnd())).toBe(true);
-    expect(after).toContain('[mcp_servers.pinecall]\ncommand = "npx"\nargs = ["-y", "pinecall", "mcp"]\n');
+    expect(after).toContain('[mcp_servers.pinecall]\ncommand = "npx"\nargs = ["-y", "pinecall@latest", "mcp"]\n');
   });
 
   it("has its Pinecall section replaced in place, and removed whole", () => {
@@ -72,11 +72,17 @@ describe("installing everywhere", () => {
     expect(JSON.parse(readFileSync(join(home, ".claude.json"), "utf8"))).toMatchObject({ theme: "dark", mcpServers: { pinecall: ENTRY } });
   });
 
+  it("names the newest published CLI, never the bare name a project's older copy would answer to", () => {
+    const [claude] = hosts(mkdtempSync(join(tmpdir(), "pinecall-hosts-")));
+
+    expect(entryFor(claude!, false).args[1]).toBe("pinecall@latest");
+  });
+
   it("never writes a key, and carries --prod only when a person asked for it", () => {
     const [claude] = hosts(mkdtempSync(join(tmpdir(), "pinecall-hosts-")));
 
     expect(JSON.stringify(entryFor(claude!, false))).not.toMatch(/KEY|key/);
-    expect(entryFor(claude!, true).args).toEqual(["-y", "pinecall", "mcp", "--prod"]);
+    expect(entryFor(claude!, true).args).toEqual(["-y", "pinecall@latest", "mcp", "--prod"]);
   });
 
   it("takes Pinecall out again, and lists every assistant with its state", () => {

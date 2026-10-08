@@ -18,7 +18,7 @@ export const group: Group = {
   It starts no process of its own. Every tool acts in the sandbox; started with --prod, a tool
   may ask for production, and your org's switch still decides.
 
-  install writes \`npx -y pinecall mcp\` into every assistant installed here — Claude Code,
+  install writes \`npx -y pinecall@latest mcp\` into every assistant installed here — Claude Code,
   Claude Desktop, Codex, Cursor, Windsurf, Antigravity, Gemini CLI — replacing an older entry,
   copying each file to .bak first, and leaving every other setting and comment as it was. No key
   is written: the server reads the project's .env.

@@ -16,8 +16,8 @@ npm i -g pinecall
 pinecall mcp install
 ```
 
-`install` writes one entry into every assistant installed on this machine — `npx -y pinecall mcp`
-— replacing an older Pinecall entry, copying each file beside itself as `.bak` first, and leaving
+`install` writes one entry into every assistant installed on this machine — `npx -y pinecall@latest mcp`,
+the newest published CLI, whatever a project pins — replacing an older Pinecall entry, copying each file beside itself as `.bak` first, and leaving
 every other server, setting and comment in it as it was. Restart the assistant afterwards: it read
 its config when it started. No key is written anywhere: the server reads the open project's
 `.env`, and the `login` tool signs the machine in.
