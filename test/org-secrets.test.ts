@@ -80,7 +80,7 @@ describe("pinecall secrets", () => {
 
     expect(err.text()).toContain("no value for CRM_TOKEN");
     expect(err.text()).toContain("crm_token is no name for a secret");
-    expect(err.text()).toContain("PINECALL_KEY is the box's to set");
+    expect(err.text()).toContain("PINECALL_KEY is Pinecall's to set");
     expect(gateway.heard.filter((one) => one.method === "PUT")).toEqual([]);
   });
 

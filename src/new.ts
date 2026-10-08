@@ -83,7 +83,7 @@ export function wordsFor(slug: string, template: Template): Record<string, strin
   };
 }
 
-// A new TypeScript project starts on this CLI and the framework it is released with: the box
+// A new TypeScript project starts on this CLI and the framework it is released with: Pinecall
 // starts a deployed project with the project's own `pinecall start`.
 const OURS = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
   version: string;

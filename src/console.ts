@@ -8,7 +8,7 @@ import type { Group } from "./groups.js";
 import { aLoginCode, consoleUrl, whyNoConsole } from "./start-console.js";
 
 export const group: Group = {
-  purpose: "the box's console in a browser, signed in: the sandbox's, or production's with --prod",
+  purpose: "the console in a browser, signed in: the sandbox's, or production's with --prod",
   usage: `usage: pinecall console [agent] [--prod] [--no-open]
 
   Opens the console of the world this verb acts in, signed in. The key itself never travels: the

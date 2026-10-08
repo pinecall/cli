@@ -40,7 +40,7 @@ export const group: Group = {
                          every fact kept of them. <who> is the number or the id the call carried.
   erasures               the trail: what was erased, when, and who asked; it outlives the org
   reads [<call|number>]  who read the org's calls: a person reading a log or a recording, the
-                         operator off the box or in a traceback; once an hour per reader
+                         operator outside the gateway or in a traceback; once an hour per reader
   policy                 the org's compliance settings, one row: how many days a sealed call is
                          kept before the nightly run erases it (--retention-days, --keep-all), the
                          hours of the called number's own day a call may ring (--calling-hours

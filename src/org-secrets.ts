@@ -20,7 +20,7 @@ export const group: Group = {
   purpose: "the org's secrets: what its hosted apps are started with, as environment variables",
   usage: `${USAGE}
 
-  A secret is the org's, per world: every app \`pinecall deploy\` put on the box starts with all of
+  A secret is the org's, per world: every app \`pinecall deploy\` put on Pinecall starts with all of
   them. They are kept sealed, and nothing reads a value back — set, replace or drop. A change is a
   new start of every app of the org in that world, the old process answering until the new one
   registers. The value never goes on the command line, where the shell would keep it: it is typed
@@ -28,7 +28,7 @@ export const group: Group = {
 
   list          the secrets' names, who set each and when
   set <NAME>    keep one; the same name again replaces it. Capitals, digits and underscores, never
-                starting with PINECALL_: the box sets those itself
+                starting with PINECALL_: Pinecall sets those itself
   rm <NAME>     the secret dropped`,
   run,
 };
@@ -48,7 +48,7 @@ const A_NAME = /^[A-Z][A-Z0-9_]*$/;
 const NOT_A_NAME = (name: string): string =>
   `${name} is no name for a secret: capitals, digits and underscores, like CRM_TOKEN`;
 
-const THE_BOXS = (name: string): string => `${name} is the box's to set: a secret never starts with PINECALL_`;
+const THE_BOXS = (name: string): string => `${name} is Pinecall's to set: a secret never starts with PINECALL_`;
 
 const NO_VALUE = (name: string): string => `no value for ${name}: type it, or pipe it in`;
 

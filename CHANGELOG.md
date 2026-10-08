@@ -6,6 +6,16 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `pinecall --version` (`-v`, `version`) prints the CLI's version.
+
+### Fixed
+
+- `pinecall eval --help` names the six checks the runtime runs and their verdicts (held · broken · deferred · skipped), and its `--policy` example uses keys the runtime reads; the old `llm_ttft` matched nothing and silently skipped the latency check.
+- `pinecall callbacks` says `via the agent` for a call back the agent's own tool promised, instead of `via the widget`.
+- Help and messages say Pinecall where they said "the box".
+
 ## [0.9.22] — `pinecall new`, and every verb walked on what it makes
 
 ### Added

@@ -2,7 +2,7 @@
 /** `pinecall <group> [args]`: the tenant CLI entry point and group dispatcher. */
 
 import { CannotRun } from "./cannot-run.js";
-import { realpathSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
 import { helpFor, PLANNED, plannedGroup, type Group } from "./groups.js";
@@ -33,6 +33,10 @@ export async function main(
   if (name === undefined || name === "--help" || name === "-h" || name === "help") {
     out.write(usage());
     return name === undefined ? 2 : 0;
+  }
+  if (name === "--version" || name === "-v" || name === "version") {
+    out.write(`${version()}\n`);
+    return 0;
   }
   const group = await groupFor(name, out);
   if (group === undefined) {
@@ -96,6 +100,12 @@ export async function groupFor(name: string, out: NodeJS.WritableStream = proces
   return planned === undefined ? undefined : plannedGroup(name, planned, out);
 }
 
+/** The version this CLI was published as: its own package.json's. */
+export function version(): string {
+  const ours = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string };
+  return ours.version;
+}
+
 /** Top-level help listing every group. */
 export function usage(): string {
   const lines = [
@@ -104,7 +114,7 @@ export function usage(): string {
     "  new       a new project of one agent, in TypeScript or Ruby (--ruby)",
     "  link      this project's folder to one of your orgs: your key, in its .env",
     "  start     the app and its doors: the process you deploy (--prod for production)",
-    "  console   the box's console in a browser, signed in: the sandbox's, --prod for production",
+    "  console   the console in a browser, signed in: the sandbox's, --prod for production",
     "  chat      the app in this terminal's own process, and a prompt against it",
     "  prompt    the exact prompt a state would produce, offline",
     "  test      ring 1: the goldens, through the app in this terminal's own process",
@@ -128,7 +138,7 @@ export function usage(): string {
     "  voices    a vendor's voices in a language, and play one here before you choose it",
     "  callbacks the numbers people left when every seat was taken: who to call back",
     "  data      the org's data: erasures and their trail, who read a call, the policy, consent and the do-not-call list, export",
-    "  deploy    run this project on the box: a release it installs and starts, list | releases | rollback | rm",
+    "  deploy    run this project on Pinecall: a release it installs and starts, list | releases | rollback | rm",
     "  secrets   list | set | rm the values the org's hosted apps are started with",
     "  login     sign this machine in through a browser; `link` asks for it when it is needed",
     "  whoami    which gateway, which org, whether you act in production, and where the key came from",

@@ -1,4 +1,4 @@
-/** `pinecall deploy`: the project uploaded as a release, which the box installs and runs itself. */
+/** `pinecall deploy`: the project uploaded as a release, which Pinecall installs and runs itself. */
 
 import { existsSync, readFileSync } from "node:fs";
 import { basename, join, relative } from "node:path";
@@ -27,7 +27,7 @@ const USAGE = [
 ].join("\n");
 
 export const group: Group = {
-  purpose: "run this project on the box: uploaded as a release, installed and started there",
+  purpose: "run this project on Pinecall: uploaded as a release, installed and started there",
   usage: `${USAGE}
 
   The box runs the project the way \`pinecall start\` would, in a container of its own: it installs
@@ -44,7 +44,7 @@ export const group: Group = {
   list               the org's hosted apps: the newest release, the one serving, and why one failed
   releases           one app's releases, newest first
   rollback <n>       release n's sources kept again as the next release, and followed
-  logs               the last lines of the app's process, fresh from the box; --follow keeps printing
+  logs               the last lines of the app's process, fresh from Pinecall; --follow keeps printing
   stop               the process drains and nothing runs; its releases and token stay
   start              a stopped app runs again, its newest release
   rm                 stop hosting the app: its releases go, and its token is revoked
@@ -89,14 +89,14 @@ const NOTHING_TO_SEND = "nothing to send: this folder holds no file a release wo
 const SERVED_BY = ["pinecall", "@pinecall/agents"] as const;
 
 const NOT_SERVABLE = (missing: readonly string[]): string =>
-  `the box starts this project with its own \`pinecall start\`, and its package.json does not list ${missing.join(" or ")} in dependencies: npm i ${missing.join(" ")}`;
+  `Pinecall starts this project with its own \`pinecall start\`, and its package.json does not list ${missing.join(" or ")} in dependencies: npm i ${missing.join(" ")}`;
 
 const NOT_HOSTED = (file: string): string =>
-  `the box hosts TypeScript projects, and ${file} is not one: run \`pinecall start\` on a server of your own, with a server's token in PINECALL_KEY`;
+  `Pinecall hosts TypeScript projects, and ${file} is not one: run \`pinecall start\` on a server of your own, with a server's token in PINECALL_KEY`;
 
 const NOT_A_RELEASE = (said: string): string => `rollback ${said}: a release is its number, from \`pinecall deploy releases\``;
 
-const NONE_YET = "the box hosts no app for this org here yet: `pinecall deploy` uploads this folder as one";
+const NONE_YET = "Pinecall hosts no app for this org here yet: `pinecall deploy` uploads this folder as one";
 
 const REPLACED = (ours: number, newer: number): string => `release ${ours} was replaced by release ${newer} before it went live`;
 
@@ -226,7 +226,7 @@ interface Following {
 /** Read the app until the release is live (0), failed or replaced (1), or the time is up (1). */
 async function followed(door: Door, sent: Release, following: Following): Promise<number> {
   const { out, everyMs, withinMs } = following;
-  out.write(`${sent.name}: the box installs and starts it; the release before keeps answering meanwhile\n`);
+  out.write(`${sent.name}: Pinecall installs and starts it; the release before keeps answering meanwhile\n`);
   const started = Date.now();
   while (Date.now() - started < withinMs) {
     const app = (await asked<HostedAppList>(door, "/v1/hosted")).apps.find((one) => one.name === sent.name);

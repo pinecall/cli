@@ -1,10 +1,10 @@
-/** `pinecall deploy logs`: an app's last lines, fresh from the box, once or as they come. */
+/** `pinecall deploy logs`: an app's last lines, fresh from Pinecall, once or as they come. */
 
 import type { AppLogs } from "@pinecall/agents/wire";
 
 import { asked, type Door } from "./testing/gateway.js";
 
-/** How often the box is asked while waiting and following, and how long a first read waits. */
+/** How often Pinecall is asked while waiting and following, and how long a first read waits. */
 export interface Pacing {
   everyMs: number;
   withinMs: number;
@@ -13,13 +13,13 @@ export interface Pacing {
 }
 
 const NOTHING_YET = (name: string): string =>
-  `${name}: the box sent no lines yet — is it running? \`pinecall deploy list\` says`;
+  `${name}: Pinecall sent no lines yet — is it running? \`pinecall deploy list\` says`;
 
 const STALE = (name: string, seconds: number): string =>
-  `${name}: the box sent nothing new; these are its lines from ${seconds}s ago`;
+  `${name}: Pinecall sent nothing new; these are its lines from ${seconds}s ago`;
 
 /**
- * Asking is what makes the box's runner send the lines, on its next beat: the first answer is
+ * Asking is what makes Pinecall's runner send the lines, on its next beat: the first answer is
  * what it sent last. Wait for lines read after this ask, then print them; follow prints what came
  * after, until `until()`.
  */

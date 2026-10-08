@@ -15,7 +15,7 @@ export interface Callback {
   ts: number;
   channel: string;
   number: string;
-  via: "overflow" | "widget";
+  via: "overflow" | "widget" | "agent";
   call: string | null;
 }
 
@@ -29,7 +29,7 @@ export const group: Group = {
   usage: `usage: pinecall callbacks [--agent <slug>] [--after <cursor>]
 
   Every callback.requested this org's agents wrote — a phone caller the overflow agent answered,
-  or a web visitor who left a number at the widget — oldest first, with the cursor the next page
+  one the agent's own tool promised a call back, or a web visitor who left a number at the widget — oldest first, with the cursor the next page
   starts at. The runtime records them; dialing back is your app's.`,
   run,
 };
@@ -79,7 +79,7 @@ export async function callbacks(door: Door, query: URLSearchParams): Promise<Pag
 /** One request as a line: time, agent, number, channel and source. */
 export function lineOf(one: Callback): string {
   const when = new Date(one.ts * 1000).toISOString().slice(0, 16).replace("T", " ");
-  const took = one.via === "overflow" ? `overflow on ${one.call ?? "?"}` : "the widget";
+  const took = one.via === "overflow" ? `overflow on ${one.call ?? "?"}` : one.via === "agent" ? `the agent on ${one.call ?? "?"}` : "the widget";
   return `${when}  ${one.agent}  ${one.number}  ${one.channel}  via ${took}`;
 }
 

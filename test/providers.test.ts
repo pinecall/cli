@@ -174,7 +174,7 @@ describe("taking one back and reading the names", () => {
 
     await run(["list"], { out: out.stream, env });
 
-    expect(out.text()).toBe("no provider key brought: every call runs on the keys of the box\n");
+    expect(out.text()).toBe("no provider key brought: every call runs on the keys of Pinecall\n");
   });
 });
 

@@ -189,10 +189,18 @@ describe("`console` opens the page and `start` is the app", () => {
   it("declares both, each saying which it is", () => {
     expect(groupNames()).toContain("console");
     expect(usage()).toContain("start     the app and its doors: the process you deploy");
-    expect(usage()).toContain("console   the box's console in a browser");
+    expect(usage()).toContain("console   the console in a browser");
   });
 
-  it("declares no `serve`: that console is the box's, at its second name", () => {
+  it("prints its own version for --version, -v and version", async () => {
+    for (const flag of ["--version", "-v", "version"]) {
+      const out = collected();
+      expect(await main([flag], out.stream, collected().stream)).toBe(0);
+      expect(out.text()).toMatch(/^\d+\.\d+\.\d+\n$/);
+    }
+  });
+
+  it("declares no `serve`: that console is Pinecall's, at its second name", () => {
     expect(groupNames()).not.toContain("serve");
   });
 });
@@ -251,7 +259,7 @@ describe("`ui` and `serve` are not verbs of this CLI", () => {
       expect(err.text()).toContain(`no such group: ${gone}`);
       expect(groupNames()).not.toContain(gone);
     }
-    expect(usage()).toContain("console   the box's console in a browser");
+    expect(usage()).toContain("console   the console in a browser");
   });
 });
 

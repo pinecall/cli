@@ -18,7 +18,7 @@ const USAGE = `usage: pinecall carriers list
 
 const CARRIER = "/v1/carrier";
 
-/** A network a SIP peer calls from, and whether the box's operator admitted it. */
+/** A network a SIP peer calls from, and whether Pinecall's operator admitted it. */
 interface Network {
   network: string;
   state: string;
@@ -43,7 +43,7 @@ export const group: Group = {
   Every secret is read on stdin and never from the command line: typed with nothing echoed on a
   terminal, or piped one per line — a SIP peer's password, then its outbound password when
   --outbound-username is given. \`add\` with an account the org already holds replaces its secret.
-  A peer's networks wait for the box's operator before 5060 opens to them; \`show\` says where each
+  A peer's networks wait for Pinecall's operator before 5060 opens to them; \`show\` says where each
   one stands. An account's id is its own: Twilio's account SID, the peer's username, Meta's phone
   number id. \`drop\` forgets an account and leaves its numbers routed until each is dropped.`,
   run,
@@ -146,7 +146,7 @@ async function add(
   const kept = await asked<CarrierRow>(door, CARRIER, { method: "PUT", body });
   out.write(`kept: ${aLine(kept)}\n`);
   if (kept.networks.some((one) => one.state === "waiting"))
-    out.write("  each waiting network opens once the box's operator approves it: `pinecall carriers show` says when\n");
+    out.write("  each waiting network opens once Pinecall's operator approves it: `pinecall carriers show` says when\n");
   out.write("  route one of its numbers: `pinecall numbers import <+34…> --agent <slug>`\n");
   return 0;
 }

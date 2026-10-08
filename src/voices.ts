@@ -18,7 +18,7 @@ import { refusal } from "./whoami.js";
 const USAGE = `usage: pinecall voices [--tts <vendor>] [--language es] [--country ES]
        pinecall voices play <voice> ["the words"] [--tts <vendor>] [--model <model>] [--language es] [--save file.wav]`;
 
-/** The catalogue as this verb reads it: the box's vendor per stage, and who lists its voices. */
+/** The catalogue as this verb reads it: Pinecall's vendor per stage, and who lists its voices. */
 interface Catalogue {
   providers: { name: string; voices_listed: boolean }[];
   defaults: Record<string, string>;
@@ -28,7 +28,7 @@ export const group: Group = {
   purpose: "a voice vendor's voices, and any one of them heard on this machine before it is chosen",
   usage: `${USAGE}
 
-  The vendor is --tts, or the box's own voice when none is named (\`pinecall providers\` says which).
+  The vendor is --tts, or Pinecall's own voice when none is named (\`pinecall providers\` says which).
 
   With nothing after it: the vendor's voices in that language, one per line — the id the agent's
   voice setting takes, the name, gender, and where the accent is from (ES is Spain, MX Mexico), so
@@ -40,7 +40,7 @@ export const group: Group = {
   plays them here — afplay, ffplay, play, aplay or pw-play, whichever this machine has — with how
   long the vendor took to start and to finish. With no words, the gateway reads one line in the
   language. It runs on the org's own key for the vendor when it brought one (pinecall providers
-  add), and on the box's otherwise. --save keeps the WAV where you say.
+  add), and on Pinecall's otherwise. --save keeps the WAV where you say.
 
   The voice it plays is chosen with pinecall agent set --tts <vendor> --tts-model <model> --voice
   <id>: the model you tried with --model is not kept unless --tts-model says it too.`,

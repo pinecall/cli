@@ -32,13 +32,14 @@ export const group: Group = {
   purpose: "ring 3: one real call, re-evaluated",
   usage: `usage: pinecall eval <call-id> [--policy policy.json] [--json]
 
-  One finished call rebuilt from its log and answered by the runtime's four CODE checks —
-  consent, register, errors, latency. Nothing is re-run and no model is asked; the verdicts are
-  the operator's vocabulary (passed · failed · deferred · skipped), never a judge's four words.
-  Exits 1 when a check did not hold.
+  One finished call rebuilt from its log and answered by the runtime's six CODE checks —
+  consent, register, errors, latency, talk, interruptions. Nothing is re-run and no model is
+  asked; each answers held · broken · deferred · skipped. Exits 1 when a check is broken.
 
-  --policy file   {"banned": ["…"], "budget": {"llm_ttft": 1.5}} — the words this business will
-                  not have its agent say, and the latencies it holds a call to
+  --policy file   {"banned": ["…"], "budget": {"e2e_latency": 2, "llm_node_ttft": 1, "tts_node_ttfb": 0.6,
+                  "talk_share": 0.6}} — the words this business will not have its agent say, the
+                  seconds each turn's worst latency may take (livekit's names), and the most of the
+                  talking the agent may do. A budget replaces the defaults whole
   --json          the answer as the door wrote it`,
   run,
 };

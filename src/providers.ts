@@ -21,10 +21,10 @@ export const group: Group = {
   vendor whose credentials are a chain or a pair and never one key anybody could bring.
 
   A key added here is this org's own account with that vendor, and every call of this org runs
-  on it from the next one; every vendor nobody brought runs on the box's own key. add reads the
+  on it from the next one; every vendor nobody brought runs on Pinecall's own key. add reads the
   key from stdin — typed with nothing echoed on a terminal, one piped line off one — and never
-  from a flag: argv is visible in \`ps\` to every user on the box, and a key pasted as an argument
-  is a key in the shell history. rm gives that vendor back to the box's key.
+  from a flag: argv is visible in \`ps\` to every user on the machine, and a key pasted as an argument
+  is a key in the shell history. rm gives that vendor back to Pinecall's key.
 
   No door a person reads ever answers with a provider key: list prints the vendors and nothing
   else, not a value, not a prefix, not a fingerprint. The one door that does read a key back is
@@ -91,7 +91,7 @@ async function remove(door: Door, vendor: string, out: NodeJS.WritableStream): P
 async function list(door: Door, out: NodeJS.WritableStream): Promise<number> {
   const brought = await asked<{ vendors: string[] }>(door, "/v1/provider-keys");
   if (brought.vendors.length === 0) {
-    out.write("no provider key brought: every call runs on the keys of the box\n");
+    out.write("no provider key brought: every call runs on the keys of Pinecall\n");
     return 0;
   }
   for (const vendor of brought.vendors) out.write(`${vendor}\n`);

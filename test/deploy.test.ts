@@ -200,7 +200,7 @@ describe("pinecall deploy", () => {
 
     expect(await deploying([], written(), err)).toBe(2);
 
-    expect(err.text()).toContain("the box hosts TypeScript projects, and agents/desk/agent.rb is not one");
+    expect(err.text()).toContain("Pinecall hosts TypeScript projects, and agents/desk/agent.rb is not one");
     expect(gateway.heard).toEqual([]);
   });
 });
@@ -253,8 +253,8 @@ describe("the other verbs", () => {
     const none = written();
     expect(await deploying(["logs"], none)).toBe(1);
 
-    expect(out.text()).toMatch(/^support-line: the box sent nothing new; these are its lines from \d+s ago\nconnected\n$/);
-    expect(none.text()).toContain("the box sent no lines yet");
+    expect(out.text()).toMatch(/^support-line: Pinecall sent nothing new; these are its lines from \d+s ago\nconnected\n$/);
+    expect(none.text()).toContain("Pinecall sent no lines yet");
   });
 
   it("lists every app with what serves it and what failed", async () => {
