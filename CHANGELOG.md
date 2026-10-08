@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.33] — `haiku` is Claude Haiku 5.5
+
+### Changed
+
+- The `haiku` tier (`pinecall test --model haiku`, `pinecall agent set --llm haiku`, the nightly's baseline column) expands to `claude-haiku-5-5`, not `claude-haiku-4-5-20251001`. A setting stored before keeps the id it was stored with.
+
 ## [0.9.32] — `pinecall generate`
 
 ### Added

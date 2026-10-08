@@ -83,7 +83,7 @@ describe("setting", () => {
   it("expands a short model name to the id its provider answers to", async () => {
     await run(["set", "--agent", AGENT, "--llm", "haiku"], { out: written().stream, env: environment() });
 
-    expect((gateway.written as { config: Record<string, unknown> }).config["llm"]).toBe("anthropic/claude-haiku-4-5-20251001");
+    expect((gateway.written as { config: Record<string, unknown> }).config["llm"]).toBe("anthropic/claude-haiku-5-5");
   });
 
   it("expands the model half of a vendor/model, and leaves a vendor alone and a model alone as typed", async () => {

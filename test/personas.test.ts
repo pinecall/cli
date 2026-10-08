@@ -197,7 +197,7 @@ describe("how a caller is played, and when it accepts the call", () => {
 
     const [put] = gateway.heard.filter((one) => one.method === "PUT");
     expect(put?.body).toMatchObject({
-      llm: "anthropic/claude-haiku-4-5-20251001",
+      llm: "anthropic/claude-haiku-5-5",
       tts: null,
       voice: "carolina",
       accepts_when: "una hora hoy",

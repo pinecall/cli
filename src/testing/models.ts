@@ -6,7 +6,7 @@ import { type Camel } from "@pinecall/agents/wire";
 // Short names for Anthropic tiers; the provider 404s on a bare "haiku". Other names pass through,
 // and a name without a vendor defaults to Anthropic.
 export const SHORT_NAMES: Record<string, string> = {
-  haiku: "claude-haiku-4-5-20251001",
+  haiku: "claude-haiku-5-5",
   sonnet: "claude-sonnet-5",
   opus: "claude-opus-5",
 };

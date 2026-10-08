@@ -893,7 +893,7 @@ and nothing is written; `pinecall agent clear language` takes it out of the corn
 
 **A model knob takes a tier by its short name.** `--llm haiku` · `sonnet` · `opus` are expanded
 here to the model id the provider answers to — the same table `pinecall test --model` reads — so
-the corner never holds a name that is a 404 at the vendor. `--llm <vendor>/<model>`, a vendor
+the corner never holds a name that is a 404 at the vendor. `haiku` is `claude-haiku-5-5`. `--llm <vendor>/<model>`, a vendor
 alone and a model alone travel as typed; a word that names no model at all (an empty one, half a
 `vendor/model`) is refused with exit 2 and nothing is written.
 
