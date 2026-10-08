@@ -1,15 +1,16 @@
 /** `pinecall link`: tie the project folder to an org by writing its key to `.env`. */
 
-import { join } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { parseArgs } from "node:util";
 
-import { DOTENV, ignoredByGit, writeDotenv } from "./dotenv.js";
-import { CLOUD_URL, KEY_VARIABLE, URL_VARIABLE } from "./env.js";
+import { DOTENV } from "./dotenv.js";
+import { CLOUD_URL } from "./env.js";
+import { ignoredByGit } from "./git.js";
 import type { Group } from "./groups.js";
 import { signedInThrough, type Signing } from "./login.js";
+import { keyIn, keyWritten, slugOf, theirOrgs, type Theirs } from "./org-key.js";
 import { pinecallHome, signedIn } from "./signed-in.js";
-import { asked, type Door } from "./testing/gateway.js";
+import type { Door } from "./testing/gateway.js";
 import { refusal } from "./whoami.js";
 import { PRODUCTION } from "./world.js";
 
@@ -32,15 +33,6 @@ export const group: Group = {
   --gateway <url>  another gateway than the one this machine last signed in to`,
   run: link,
 };
-
-/** One org from `GET /v1/login/orgs`. */
-interface Theirs {
-  org: string;
-  slug?: string | null;
-  here: boolean;
-  /** False for orgs an operator can enter without membership; those cannot be linked. */
-  member?: boolean;
-}
 
 /** Test overrides: target folder and org chooser. */
 export interface Linking extends Signing {
@@ -66,7 +58,7 @@ export async function link(argv: string[], how: Linking = {}): Promise<number> {
 
   let orgs: Theirs[];
   try {
-    orgs = (await asked<{ orgs: Theirs[] }>(door, "/v1/login/orgs")).orgs.filter((org) => org.member !== false);
+    orgs = await theirOrgs(door);
   } catch (refused) {
     err.write(`${refusal(refused)}\n`);
     return 1;
@@ -79,17 +71,14 @@ export async function link(argv: string[], how: Linking = {}): Promise<number> {
   }
   let theirs: string;
   try {
-    theirs = chosen.here ? key : (await asked<{ key: string }>(door, "/v1/login/org", { method: "POST", body: { org: chosen.org } })).key;
+    theirs = await keyIn(door, chosen);
   } catch (refused) {
     err.write(`${refusal(refused)}\n`);
     return 1;
   }
 
-  const file = join(how.from ?? process.cwd(), DOTENV);
-  const written: Record<string, string> = { [KEY_VARIABLE]: theirs };
-  if (url !== CLOUD_URL) written[URL_VARIABLE] = url;
-  writeDotenv(file, written);
-  out.write(`▸ ${slugOf(chosen)} · ${Object.keys(written).join(" and ")} written to ${DOTENV}\n`);
+  const { file, names } = keyWritten(how.from ?? process.cwd(), url, theirs);
+  out.write(`▸ ${slugOf(chosen)} · ${names.join(" and ")} written to ${DOTENV}\n`);
   // Warn on every run until .env is git-ignored, so the key is never committed.
   if (!ignoredByGit(file)) err.write(`git would commit ${DOTENV}: add it to .gitignore before a commit carries your key\n`);
   return 0;
@@ -114,8 +103,4 @@ async function askTheTerminal(slugs: string[]): Promise<string | undefined> {
   } finally {
     asking.close();
   }
-}
-
-function slugOf(org: Theirs): string {
-  return org.slug ?? org.org;
 }

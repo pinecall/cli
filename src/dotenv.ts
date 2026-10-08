@@ -1,6 +1,5 @@
 /** Find, read and write a project's `.env` file. */
 
-import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
@@ -46,16 +45,6 @@ export function writeDotenv(file: string, values: Record<string, string>): void 
   });
   for (const [name, value] of left) written.push(`${name}=${value}`);
   writeFileSync(file, `${written.join("\n")}\n`, { mode: 0o600 });
-}
-
-/**
- * Whether git ignores this file, per `git check-ignore`. Also true outside a repository or
- * without git, since nothing can commit it there.
- */
-export function ignoredByGit(file: string): boolean {
-  const asked = spawnSync("git", ["check-ignore", "-q", file], { cwd: dirname(file), stdio: "ignore" });
-  // 0 ignored · 1 not ignored · 128 not a repository; an error is no git on this machine.
-  return asked.error !== undefined || asked.status !== 1;
 }
 
 function unquoted(value: string): string {
