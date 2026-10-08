@@ -153,13 +153,13 @@ The suites the gateway kept: the newest, one run's matrix, what moved between tw
 
 ## `cases`
 
-The org's dataset: real calls kept as cases — the inbox, one case whole, approved into the nightly, dismissed, reopened, pulled into the repository as a golden, a call kept, one forgotten.
+The org's dataset: real calls kept as cases — the inbox, one case whole, approved into the nightly, dismissed, reopened, pulled into the repository as a golden, a call kept.
 
-`cases` is the dataset real calls make: a call a judge broke on is kept at hang-up as a pending case — its caller's lines, the state it opened in, and an expect that says what must not happen again. `list` answers the agent's cases and how many wait; `show` one whole. Reproduce one with `test` and `case`, fix the agent, then `approve` it (the nightly, `test` with `dataset`, plays it) or `dismiss` it — `judge_was_wrong` when the judge that broke should have held. `pull` writes its golden into `test/<agent>/goldens/` and marks it kept in the repository, so the nightly plays the file. `keep` keeps a finished call as an approved case. A case is named within the agent.
+`cases` is the dataset real calls make: a call a judge broke on is kept at hang-up as a pending case — its caller's lines, the state it opened in, and an expect that says what must not happen again. `list` answers the agent's cases and how many wait; `show` one whole. Reproduce one with `test` and `case`, fix the agent, then `approve` it (the nightly, `test` with `dataset`, plays it) or `dismiss` it — `judge_was_wrong` when the judge that broke should have held. `pull` writes its golden into `test/<agent>/goldens/` and marks it kept in the repository, so the nightly plays the file. `keep` keeps a finished call as an approved case. A case is named within the agent. Forgetting one cannot be undone, so it is never a tool: `pinecall cases forget` in a terminal.
 
 | parameter | takes | | what it is |
 |---|---|---|---|
-| `action` | `list` · `show` · `approve` · `dismiss` · `reopen` · `pull` · `keep` · `forget` | required | list the agent's cases, the pending first; show one whole; approve it into the nightly; dismiss it; reopen it as pending; pull its golden into the agent's goldens folder and mark it kept in the repository; keep a finished call as a case; forget one |
+| `action` | `list` · `show` · `approve` · `dismiss` · `reopen` · `pull` · `keep` | required | list the agent's cases, the pending first; show one whole; approve it into the nightly; dismiss it; reopen it as pending; pull its golden into the agent's goldens folder and mark it kept in the repository; keep a finished call as a case |
 | `agent` | text |  | the agent's name; the project's only agent when left out |
 | `name` | text |  | the case's name within the agent; `keep`: the name the new case is played by |
 | `status` | `pending` · `approved` · `dismissed` |  | `list`: only the cases in this status; every status when left out |

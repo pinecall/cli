@@ -1,18 +1,18 @@
-/** The `cases` tool: the org's dataset — real calls kept as cases — read, decided, pulled into the repository, kept and forgotten, over the cores `pinecall cases` runs. */
+/** The `cases` tool: the org's dataset — real calls kept as cases — read, decided, pulled into the repository and kept, over the cores `pinecall cases` runs; forgetting one is a terminal's. */
 
 import { z } from "zod";
 
-import { A_NOTE_ALONE, casesOf, caseNamed, decided, forgotten, keptAsCase, pulled, STATUSES } from "../../testing/cases.js";
+import { A_NOTE_ALONE, casesOf, caseNamed, decided, keptAsCase, pulled, STATUSES } from "../../testing/cases.js";
 import { Refused, tool } from "../tool.js";
 import { AGENT, PROD } from "./fields.js";
 
 export const cases = tool({
   name: "cases",
-  description: "The org's dataset: real calls kept as cases — the inbox, one case whole, approved into the nightly, dismissed, reopened, pulled into the repository as a golden, a call kept, one forgotten.",
+  description: "The org's dataset: real calls kept as cases — the inbox, one case whole, approved into the nightly, dismissed, reopened, pulled into the repository as a golden, a call kept.",
   schema: {
     action: z
-      .enum(["list", "show", "approve", "dismiss", "reopen", "pull", "keep", "forget"])
-      .describe("list the agent's cases, the pending first; show one whole; approve it into the nightly; dismiss it; reopen it as pending; pull its golden into the agent's goldens folder and mark it kept in the repository; keep a finished call as a case; forget one"),
+      .enum(["list", "show", "approve", "dismiss", "reopen", "pull", "keep"])
+      .describe("list the agent's cases, the pending first; show one whole; approve it into the nightly; dismiss it; reopen it as pending; pull its golden into the agent's goldens folder and mark it kept in the repository; keep a finished call as a case"),
     agent: AGENT,
     name: z.string().min(1).optional().describe("the case's name within the agent; `keep`: the name the new case is played by"),
     status: z.enum(STATUSES).optional().describe("`list`: only the cases in this status; every status when left out"),
@@ -23,7 +23,7 @@ export const cases = tool({
     prod: PROD,
   },
   manual:
-    "`cases` is the dataset real calls make: a call a judge broke on is kept at hang-up as a pending case — its caller's lines, the state it opened in, and an expect that says what must not happen again. `list` answers the agent's cases and how many wait; `show` one whole. Reproduce one with `test` and `case`, fix the agent, then `approve` it (the nightly, `test` with `dataset`, plays it) or `dismiss` it — `judge_was_wrong` when the judge that broke should have held. `pull` writes its golden into `test/<agent>/goldens/` and marks it kept in the repository, so the nightly plays the file. `keep` keeps a finished call as an approved case. A case is named within the agent.",
+    "`cases` is the dataset real calls make: a call a judge broke on is kept at hang-up as a pending case — its caller's lines, the state it opened in, and an expect that says what must not happen again. `list` answers the agent's cases and how many wait; `show` one whole. Reproduce one with `test` and `case`, fix the agent, then `approve` it (the nightly, `test` with `dataset`, plays it) or `dismiss` it — `judge_was_wrong` when the judge that broke should have held. `pull` writes its golden into `test/<agent>/goldens/` and marks it kept in the repository, so the nightly plays the file. `keep` keeps a finished call as an approved case. A case is named within the agent. Forgetting one cannot be undone, so it is never a tool: `pinecall cases forget` in a terminal.",
   handler: async (args, session) => {
     const door = await session.door(args.prod);
     if (args.action === "keep") {
@@ -38,10 +38,6 @@ export const cases = tool({
     if (args.action === "approve") return await decided(door, home.name, name, { status: "approved" });
     if (args.action === "reopen") return await decided(door, home.name, name, { status: "pending" });
     if (args.action === "pull") return await pulled(door, home.name, name, home.goldens);
-    if (args.action === "forget") {
-      const gone = await forgotten(door, home.name, name);
-      return { forgotten: gone.name, source_call: gone.source_call };
-    }
     if (args.note !== undefined && args.judge_was_wrong === undefined) throw new Refused(A_NOTE_ALONE);
     return await decided(door, home.name, name, {
       status: "dismissed",
