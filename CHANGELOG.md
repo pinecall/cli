@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.29] — the console reaches the agent an assistant holds
+
+### Added
+
+- An agent `pinecall mcp`'s `start` holds in a thread has a companion beside it, as `pinecall start` does: the console's Chat, Tests, Simulations, Docs and Memory screens reach it. `pinecall agent list` shows it as `pinecall-mcp/<version>`.
+
 ## [0.9.28] — every tool of the MCP
 
 ### Added

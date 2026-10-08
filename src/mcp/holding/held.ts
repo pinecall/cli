@@ -6,10 +6,13 @@ import { basename, sep } from "node:path";
 
 import type { AppList } from "@pinecall/agents/wire";
 
+import { companionFor, type Companion } from "../../companion.js";
 import type { Open } from "../../env.js";
 import type { Home } from "../../home.js";
 import { languageOf, servingOne } from "../../language.js";
+import type { Serving } from "../../serving.js";
 import { asked } from "../../testing/gateway.js";
+import { version } from "../../version.js";
 import { Refused } from "../tool.js";
 import { Logs, threadServing, type Thread } from "./thread.js";
 
@@ -29,6 +32,7 @@ export class Held {
   private thread: Thread | undefined;
   private attached: string | undefined;
   private watcher: FSWatcher | undefined;
+  private companion: Companion | undefined;
   private reloading: Promise<void> = Promise.resolve();
 
   constructor(
@@ -58,6 +62,10 @@ export class Held {
     if (language !== "typescript") throw new Refused(RUN_IT_YOURSELF(language === "ruby" ? "Ruby" : "Python", this.home.root));
     this.thread = await this.started();
     this.version = 1;
+    // The console's screens (Chat, Tests, Simulations, Docs, Memory) reach the agent this server holds,
+    // through whichever thread answers now: a reload changes the app, not the companion.
+    this.companion = companionFor(this.door, [this.home], this.serving(), this.logs.stream(), `pinecall-mcp/${version()}`);
+    await this.companion.pc.connect();
     this.watcher = watch(this.home.root, { recursive: true }, (_event, file) => {
       if (file !== null && !String(file).split(sep).some((part) => NEVER_WATCHED.has(part)) && basename(String(file)) !== ".env") this.saved();
     });
@@ -76,6 +84,8 @@ export class Held {
   async stop(): Promise<void> {
     this.watcher?.close();
     this.watcher = undefined;
+    await this.companion?.close();
+    this.companion = undefined;
     this.attached = undefined;
     const thread = this.thread;
     this.thread = undefined;
@@ -83,6 +93,15 @@ export class Held {
   }
 
   private timer: NodeJS.Timeout | undefined;
+
+  // The companion reads the app on every dial: the thread answering now, never the one it started with.
+  private serving(): Serving {
+    return {
+      app: () => this.app(),
+      registered: async () => await this.ready(),
+      onEvent: () => () => undefined,
+    };
+  }
 
   private saved(): void {
     clearTimeout(this.timer);

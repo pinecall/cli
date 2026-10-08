@@ -12,7 +12,7 @@ export const start = tool({
   description: "Hold the project's agent so it answers calls: in a thread of this server, reloaded on every save, or attached to a process already holding it.",
   schema: { agent: AGENT },
   manual:
-    "`start` holds the agent the way `pinecall start` does: it answers written calls (`chat`), spoken ones from the console, and a phone ring when a number points at it. A TypeScript agent runs inside this server and reloads on every save; a save that does not load keeps the version before answering, and `status` says why. A Ruby agent is held by `pinecall start --watch` in a terminal: `start` then attaches to it. Already held on this machine (a terminal, another window), it attaches instead of fighting for the line.",
+    "`start` holds the agent the way `pinecall start` does: it answers written calls (`chat`), spoken ones from the console, and a phone ring when a number points at it. A TypeScript agent runs inside this server and reloads on every save; a save that does not load keeps the version before answering, and `status` says why. A Ruby agent is held by `pinecall start --watch` in a terminal: `start` then attaches to it. Already held on this machine (a terminal, another window), it attaches instead of fighting for the line. The console's screens reach the agent held here, through a companion this server keeps beside the thread.",
   handler: async (args, session) => {
     const home = await session.home(args.agent);
     const already = session.held.get(home.name);

@@ -38,8 +38,8 @@ export interface Companion {
  * whose class draws the panel. Connect it after the agents registered, so there is a declaration
  * to inherit.
  */
-export function companionFor(door: Door, homes: Home[], serving: Serving, out: NodeJS.WritableStream): Companion {
-  const pc = new Pinecall({ url: door.url, apiKey: door.apiKey, env: door.world, sdk: COMPANION_SDK });
+export function companionFor(door: Door, homes: Home[], serving: Serving, out: NodeJS.WritableStream, sdk: string = COMPANION_SDK): Companion {
+  const pc = new Pinecall({ url: door.url, apiKey: door.apiKey, env: door.world, sdk });
   const chattings: Chatting[] = [];
   for (const home of homes) {
     const served: Served = { slug: home.name, app: () => serving.app(home.name) };

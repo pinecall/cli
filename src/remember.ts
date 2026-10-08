@@ -12,14 +12,11 @@ import type { Group } from "./groups.js";
 import { AGENT_FLAG, oneHome } from "./home.js";
 import { servingOne } from "./language.js";
 import { extracted } from "./testing/gateway.js";
-import { casesIn, matching } from "./testing/goldens.js";
+import { CASES, casesIn, matching, NO_CASES } from "./testing/goldens.js";
 import { BROKEN, HELD } from "./testing/score.js";
 import { refusal } from "./whoami.js";
 
 /** Default location of extraction goldens, separate from the conversation goldens. */
-export const CASES = "test/<name>/memory";
-
-export const NO_CASES = `no extraction goldens at ${CASES}: write one, or name the file or directory to run`;
 
 const USAGE = "usage: pinecall remember [paths] [--agent <name>] [--file agent.tsx] [--grep x] [--json]";
 
@@ -116,3 +113,5 @@ export function linesOf(answer: ExtractionRun): string[] {
   }
   return lines;
 }
+
+export { CASES, NO_CASES };

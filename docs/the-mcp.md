@@ -65,7 +65,7 @@ seconds (25 unless asked, at most 50) and says how to keep waiting, so no host g
 
 | tool | actions | what it does |
 |---|---|---|
-| `start` | — | holds the agent as `pinecall start` does. A TypeScript agent runs in a worker thread of this server — no process — and reloads on every save: the new version registers before the old one drains, a save that does not load keeps the version before answering. A Ruby agent, or one a terminal already holds, is attached to instead |
+| `start` | — | holds the agent as `pinecall start` does. A TypeScript agent runs in a worker thread of this server — no process — and reloads on every save: the new version registers before the old one drains, a save that does not load keeps the version before answering. A Ruby agent, or one a terminal already holds, is attached to instead. Beside the thread a companion answers the console, so its Chat, Tests, Simulations, Docs and Memory screens reach the agent the assistant holds; `pinecall agent list` shows it as `pinecall-mcp/<version>` |
 | `stop` | — | drains the thread and lets the agent go; an attached process is left running |
 | `status` | — | each agent held, how (`thread` or `attached`), its app, the version answering, and the sentence a broken save was refused with |
 | `logs` | — | the last lines the agent printed: its own output, a load error, the versions as they replace each other |

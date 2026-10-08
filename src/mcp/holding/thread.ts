@@ -1,6 +1,6 @@
 /** An agent served in a worker thread of this process: the project's own serve entry, its `main` called with the thread's streams. */
 
-import { PassThrough } from "node:stream";
+import { PassThrough, Writable } from "node:stream";
 import { Worker } from "node:worker_threads";
 
 import type { Started } from "../../language.js";
@@ -35,6 +35,11 @@ export class Logs {
 
   last(count: number): string[] {
     return this.lines.slice(-count);
+  }
+
+  /** A stream whose lines land here: what a core writes for a terminal, kept off the protocol's stdout. */
+  stream(): NodeJS.WritableStream {
+    return new Writable({ write: (chunk: Buffer, _encoding, done) => (this.add(chunk.toString()), done()) });
   }
 }
 
