@@ -670,9 +670,9 @@ under the box's judging ceiling. Its verdict lands in `call.score` beside the pa
 judge's name; `sessions <call>` and `simulate --judge` print it.
 
 The agent is the project's one, or the one `--agent` names by its folder's name; `--org`
-names the org's list instead, needs no project, and beside `--agent` is refused. One of the four
-reserved names — `consent`, `grounded`, `promises`, `persona` — a name the org and an agent would
-share, or a question left blank is the gateway's refusal. A name is
+names the org's list instead, needs no project, and beside `--agent` is refused. One of the
+platform's own names — `consent`, `grounded`, `promises`, `persona`, `identified`, `disclosed`,
+`honoured_stop`, `heard` — a name the org and an agent would share, or a question left blank is the gateway's refusal. A name is
 lower-case letters and digits joined by hyphens, as a verdict names it; anything else, an `add`
 without `--asks`, or an `--on` that is neither word is refused here with **exit 2**, before it
 travels. `--json` prints what the gateway answered, `{"judges": […]}`, for every verb.

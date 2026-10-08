@@ -124,6 +124,11 @@ function said(report: Report, asJson: boolean, out: NodeJS.WritableStream): numb
   return 0;
 }
 
+/** A median as its unit reads: a share of the talking as a percent, everything else in seconds. */
+function measured(one: Measured): string {
+  return one.name === "talk_share" ? `${Math.round(one.seconds * 100)}%` : `${one.seconds.toFixed(2)}s`;
+}
+
 /** Format the report: stages, greeting, latency medians, unavailable vendors. */
 export function linesOf(report: Report): string[] {
   const calls = `${report.calls} call${report.calls === 1 ? "" : "s"}`;
@@ -134,7 +139,7 @@ export function linesOf(report: Report): string[] {
   const opening = openingLine(report);
   if (opening !== "") lines.push("", `  greeting  ${opening}`);
   if (report.medians.length > 0) {
-    lines.push("", `  ${report.medians.map((one) => `${one.name} ${one.seconds.toFixed(2)}s`).join(" · ")}`);
+    lines.push("", `  ${report.medians.map((one) => `${one.name} ${measured(one)}`).join(" · ")}`);
   }
   const off = Object.entries(report.unavailable_reasons);
   if (off.length > 0) {

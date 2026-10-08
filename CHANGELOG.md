@@ -6,6 +6,13 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.24] — `pipeline` reads talk_share as a share
+
+### Fixed
+
+- `pinecall pipeline` prints `talk_share` as a percent, not in seconds.
+- `pinecall judges --help` and the CLI's page name every platform judge name the gateway reserves (`identified`, `disclosed`, `honoured_stop` and `heard` beside `consent`, `grounded`, `promises`, `persona`).
+
 ## [0.9.23] — `--version`, and help that says what the runtime answers
 
 ### Added

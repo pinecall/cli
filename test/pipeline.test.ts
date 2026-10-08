@@ -21,7 +21,7 @@ const REPORT = {
   greeting: { say: "Clínica Norte, ¿en qué puedo ayudarle?", reply: null, allow_interruptions: null },
   voices: ["Lucia", "Mateo"],
   calls: 12,
-  medians: [{ name: "eou_delay", seconds: 0.31, turns: 40 }],
+  medians: [{ name: "eou_delay", seconds: 0.31, turns: 40 }, { name: "talk_share", seconds: 0.62, turns: 40 }],
   unavailable_reasons: { cartesia: "no key on this box" },
 };
 
