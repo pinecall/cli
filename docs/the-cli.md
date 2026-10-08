@@ -533,7 +533,7 @@ Eres la recepción de Clínica Norte. Hablas de usted, con frases cortas. …
 
 ```
 pinecall test [paths] [--agent <name>] [--file agent.tsx] [--model m]… [--grep x] [--watch] [--json]
-              [--inspect[=host:port] | --inspect-brk]
+              [--case <name>]… [--dataset] [--version n] [--inspect[=host:port] | --inspect-brk]
 pinecall test --voice [--background-noise dB] [--packet-loss 0.05]
 ```
 
@@ -559,6 +559,27 @@ clinica-norte · 2 goldens · anthropic/claude-haiku-5-5
 goldens out loud on a real line; `--background-noise` puts a television behind the caller
 at that many dB under them, and `--packet-loss` drops that share of their packets — a fraction
 from 0 to 1 here (`0.05` is one in twenty), where `simulate` takes a percent.
+
+**The org's cases play beside the goldens.** A case is a real call kept as a golden by the
+gateway (`pinecall cases`). `--case <name>`, repeated, plays those cases by name, whatever their
+status — a `pending` one too, which is how the call that broke is reproduced before anybody
+approves it. `--dataset` plays every case of the agent a person approved that is not held out and
+not kept in the repository: what a nightly asks for. With `--case` or `--dataset` and **no
+paths**, only the cases are played — `test/<name>/goldens/` is not read, and a project with no
+goldens yet is not refused; with paths, both. Cases are a real caller's words, so they play only
+in the sandbox (the gateway refuses `--prod`), and `--watch` beside them needs a path to watch:
+a run of cases alone reads no file that could change, and is refused with exit 2. In a project of
+several agents, `--dataset` plays each agent's in turn; `--case` names one agent's cases and needs
+`--agent`.
+
+`--version n` builds every call of the run on that version of the agent's settings — as `agent
+history` numbers them — instead of the one standing: a candidate measured against what runs now.
+
+**Whose settings a run plays on is the key's.** From a laptop, a person's key runs on **your
+corner** of the sandbox ([`agent`](#agent)); in CI, a sandbox server token runs on **the
+team's**. So a settings fix that is only in your corner is green at your desk and red in CI,
+until `pinecall agent push --team` (or `agent set … --team`) gives it to the team. `--version`
+names a version of the corner the run plays on.
 
 ## `simulate`
 

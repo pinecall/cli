@@ -1,23 +1,23 @@
-/** `pinecall test [paths]`: run goldens through the agent served from this terminal, scored by the gateway. */
+/** `pinecall test [paths]`: run goldens, and the org's cases, through the agent served from this terminal, scored by the gateway. */
 
 import { existsSync, watch } from "node:fs";
 import { parseArgs } from "node:util";
 
-import { whileServing } from "./child.js";
+import { whileServing, type Spawns } from "./child.js";
 import { modelOf } from "./testing/models.js";
 import { theDoor, type Open } from "./env.js";
 import type { Group } from "./groups.js";
 import { AGENT_FLAG, hasDirectory, homesFor, type Home } from "./home.js";
 import { inspectOf, servingOne } from "./language.js";
 import type { Served } from "./serving.js";
-import type { Wanted } from "./testing/gateway.js";
+import type { Played, Wanted } from "./testing/gateway.js";
 import { GOLDENS, goldensIn, matching, NO_GOLDENS } from "./testing/goldens.js";
 import { ranSuite } from "./testing/suite.js";
 import { packetLossOf } from "./testing/voice.js";
 
 const USAGE =
   "usage: pinecall test [paths] [--agent <name>] [--file agent.tsx] [--model m]… [--grep x] [--watch] [--json]\n" +
-  "                    [--inspect[=host:port] | --inspect-brk]\n" +
+  "                    [--case <name>]… [--dataset] [--version n] [--inspect[=host:port] | --inspect-brk]\n" +
   "       pinecall test --voice [--background-noise dB] [--packet-loss 0.05]\n";
 
 export const group: Group = {
@@ -36,7 +36,18 @@ export const group: Group = {
   --voice             ring 2: the same goldens said out loud on a real line
   --background-noise  dB under the caller, on a spoken run: a television behind them
   --packet-loss       the share of the caller's packets that never arrive, 0 to 1; a percent is refused
-  --inspect           Node's own flag, given to the agent's process (a TypeScript agent's alone)`,
+  --case <name>       a case of the org's dataset, by name, whatever its status (\`pinecall cases\`
+                      lists them): a pending one is how the call that broke is reproduced. Repeatable
+  --dataset           every case a person approved, not held out and not kept in the repository:
+                      the nightly. With --case or --dataset and no paths, only the cases are played
+                      and test/goldens is not read; with paths, both. Cases play in the sandbox only
+  --version n         every call of the run on that version of the agent's settings instead of the
+                      one standing: a candidate against what runs now
+  --inspect           Node's own flag, given to the agent's process (a TypeScript agent's alone)
+
+  Whose settings a run plays on is the key's: from a laptop, YOUR corner of the sandbox; in CI, a
+  sandbox server token, the TEAM's. A settings fix only you have is green at your desk and red in
+  CI until \`pinecall agent push --team\` (or \`agent set … --team\`) gives it to the team.`,
   run,
 };
 
@@ -64,12 +75,47 @@ const SETTLE_MS = 150;
 /** The flags of one run that reach the suite. */
 type Asked = Parameters<typeof aLine>[0] & { grep?: string | undefined; model?: string[] | undefined; json?: boolean | undefined };
 
+const NOT_A_VERSION = (said: string): string =>
+  `--version ${said}: a version of the agent's settings is a whole number from 1, as \`pinecall agent history\` lists them`;
+
+const NOTHING_TO_WATCH =
+  "--watch runs again when a golden file changes, and a run of cases alone reads none: name the goldens to watch beside --case or --dataset";
+
+const FOR_ONE_AGENT = (names: string[]): string =>
+  `paths, --watch, --case and --version are for one agent: add --agent ${names.join(" or --agent ")}`;
+
+/** The cases and the settings version the flags ask for, or the sentence refusing them. */
+function playedOf(values: { case?: string[]; dataset?: boolean; version?: string }): Played | string {
+  const version = values.version === undefined ? undefined : Number(values.version);
+  if (version !== undefined && (!Number.isInteger(version) || version < 1)) return NOT_A_VERSION(values.version!);
+  return {
+    ...(values.case === undefined ? {} : { cases: [...new Set(values.case)] }),
+    ...(values.dataset === true ? { dataset: true } : {}),
+    ...(version === undefined ? {} : { version }),
+  };
+}
+
+/** Whether a run plays any of the org's cases. */
+function playsCases(played: Played): boolean {
+  return played.cases !== undefined || played.dataset === true;
+}
+
+/** Output streams, the environment and the agent's process, for tests. */
+export interface Testing {
+  out?: NodeJS.WritableStream;
+  err?: NodeJS.WritableStream;
+  env?: NodeJS.ProcessEnv;
+  spawns?: Spawns;
+}
+
 /**
  * Serve the agent from a process this terminal starts, as `pinecall chat` does, so @tool bodies run
  * here and can be debugged; the gateway drives and scores the conversations. The suite is
  * `testing/suite.ts`.
  */
-export async function run(argv: string[], out: NodeJS.WritableStream = process.stdout): Promise<number> {
+export async function run(argv: string[], how: Testing = {}): Promise<number> {
+  const out = how.out ?? process.stdout;
+  const err = how.err ?? process.stderr;
   const { inspect, rest } = inspectOf(argv);
   const { values, positionals } = parseArgs({
     args: rest,
@@ -84,43 +130,56 @@ export async function run(argv: string[], out: NodeJS.WritableStream = process.s
       voice: { type: "boolean", default: false },
       "background-noise": { type: "string" },
       "packet-loss": { type: "string" },
+      case: { type: "string", multiple: true },
+      dataset: { type: "boolean", default: false },
+      version: { type: "string" },
     },
   });
-  const door = await theDoor();
+  const played = playedOf(values);
+  if (typeof played === "string") {
+    err.write(`${played}\n`);
+    return 2;
+  }
+  // Cases and no paths: only the cases, and test/goldens is not read.
+  const onlyCases = playsCases(played) && positionals.length === 0;
+  if (onlyCases && values.watch === true) {
+    err.write(`${NOTHING_TO_WATCH}\n`);
+    return 2;
+  }
+  const door = await theDoor(how.env ?? process.env, err);
   if (door === undefined) return 2;
+  // A console's process: a run names its app, and a real call never rings in a terminal running one.
+  const served = (home: Home, use: (agent: Served) => Promise<number>): Promise<number> =>
+    whileServing(servingOne(door, home, { console: true, inspect }), home.name, use, how.spawns);
+  const suite = (agent: Served, paths: string[]): Promise<number> => suiteOf(agent, paths, door, values, played, out, err);
   // Multi-agent project: run each agent's goldens in turn; exit with the worst code.
   const homes = await homesFor(values.file, values.agent);
   if (homes.length > 1) {
-    if (positionals.length > 0 || values.watch === true) {
-      process.stderr.write(`paths and --watch are for one agent: add --agent ${homes.map((home) => home.name).join(" or --agent ")}\n`);
+    if (positionals.length > 0 || values.watch === true || played.cases !== undefined || played.version !== undefined) {
+      err.write(`${FOR_ONE_AGENT(homes.map((home) => home.name))}\n`);
       return 2;
     }
     let worst = 0;
     for (const home of homes) {
-      if (!hasDirectory(home.goldens)) {
+      if (!onlyCases && !hasDirectory(home.goldens)) {
         out.write(`${home.name} · no goldens at ${home.goldens}\n`);
         continue;
       }
-      worst = Math.max(worst, await served(door, home, inspect, (agent) => suiteOf(agent, [home.goldens], door, values, out)));
+      worst = Math.max(worst, await served(home, (agent) => suite(agent, onlyCases ? [] : [home.goldens])));
     }
     return worst;
   }
   const home = homes[0]!;
-  const paths = positionals.length > 0 ? positionals : [home.goldens];
-  if (positionals.length === 0 && !existsSync(home.goldens)) {
-    process.stderr.write(`${NO_GOLDENS.replace(GOLDENS, home.goldens)}\n${USAGE}`);
+  const paths = positionals.length > 0 ? positionals : onlyCases ? [] : [home.goldens];
+  if (positionals.length === 0 && !onlyCases && !existsSync(home.goldens)) {
+    err.write(`${NO_GOLDENS.replace(GOLDENS, home.goldens)}\n${USAGE}`);
     return 2;
   }
-  return await served(door, home, inspect, async (agent) => {
-    if (values.watch !== true) return await suiteOf(agent, paths, door, values, out);
-    await suiteOf(agent, paths, door, values, out);
-    return await watching(paths, () => suiteOf(agent, paths, door, values, out), out);
+  return await served(home, async (agent) => {
+    if (values.watch !== true) return await suite(agent, paths);
+    await suite(agent, paths);
+    return await watching(paths, () => suite(agent, paths), out);
   });
-}
-
-// A console's process: a run names its app, and a real call never rings in a terminal running one.
-async function served(door: Open, home: Home, inspect: string[], use: (agent: Served) => Promise<number>): Promise<number> {
-  return await whileServing(servingOne(door, home, { console: true, inspect }), home.name, use);
 }
 
 // Re-runs on golden changes only: node will not re-import the already loaded class.
@@ -147,13 +206,22 @@ async function watching(
   return await new Promise<number>(() => {});
 }
 
-/** Run the goldens under `paths` through the agent served. */
-async function suiteOf(served: Served, paths: string[], door: Open, values: Asked, out: NodeJS.WritableStream): Promise<number> {
+/** Run the goldens under `paths`, and the cases asked, through the agent served. */
+async function suiteOf(
+  served: Served,
+  paths: string[],
+  door: Open,
+  values: Asked,
+  played: Played,
+  out: NodeJS.WritableStream,
+  err: NodeJS.WritableStream,
+): Promise<number> {
   const models = (values.model ?? []).map(modelOf).filter((model) => model !== undefined);
-  const goldens = matching(await goldensIn(paths), values.grep);
-  if (goldens.length === 0) {
-    process.stderr.write(`no golden matched${values.grep === undefined ? "" : ` --grep ${values.grep}`}\n`);
+  // No paths is no goldens: `goldensIn([])` would read test/goldens.
+  const goldens = paths.length === 0 ? [] : matching(await goldensIn(paths), values.grep);
+  if (goldens.length === 0 && !playsCases(played)) {
+    err.write(`no golden matched${values.grep === undefined ? "" : ` --grep ${values.grep}`}\n`);
     return 2;
   }
-  return await ranSuite({ door, served, goldens, models, line: aLine(values), out, json: values.json === true });
+  return await ranSuite({ door, served, goldens, models, line: aLine(values), played, out, json: values.json === true });
 }

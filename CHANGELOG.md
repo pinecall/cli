@@ -6,6 +6,10 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- `pinecall test --case <name>` (repeatable) plays cases of the org's dataset by name, a pending one too; `--dataset` plays every approved case; with either and no paths, only the cases run and `test/goldens` is not needed. `--version n` runs every call on that version of the agent's settings. A golden's `expect` takes `judges`: hang-up judges asked again by name.
+
 ## [0.9.37] — the desk, as an MCP tool
 
 ### Added

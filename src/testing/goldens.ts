@@ -23,6 +23,8 @@ export interface Expect {
   grounded?: boolean;
   register?: "tu" | "usted";
   replies?: boolean;
+  /** Hang-up judges asked again of the golden's call, by name: `promises`, the org's, the agent's own. */
+  judges?: string[];
 }
 
 /** One scripted conversation: initial state, caller input and expectations. */

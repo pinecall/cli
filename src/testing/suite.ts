@@ -4,7 +4,7 @@ import { type ModelConfig } from "@pinecall/agents/wire";
 import { type Camel } from "@pinecall/agents/wire";
 
 import type { Served } from "../serving.js";
-import { aRun, entriesOf, Refused, theRuns, type Door, type Entry, type EvalRun, type Wanted } from "./gateway.js";
+import { aRun, entriesOf, Refused, theRuns, type Door, type Entry, type EvalRun, type Played, type Wanted } from "./gateway.js";
 import type { Golden } from "./goldens.js";
 import { mediansOf } from "./latency.js";
 import { reportOf, type Latencies } from "./matrix.js";
@@ -26,6 +26,8 @@ export interface Suite {
   models: Camel<ModelConfig>[];
   /** Ring 2 fields for a spoken suite; empty for a written one. */
   line: Partial<Wanted>;
+  /** The cases played beside the goldens, and the settings version they all play on; none when left out. */
+  played?: Played;
   out: NodeJS.WritableStream;
   json: boolean;
 }
@@ -36,10 +38,12 @@ export interface Suite {
  */
 export async function ranSuite(suite: Suite): Promise<number> {
   const { door, served, goldens, models, out } = suite;
+  const played = suite.played ?? {};
   const app = served.app();
   const pending = aRun(door, {
     agent: served.slug,
     goldens,
+    ...played,
     ...(models.length > 0 ? { models } : {}),
     ...(app === undefined ? {} : { app }),
     ...suite.line,
@@ -47,6 +51,7 @@ export async function ranSuite(suite: Suite): Promise<number> {
   const watched = {
     agent: served.slug,
     goldens: goldens.length,
+    ...casesOf(played),
     models: models.length > 0 ? models.map((model) => `${model.provider}/${model.model}`) : [DECLARED],
     declaredAs: DECLARED,
   };
@@ -59,6 +64,12 @@ export async function ranSuite(suite: Suite): Promise<number> {
     return 1;
   }
   return await reported(door, run, goldens, DECLARED, suite.json, out);
+}
+
+// How many cases the header counts: the names given, or the whole dataset, whose size the gateway knows.
+function casesOf(played: Played): { cases?: number | "dataset" } {
+  if (played.dataset === true) return { cases: "dataset" };
+  return played.cases === undefined ? {} : { cases: played.cases.length };
 }
 
 /** A finished run as data: the run, each call's latency medians, and the reproductions written for what broke. */

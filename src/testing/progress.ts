@@ -10,6 +10,8 @@ const EVERY_MS = 500;
 export interface Watched {
   agent: string;
   goldens: number;
+  /** Cases of the org's dataset played beside them: a count when named, `dataset` when the whole of it is, whose size only the gateway knows. */
+  cases?: number | "dataset";
   /** Model names for display: the declared model, or those passed on the command line. */
   models: string[];
   /** Display name for the runner's `declared` model. */
@@ -40,7 +42,7 @@ export async function followed(
 ): Promise<EvalRun> {
   const knocked = Date.now();
   const live = !asJson && isTerminal(out);
-  const total = watched.goldens * Math.max(watched.models.length, 1);
+  const total = watched.cases === "dataset" ? null : (watched.goldens + (watched.cases ?? 0)) * Math.max(watched.models.length, 1);
   let settled = false;
   const answered = pending.finally(() => (settled = true));
   let id: string | undefined;
@@ -85,10 +87,12 @@ async function untilItStops(door: Door, id: string): Promise<EvalRun> {
   }
 }
 
-/** Header line: agent, golden count, models and run id. */
+/** Header line: agent, golden count, the cases played, models and run id. */
 export function header(watched: Watched, id: string): string {
-  const counted = `${watched.goldens} golden${watched.goldens === 1 ? "" : "s"}`;
-  return `${watched.agent} · ${counted} · ${watched.models.join(" · ")} · ${id}`;
+  const counted = watched.goldens > 0 || watched.cases === undefined ? [`${watched.goldens} golden${watched.goldens === 1 ? "" : "s"}`] : [];
+  if (watched.cases === "dataset") counted.push("the dataset");
+  else if (watched.cases !== undefined) counted.push(`${watched.cases} case${watched.cases === 1 ? "" : "s"}`);
+  return [watched.agent, ...counted, ...watched.models, id].join(" · ");
 }
 
 // The runner admits one run per agent and stores it before the first call, so the newest running
@@ -127,10 +131,12 @@ function readingLines(run: EvalRun): string[] {
     .map((opened) => `  ${OPEN} ${opened.golden}  ${opened.call.slice(0, A_CALL_SHOWN)}…  ${READING}`);
 }
 
-function bar(run: EvalRun, total: number, knocked: number): string {
+// A run of the whole dataset has no total this side knows: it counts what was judged.
+function bar(run: EvalRun, total: number | null, knocked: number): string {
   const judged = run.matrix?.runs.length ?? 0;
-  const filled = total === 0 ? BAR_WIDTH : Math.round((judged / total) * BAR_WIDTH);
   const seconds = Math.round((Date.now() - knocked) / 1000);
+  if (total === null) return `${judged} judged · ${seconds}s`;
+  const filled = total === 0 ? BAR_WIDTH : Math.round((judged / total) * BAR_WIDTH);
   return `[${FILLED.repeat(filled)}${EMPTY.repeat(BAR_WIDTH - filled)}] ${judged}/${total} · ${seconds}s`;
 }
 

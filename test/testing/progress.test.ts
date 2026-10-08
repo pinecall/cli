@@ -176,4 +176,13 @@ describe("what the terminal shows while the run is going", () => {
       "clinica-norte · 1 golden · anthropic/claude-haiku-5-5 · openai/gpt-5-mini · run_1",
     );
   });
+
+  it("counts the cases named beside the goldens, and leaves out goldens a run of cases alone has none of", () => {
+    expect(header({ ...WATCHED, cases: 1 }, "run_1")).toBe("clinica-norte · 2 goldens · 1 case · haiku · run_1");
+    expect(header({ ...WATCHED, goldens: 0, cases: 3 }, "run_1")).toBe("clinica-norte · 3 cases · haiku · run_1");
+  });
+
+  it("names the dataset rather than a count only the gateway knows", () => {
+    expect(header({ ...WATCHED, goldens: 0, cases: "dataset" }, "run_1")).toBe("clinica-norte · the dataset · haiku · run_1");
+  });
 });

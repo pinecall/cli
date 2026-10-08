@@ -77,8 +77,18 @@ export interface EvalRun {
   error: string | null;
 }
 
+/** What a run plays beside its goldens — the org's cases — and the version of the settings it plays on. */
+export interface Played {
+  /** Cases of the org's dataset by name, whatever their status: a pending one is reproduced. */
+  cases?: string[];
+  /** Every case of the agent a person approved, not held out and not kept in the repository. */
+  dataset?: boolean;
+  /** A version of the agent's settings, in the scope of the app that holds it, instead of the one standing. */
+  version?: number;
+}
+
 /** Body of `POST /v1/evals/run`. */
-export interface Wanted {
+export interface Wanted extends Played {
   agent: string;
   goldens: Golden[];
   models?: Camel<ModelConfig>[];
