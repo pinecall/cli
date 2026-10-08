@@ -8,7 +8,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { aDuration, run, type Played } from "../src/voices.js";
+import { aDuration } from "../src/voice-sample.js";
+import { run, type Played } from "../src/voices.js";
 import { pointingAt } from "./home.js";
 import { written } from "./said.js";
 
@@ -44,7 +45,7 @@ class FakeGateway {
   /** The GET /v1/voices response; the default list unless a test overrides it. */
   listed: unknown = { tts: "cartesia", language: "es", voices: VOICES };
   timing: string | null = "first-audio;dur=210, total;dur=900";
-  /** GET /v1/providers: the box's voice, and which vendors list theirs. */
+  /** GET /v1/providers: the gateway's voice, and which vendors list theirs. */
   catalogue: unknown = A_CATALOGUE;
   #server!: Server;
   url = "";
@@ -107,7 +108,7 @@ function aPlayer(files: string[]): (file: string) => Played {
 }
 
 describe("listing", () => {
-  it("asks the box's own voice when no vendor is named, and prints the id first in aligned columns", async () => {
+  it("asks the gateway's own voice when no vendor is named, and prints the id first in aligned columns", async () => {
     const out = written();
 
     const code = await run(["--language", "es"], { out: out.stream, env });
@@ -132,7 +133,7 @@ describe("listing", () => {
     expect(gateway.heard.map((one) => one.path)).toEqual(["/v1/providers"]);
   });
 
-  it("says so when the box's own voice is one that lists none", async () => {
+  it("says so when the gateway's own voice is one that lists none", async () => {
     gateway.catalogue = { ...A_CATALOGUE, defaults: { tts: "rime" } };
     const err = written();
 

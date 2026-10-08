@@ -1,5 +1,6 @@
-/** Known command-line audio players and lookup of the first one on PATH. */
+/** Known command-line audio players, the first one on PATH, and a file played on it: the one place audio is played. */
 
+import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { delimiter, join } from "node:path";
 
@@ -34,4 +35,17 @@ export function aPlayerFor(way: "raw" | "file"): Player | null {
 export function onThePath(name: string): boolean {
   // Skip empty PATH segments, which would resolve to the cwd.
   return (process.env["PATH"] ?? "").split(delimiter).some((where) => where !== "" && existsSync(join(where, name)));
+}
+
+/** Result of playing a file: the player used, or why it failed. */
+export type Played = { player: string } | { failed: string };
+
+/** Play the file with the first available local player. */
+export function playedHere(file: string): Played {
+  const player = aPlayerFor("file");
+  if (player === null) return { failed: "no player on this machine (afplay, ffplay, play, aplay or pw-play)" };
+  const ran = spawnSync(player.name, [...player.file, file], { stdio: "ignore" });
+  if (ran.error !== undefined) return { failed: `${player.name} could not start (${ran.error.message})` };
+  if (ran.status !== 0) return { failed: `${player.name} could not play it (exit ${ran.status ?? "?"})` };
+  return { player: player.name };
 }
