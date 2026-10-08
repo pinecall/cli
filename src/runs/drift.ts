@@ -4,7 +4,7 @@ import { type CallScore } from "@pinecall/agents/wire";
 import { type SessionLine } from "@pinecall/agents/wire";
 
 import { entriesOf, theSessions, type Door } from "../testing/gateway.js";
-import { theScoreIn } from "./candidate.js";
+import { theScoreIn } from "../testing/score.js";
 
 /** Calls read per drift; 200 is the sessions endpoint's maximum. */
 export const A_WINDOW_OF_CALLS = 200;

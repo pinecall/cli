@@ -776,8 +776,15 @@ line, which carries the run id and belongs to a run that is still happening; `di
 two, golden by golden — a measurement that HELD and is new to the later run is not a change and is
 left out, one that is BROKEN is printed (`not measured → broken`), and one the later run stopped
 making is printed too, so a golden nobody ran is never read as a fix. **`promote`** writes one real call down as a golden **candidate** in
-`test/candidates` — the state it was in, every caller turn from `--from-seq`, and an `expect`
-derived from what the judges answered — for a person to edit before it counts as a golden.
+`test/candidates` — the golden the gateway derives from it (`GET /v1/calls/{call}/golden`): the
+state it was in at `--from-seq`, every caller turn after it, the facts the app gave it, what memory
+recalled, the day it ran, and an `expect` from its **broken** verdicts — for a person to edit
+before it counts as a golden. Promote is for the call that **broke**: a verdict says what went
+wrong, never what was right, so the expect says what must not happen again — the tool a broken
+`consent` ran unasked in `not_tools`, `grounded: true`, the other judges that broke in `judges`,
+asked again by name — and the verb prints a note for each. A call that held gives an empty
+`expect`, and you write what it must keep doing. The same golden is what [`cases keep`](#cases)
+keeps on the gateway instead, for a case that belongs in the dataset rather than in the repository.
 **`drift`** counts each judge's held-rate over two windows of finished calls and exits 1 when one
 fell further than `--threshold` points: nothing is judged again, a held-rate is a count of the
 verdicts `call.score` already carries. The window is the last `--window`; the baseline is the time
@@ -1731,7 +1738,7 @@ code can call — over HTTP, in any language, with the same key.
 | `supervise` | `POST /v1/calls/{call}/verbs` — with the **org key**: a desk that only reads and types needs no seat. A seat (`POST …/supervise`) is for audio, and that is the console's |
 | `simulate --listen` | `POST /v1/calls/{call}/listen`, then the LiveKit room |
 | `simulate --voice` · `test --voice` | `POST /v1/evals/voice`, `POST /v1/evals/caller` |
-| `test` · `runs` | `POST /v1/evals/run`, `GET /v1/evals/runs[/{id}]` |
+| `test` · `runs` | `POST /v1/evals/run`, `GET /v1/evals/runs[/{id}]`; `runs promote` is `GET /v1/calls/{call}/golden?name=&from_seq=` |
 | `cases` | `GET /v1/evals/cases?agent=&status=` (a case is found by its name there), `PATCH`·`DELETE /v1/evals/cases/{id}`, `POST /v1/evals/cases` |
 | `runs drift` | `GET /v1/agents/{slug}/sessions` — a held-rate is counted off the verdicts the calls already carry, so it asks the sessions endpoint and no evals endpoint at all |
 | `eval` | `POST /v1/evals/replay/{call}` |

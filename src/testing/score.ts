@@ -1,7 +1,9 @@
-/** Text rendering of a `call.score` entry: verdict per judge and judging cost. */
+/** A `call.score` entry: found in a call's log, and rendered as a verdict per judge and the judging cost. */
 
 import { type Judgment } from "@pinecall/agents/wire";
 import { type CallScore } from "@pinecall/agents/wire";
+
+import type { Entry } from "./gateway.js";
 
 // Verdict marks, shared with the matrix report.
 export const HELD = "✓";
@@ -21,6 +23,12 @@ const MARK: Record<string, string> = {
 const NOBODY_JUDGED = "nobody judged this call";
 
 const NO_REASON = "no reason was written down";
+
+/** The last `call.score` in a call's log, or null. */
+export function theScoreIn(entries: Entry[]): CallScore | null {
+  const found = entries.filter((entry) => entry.type === "call.score").at(-1);
+  return found === undefined ? null : (found.data as unknown as CallScore);
+}
 
 /** The judge's reason, or a placeholder when empty. */
 export function reasonOf(said: { reason: string }): string {

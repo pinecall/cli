@@ -12,16 +12,16 @@ import { written } from "../said.js";
 
 const CALL = "call_that_was_judged";
 
-/** Fake gateway serving one call's log: a turn, a state and a verdict. */
+/** Fake gateway answering a call's golden door, or refusing it as a call still going. */
 class FakeGateway {
-  entries: Record<string, unknown>[] = [];
+  golden: Record<string, unknown> | null = null;
   #server!: Server;
   url = "";
 
   async open(): Promise<void> {
     this.#server = createServer((_request, response) => {
-      response.writeHead(200, { "content-type": "application/json" });
-      response.end(JSON.stringify({ entries: this.entries, live: false, next: this.entries.length + 1 }));
+      response.writeHead(this.golden === null ? 409 : 200, { "content-type": "application/json" });
+      response.end(JSON.stringify(this.golden ?? { detail: `call ${CALL} is still going: a case is made of a call that ended` }));
     });
     await new Promise<void>((bound) => this.#server.listen(0, "127.0.0.1", bound));
     this.url = `http://127.0.0.1:${(this.#server.address() as AddressInfo).port}`;
@@ -47,23 +47,12 @@ afterEach(async () => {
 
 const was = process.cwd();
 
-function aJudgedCall(): Record<string, unknown>[] {
-  return [
-    { seq: 1, call: CALL, agent: "clinica-norte", type: "state.changed", data: { state: { stage: "identify" } } },
-    { seq: 2, call: CALL, agent: "clinica-norte", type: "turn.user", data: { text: "quiero cambiar la cita" } },
-    {
-      seq: 3,
-      call: CALL,
-      agent: "clinica-norte",
-      type: "call.score",
-      data: { passed: true, judges: [{ name: "consent", verdict: "held", criteria: "", reason: "" }] },
-    },
-  ];
-}
+// The golden the gateway derives from a call that held: its caller's line, and nothing expected.
+const HELD = { name: CALL, state: { stage: "identify" }, input: ["quiero cambiar la cita"], expect: {}, promoted_from: CALL };
 
 describe("promoting a call", () => {
   it("writes the candidate beside this directory's goldens and answers where it landed", async () => {
-    gateway.entries = aJudgedCall();
+    gateway.golden = HELD;
     process.chdir(mkdtempSync(join(tmpdir(), "pinecall-candidates-")));
     const door = promotingFrom({ url: gateway.url, apiKey: "pk", world: "sandbox" }, "clinica-norte", written().stream);
 
@@ -74,14 +63,12 @@ describe("promoting a call", () => {
     expect(JSON.parse(readFileSync(promoted.path, "utf8"))).toMatchObject({ promoted_from: CALL });
   });
 
-  // Expectations come from judge verdicts, so an unjudged call is refused, not written empty.
-  it("refuses a call nobody judged, in the words the verb uses", async () => {
-    gateway.entries = aJudgedCall().slice(0, 2);
+  it("keeps the gateway's status and sentence when it refuses the call", async () => {
     const door = promotingFrom({ url: gateway.url, apiKey: "pk", world: "sandbox" }, "clinica-norte", written().stream);
 
     await expect(door.promote({ call: CALL })).rejects.toMatchObject({
-      status: 422,
-      message: expect.stringContaining("no verdict") as string,
+      status: 409,
+      message: expect.stringContaining("is still going") as string,
     });
   });
 

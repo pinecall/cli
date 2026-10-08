@@ -97,7 +97,7 @@ Run the agent's goldens through the agent this server holds, under every model n
 
 The suites the gateway kept: the newest, one run's matrix, what moved between two, a real call written as a golden candidate, and each judge's drift.
 
-`runs list` and `show` read the suites the gateway kept; `diff` says which goldens moved between two runs. `promote` writes one real, judged call as a golden candidate under `test/candidates/` — read it before you keep it. `drift` compares each judge's held-rate in the last week with the month before it and names the judges past the threshold.
+`runs list` and `show` read the suites the gateway kept; `diff` says which goldens moved between two runs. `promote` writes the golden the gateway derives from one real call as a candidate under `test/candidates/`: meant for a call that broke, whose expect says what must not happen again — a call that held gives an empty expect, and you write what it must keep doing. Read it before you keep it. `drift` compares each judge's held-rate in the last week with the month before it and names the judges past the threshold.
 
 | parameter | takes | | what it is |
 |---|---|---|---|

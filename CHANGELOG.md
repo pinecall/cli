@@ -11,6 +11,10 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `pinecall test --case <name>` (repeatable) plays cases of the org's dataset by name, a pending one too; `--dataset` plays every approved case; with either and no paths, only the cases run and `test/goldens` is not needed. `--version n` runs every call on that version of the agent's settings. A golden's `expect` takes `judges`: hang-up judges asked again by name.
 - `pinecall cases`: the org's dataset, real calls kept as cases — the inbox (`--status`), `show` one whole with the commands that come next, `approve`, `dismiss` (`--judge-was-wrong <judge>`, `--note`), `reopen`, `pull` its golden into `test/<agent>/goldens/` and mark it kept in the repository, `keep <call> --name x` a finished call, `forget` one. A case is named within the agent.
 
+### Changed
+
+- `pinecall runs promote` writes the golden the gateway derives from the call (`GET /v1/calls/{call}/golden`), so a candidate now carries the facts the app gave the call, what memory recalled and the day it ran, and every broken judge lands in its `expect` (`judges` by name). A call nobody judged is no longer refused: its expect is empty, to be written by hand.
+
 ## [0.9.37] — the desk, as an MCP tool
 
 ### Added

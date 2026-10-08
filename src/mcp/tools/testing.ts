@@ -100,7 +100,7 @@ export const runs = tool({
     prod: PROD,
   },
   manual:
-    "`runs list` and `show` read the suites the gateway kept; `diff` says which goldens moved between two runs. `promote` writes one real, judged call as a golden candidate under `test/candidates/` — read it before you keep it. `drift` compares each judge's held-rate in the last week with the month before it and names the judges past the threshold.",
+    "`runs list` and `show` read the suites the gateway kept; `diff` says which goldens moved between two runs. `promote` writes the golden the gateway derives from one real call as a candidate under `test/candidates/`: meant for a call that broke, whose expect says what must not happen again — a call that held gives an empty expect, and you write what it must keep doing. Read it before you keep it. `drift` compares each judge's held-rate in the last week with the month before it and names the judges past the threshold.",
   handler: async (args, session) => {
     const door = await session.door(args.prod);
     if (args.action === "show") return await oneRun(door, needed(args.run, "run"));

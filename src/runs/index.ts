@@ -22,9 +22,10 @@ export const group: Group = {
   usage: `${USAGE}  list    one line per run, newest first: when, which agent, how much held
   show    one run as \`pinecall test\` printed it when it happened
   diff    what moved between two runs, golden by golden
-  promote one real call written down as a golden CANDIDATE in test/candidates, with an expect
-          derived from what the judges answered. --from-seq cuts the call: the state as it stood
-          there, and every caller turn after it
+  promote the golden the gateway derives from one real call, written as a CANDIDATE in
+          test/candidates. It is for the call that BROKE: its expect says what must not happen
+          again. A call that held gives an empty expect, and you write what it must keep doing.
+          --from-seq cuts the call: the state as it stood there, and every caller turn after it
   drift   each judge's held-rate over two windows of finished calls, and the points between
           them. Exits 1 when a judge fell further than --threshold allows`,
   run,

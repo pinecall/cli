@@ -1,4 +1,4 @@
-/** The org's dataset on the gateway — real calls kept as cases — read, decided, pulled into the repository and forgotten, by name, for any front. */
+/** The org's dataset on the gateway — real calls kept as cases, read, decided, pulled into the repository, forgotten by name — and the golden a call makes, for any front. */
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -124,6 +124,13 @@ export async function pulled(door: Door, agent: string, name: string, folder: st
   await writeFile(path, `${JSON.stringify(found.golden, null, 2)}\n`, "utf8");
   const marked = whole(await asked<Sent>(door, caseDoor(found.id), { method: "PATCH", body: { kept_in_repo: true } }));
   return { path, case: marked };
+}
+
+/** The golden a finished call makes from a seq on, its expect derived from its broken verdicts; kept nowhere. */
+export async function goldenOfCall(door: Door, call: string, cut: { name?: string; fromSeq: number }): Promise<Golden> {
+  const query = new URLSearchParams({ from_seq: String(cut.fromSeq) });
+  if (cut.name !== undefined) query.set("name", cut.name);
+  return await asked<Golden>(door, `/v1/calls/${encodeURIComponent(call)}/golden?${query.toString()}`);
 }
 
 function caseDoor(id: string): string {

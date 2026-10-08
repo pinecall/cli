@@ -1,10 +1,10 @@
-// Rendering call.score: passed, failed, and unjudged (absent `passed`).
+// call.score: the last one found in a log, and rendered passed, failed, and unjudged (absent `passed`).
 
 import { type Judgment } from "@pinecall/agents/wire";
 import { type CallScore } from "@pinecall/agents/wire";
 import { describe, expect, it } from "vitest";
 
-import { linesOfScore } from "../../src/testing/score.js";
+import { linesOfScore, theScoreIn } from "../../src/testing/score.js";
 
 function judgment(name: string, verdict: Judgment["verdict"], reason: string, seqs: number[] = []): Judgment {
   return { name, verdict, criteria: `Every ${name} rule held.`, reason, evidence: { seqs } };
@@ -69,5 +69,22 @@ describe("what the asking cost", () => {
     const lines = linesOfScore(score({ passed: true, judges: [], judge_calls: 0 }));
 
     expect(lines.at(-1)).toBe("  0 judge calls");
+  });
+});
+
+describe("the score in a call's log", () => {
+  it("is the last call.score, the one a judge wrote again after the seal", () => {
+    const first = score({ passed: false, judges: [judgment("consent", "broken", "x")] });
+    const again = score({ passed: true, judges: [judgment("consent", "held", "")] });
+
+    expect(theScoreIn([
+      { seq: 1, type: "turn.user", data: { text: "hola" } },
+      { seq: 2, type: "call.score", data: { ...first } },
+      { seq: 3, type: "call.score", data: { ...again } },
+    ])).toEqual(again);
+  });
+
+  it("is null for a log that carries none", () => {
+    expect(theScoreIn([{ seq: 1, type: "turn.user", data: { text: "hola" } }])).toBeNull();
   });
 });

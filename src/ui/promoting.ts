@@ -46,7 +46,7 @@ export function promotingFrom(door: Door, agent: string | null, out: NodeJS.Writ
         out.write(`${written.path}  promoted from ${call}\n`);
         return written;
       } catch (refused) {
-        // Gateway refusals keep their status; local failures (no log, no verdict) are 422.
+        // Gateway refusals keep their status; a candidate this side could not write is 422.
         if (refused instanceof Refused) throw refused;
         throw new Refusal(422, refused instanceof Error ? refused.message : String(refused));
       }
