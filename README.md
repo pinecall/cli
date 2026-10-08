@@ -20,8 +20,10 @@ that runs is the version your project pinned.
 ## Quick start
 
 ```bash
+pinecall new front-desk          # or --ruby: a project of one agent, ready for every verb below
+cd front-desk && npm install     # bundle install for Ruby
 pinecall link        # sign in through the browser; writes your key to ./.env
-pinecall prompt --state test/<agent>/goldens/<golden>.json
+pinecall prompt      # the prompt the model reads, offline; --state <golden> for another state
 pinecall chat        # talk to the agent in this terminal
 pinecall test        # run the goldens
 pinecall start       # run the agent: the process you deploy

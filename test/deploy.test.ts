@@ -192,6 +192,17 @@ describe("pinecall deploy", () => {
     expect(err.text()).toContain("does not list @pinecall/agents in dependencies: npm i @pinecall/agents");
     expect(gateway.heard).toEqual([]);
   });
+
+  it("refuses a Ruby project, which the box does not host, and says where it runs instead", async () => {
+    mkdirSync(join(cwd, "agents/desk"), { recursive: true });
+    writeFileSync(join(cwd, "agents/desk/agent.rb"), "class Desk < Pinecall::Agent; end");
+    const err = written();
+
+    expect(await deploying([], written(), err)).toBe(2);
+
+    expect(err.text()).toContain("the box hosts TypeScript projects, and agents/desk/agent.rb is not one");
+    expect(gateway.heard).toEqual([]);
+  });
 });
 
 describe("the other verbs", () => {

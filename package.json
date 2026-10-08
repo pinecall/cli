@@ -13,7 +13,8 @@
     "pinecall": "./bin/pinecall.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "templates"
   ],
   "scripts": {
     "build": "scripts/build",

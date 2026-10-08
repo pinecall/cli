@@ -17,7 +17,7 @@ interface Case {
 export const group: Group = {
   purpose: "the exact prompt a state would produce, offline",
   offline: true,
-  usage: `usage: pinecall prompt [agent.tsx] --state <file> [--case n] [--agent <name>]
+  usage: `usage: pinecall prompt [agent.tsx] [--state <file>] [--case n] [--agent <name>]
                        [--channel phone|web|whatsapp] [--medium voice|text]
 
   The three regions of the prompt as the model would receive them — the static prefix, the
@@ -26,7 +26,8 @@ export const group: Group = {
   the state the file describes, so this answers in the time it takes to save the file.
 
   --agent <name>  which agent of a project of several, by its folder's name
-  --state file    a goldens file: an array of cases, each with its own \`state\`, or one object
+  --state file    a goldens file: an array of cases, each with its own \`state\`, or one object;
+                  without it, the state the class opens a call in
   --case n        which case of that file, when it holds several (default 0)
   --channel name  the call the prompt is for, which picks its <channel> block (default phone)
   --medium how    voice or text; without it, the one the channel implies (whatsapp is text)`,
@@ -54,12 +55,10 @@ export async function run(
       ...AGENT_FLAG,
     },
   });
-  if (values.state === undefined) {
-    err.write("pinecall prompt: --state <file> is required\n");
-    return 2;
-  }
   const home = await oneHome("prompt", positionals[0], values.agent);
-  const pairs = Object.entries(firstState(values.state, values.case)).flatMap(([field, value]) => ["--state", `${field}=${JSON.stringify(value)}`]);
+  // No file is the state the class opens a call in.
+  const state = values.state === undefined ? {} : firstState(values.state, values.case);
+  const pairs = Object.entries(state).flatMap(([field, value]) => ["--state", `${field}=${JSON.stringify(value)}`]);
   const medium = values.medium === undefined ? [] : ["--medium", values.medium];
   const args = ["--file", home.file, "--slug", home.name, ...pairs, "--channel", values.channel, ...medium, "--show-machine"];
   return await runs(startedWith(undefined, home.file, "prompt", args, { root: home.root }), out, err);

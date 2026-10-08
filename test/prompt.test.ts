@@ -97,10 +97,17 @@ describe("the prompt a state would produce", () => {
     ]);
   });
 
-  it("asks for the state file rather than guessing one", async () => {
-    const err = collected();
+  it("with no state file, prints the page a call opens on", async () => {
+    const asked: string[][] = [];
+    const code = await run([AGENT], collected().stream, collected().stream, async (started) => {
+      asked.push(started.command);
+      return 0;
+    });
 
-    expect(await run([AGENT], collected().stream, err.stream)).toBe(2);
-    expect(err.text()).toContain("--state <file> is required");
+    expect(code).toBe(0);
+    const command = asked[0]!;
+    expect(command.slice(command.indexOf("prompt"))).toEqual([
+      "prompt", "--file", AGENT, "--slug", "clinica-norte", "--channel", "phone", "--show-machine",
+    ]);
   });
 });

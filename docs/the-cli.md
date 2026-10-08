@@ -30,6 +30,7 @@ path end to end, with every output under it.
 
 | verb | what it is | needs the gateway |
 |---|---|---|
+| [`new`](#new) | a new project of one agent, in TypeScript or Ruby | **no** |
 | [`link`](#link) | this project's folder to one of your orgs: your key, written to its `.env` | yes |
 | [`start`](#start) | the app registered and answering — **the process you deploy** | yes |
 | [`console`](#console) | the box's console in a browser, signed in: the sandbox's at `<url>/sandbox/`, `--prod` for production's at `<url>/` | yes |
@@ -65,7 +66,7 @@ path end to end, with every output under it.
 production ([below](#where-the-gateway-and-the-key-come-from)) — and a verb that asks no gateway
 anything, `prompt`, refuses it instead of accepting a world it never visits.
 
-Declared and not written: `new`, `g`, `observe`, `costs`, `call`, `tokens`. Typing one prints `<verb> is not built yet: <what it is for>` and exits 0 — a person who types a verb deserves
+Declared and not written: `g`, `observe`, `costs`, `call`, `tokens`. Typing one prints `<verb> is not built yet: <what it is for>` and exits 0 — a person who types a verb deserves
 better than "unknown command". `src/groups.ts` is the one place that says which half of the
 CLI is still a design, and a verb leaves that table in the commit that writes it.
 
@@ -197,6 +198,39 @@ console's roster says so, and `pinecall test` names the folder to write one in.
 of this project, by its folder's name. In a verb that only asks the gateway — `sessions`, `pipeline`,
 `runs drift`, `numbers import`, `callbacks`, `docs attach` — it is a slug, because there is no
 class to find. `--file` is always a file.
+
+## `new`
+
+```
+pinecall new <name> [--ruby | --typescript]
+```
+
+A project of one agent in `./<name>/`, in the layout every verb reads: the class under
+`agents/<name>/` — a receptionist that answers from the documents it is given and otherwise takes a
+message with one tool — its ring-0 test, one golden under `test/<name>/goldens/`, a `.gitignore`
+that keeps `.env` and `.pinecall/` out, and the toolchain: `package.json`, `tsconfig.json` and
+`vitest.config.ts` for TypeScript (the default), a `Gemfile` and a `Rakefile` for `--ruby`, with
+the view in `agents/<name>/views/<name>.erb`. A TypeScript project depends on this CLI and on the
+`@pinecall/agents` it is released with, since the box starts a deployed project with its own
+`pinecall start`.
+
+The name is the agent's slug — lowercase letters, digits and dashes, starting with a letter — and
+the folder must not exist or must be empty. It writes files and nothing else: no key, no install,
+no gateway. It prints the commands that come next.
+
+```console
+$ pinecall new front-desk --ruby
+▸ front-desk · a Ruby agent
+
+  cd front-desk
+  bundle install
+  pinecall link        sign in, pick the org: its key goes to .env
+  pinecall chat        talk to it here
+  pinecall test        its goldens, against a real model
+  pinecall start       answer calls
+```
+
+---
 
 ## `start`
 
@@ -402,8 +436,9 @@ A written call runs in the gateway, so a gateway that restarts drops the socket 
 call. `chat` says `the gateway went away — the call is kept, reconnecting…`, dials again naming
 the call, and the conversation goes on, history and state whole. It gives up after about a minute.
 
-When the input ends — Ctrl-D, or the end of a pipe — `chat` hangs up, once the agent has answered
-the last line (a minute at most): `printf 'hola\n' | pinecall chat` prints the answer and leaves a
+When the input ends — Ctrl-D, or the end of a pipe — `chat` hangs up once the agent has answered
+every line it was sent, one turn at a time (a minute at most). It hangs up through the gateway,
+which ends the call before it closes the socket, so the agent's process stops with nothing live: `printf 'hola\n' | pinecall chat` prints the answer and leaves a
 call that ended `caller_hung_up`, never one left open.
 
 ```console
@@ -429,7 +464,7 @@ agent, while your org lets you act there; nothing said is the sandbox.
 ## `prompt`
 
 ```
-pinecall prompt [agent.tsx] --state <file> [--case n] [--agent <name>]
+pinecall prompt [agent.tsx] [--state <file>] [--case n] [--agent <name>]
                 [--channel phone|web|whatsapp] [--medium voice|text]
 ```
 
@@ -437,7 +472,8 @@ The exact prompt a state would produce, offline: **no gateway, no key, no call**
 regions in the order the model receives them, then the stage and the tools that stage shows. The
 verb you run while writing a `render()`, and it answers in the time it takes to save the file. The
 CLI reads the goldens file and hands the case's state, field by field, to the agent's own serve
-entry, which loads the class and prints the page.
+entry, which loads the class and prints the page. Without `--state` the page is the one a call
+opens on: the class's own defaults, before any tool has run.
 Because it asks nobody anything, `--prod` is refused here rather than taken and ignored.
 
 The page is a phone call's unless `--channel` and `--medium` name another, and they change what a

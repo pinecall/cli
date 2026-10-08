@@ -9,7 +9,7 @@ import { helpFor, PLANNED, plannedGroup, type Group } from "./groups.js";
 import { inTheWorld, withoutTheWorldFlag } from "./world.js";
 
 // Order is the help order: first-day verbs first.
-const BUILT = ["link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "login", "whoami"] as const;
+const BUILT = ["new", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "login", "whoami"] as const;
 
 /** Every group name, built and planned, in help order. */
 export function groupNames(): string[] {
@@ -61,6 +61,7 @@ export async function main(
 
 // Lazy imports keep light verbs like `prompt` from loading the websocket client.
 export async function groupFor(name: string, out: NodeJS.WritableStream = process.stdout): Promise<Group | undefined> {
+  if (name === "new") return (await import("./new.js")).group;
   if (name === "link") return (await import("./linking.js")).group;
   if (name === "start") return (await import("./start.js")).group;
   if (name === "console") return (await import("./console.js")).group;
@@ -100,6 +101,7 @@ export function usage(): string {
   const lines = [
     "usage: pinecall <group> [args]",
     "",
+    "  new       a new project of one agent, in TypeScript or Ruby (--ruby)",
     "  link      this project's folder to one of your orgs: your key, in its .env",
     "  start     the app and its doors: the process you deploy (--prod for production)",
     "  console   the box's console in a browser, signed in: the sandbox's, --prod for production",

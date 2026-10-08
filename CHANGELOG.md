@@ -6,6 +6,25 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- **`pinecall new <name> [--ruby]`**: a project of one agent, in TypeScript or Ruby, ready for
+  `link`, `prompt`, `chat`, `test`, `start` and `deploy`.
+
+### Changed
+
+- **`pinecall prompt` needs no `--state`**: without one it prints the page a call opens on.
+- **`pinecall deploy` refuses a Ruby project** by name, rather than asking it to `npm i` packages it
+  cannot use: the box runs TypeScript projects, and a Ruby agent runs `pinecall start` on its own
+  server.
+
+### Fixed
+
+- **`pinecall chat` with piped input answers every line.** Two lines sent at once hung up after the
+  first answer; it waits for each line to be heard and answered.
+- **`pinecall chat` hangs up through the gateway**, which ends the call before closing the socket,
+  so the agent's process no longer says it kept a live call. A pipe gets no `‹` prompts.
+
 ## [0.9.21] — the serve entry is the project's own framework
 
 ### Fixed

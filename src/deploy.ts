@@ -1,7 +1,7 @@
 /** `pinecall deploy`: the project uploaded as a release, which the box installs and runs itself. */
 
 import { existsSync, readFileSync } from "node:fs";
-import { basename, join } from "node:path";
+import { basename, join, relative } from "node:path";
 import { parseArgs } from "node:util";
 
 import { signed } from "@pinecall/agents/client";
@@ -10,6 +10,8 @@ import type { HostedApp, HostedAppList, Release, ReleaseList } from "@pinecall/a
 import { theDoor } from "./env.js";
 import type { Group } from "./groups.js";
 import { logsOf } from "./deploy-logs.js";
+import { agentFilesOfTheProject } from "./home.js";
+import { languageOf } from "./language.js";
 import { packed, projectFiles } from "./packed.js";
 import { asked, knocked, Refused, type Door } from "./testing/gateway.js";
 import { refusal } from "./whoami.js";
@@ -89,6 +91,9 @@ const SERVED_BY = ["pinecall", "@pinecall/agents"] as const;
 const NOT_SERVABLE = (missing: readonly string[]): string =>
   `the box starts this project with its own \`pinecall start\`, and its package.json does not list ${missing.join(" or ")} in dependencies: npm i ${missing.join(" ")}`;
 
+const NOT_HOSTED = (file: string): string =>
+  `the box hosts TypeScript projects, and ${file} is not one: run \`pinecall start\` on a server of your own, with a server's token in PINECALL_KEY`;
+
 const NOT_A_RELEASE = (said: string): string => `rollback ${said}: a release is its number, from \`pinecall deploy releases\``;
 
 const NONE_YET = "the box hosts no app for this org here yet: `pinecall deploy` uploads this folder as one";
@@ -162,6 +167,11 @@ export async function run(argv: string[], how: Deploying = {}): Promise<number> 
       const again = await asked<Release>(door, `${appPath(name)}/rollback`, { method: "POST", body: { release: Number(release) } });
       out.write(`${name}: release ${release!}'s sources sent again as release ${again.release}\n`);
       return values["no-follow"] ? 0 : await followed(door, again, following);
+    }
+    const foreign = agentFilesOfTheProject(cwd).find((file) => languageOf(file) !== "typescript");
+    if (foreign !== undefined) {
+      err.write(`${NOT_HOSTED(relative(cwd, foreign))}\n`);
+      return 2;
     }
     const missing = notDependedOn(cwd);
     if (missing.length > 0) {

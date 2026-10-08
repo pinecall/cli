@@ -126,6 +126,10 @@ export function talk(
   input: NodeJS.ReadableStream = process.stdin,
 ): Promise<number> {
   const lines = createInterface({ input, output: process.stdout, prompt: PROMPT });
+  // A pipe is read, not typed at: no prompt for it.
+  const prompt = (): void => {
+    if ((input as { isTTY?: boolean }).isTTY === true) lines.prompt();
+  };
   // Entries can arrive after stdin closed (piped input), and readline throws on a closed prompt.
   let typing = true;
   // The input ended; the call is left once nothing is owed.
@@ -134,12 +138,17 @@ export function talk(
   let over = false;
   let socket: WebSocket | null = null;
   let back = 0;
-  // A line sent is owed its answer until the agent, having thought, listens again: input that ends
-  // (a pipe) leaves only after that, so the last answer is printed and the call hung up whole.
-  let owed: "nothing" | "sent" | "thinking" = "nothing";
+  // Input that ends (a pipe) leaves only once every line sent was heard and answered, so the last
+  // answer is printed and the call hung up whole.
+  let owed: Owed = NOTHING_OWED;
+  // Hanging up asks the gateway to end the call and waits for it to close the socket, so the
+  // process that served the call stops with nothing live; a gateway that never closes is left.
   const leave = (): void => {
     typing = false;
-    socket?.close();
+    if (socket?.readyState !== WebSocket.OPEN) return void socket?.close();
+    socket.send(JSON.stringify({ hangup: true }));
+    const hungUp = socket;
+    setTimeout(() => hungUp.close(), HANG_UP_WITHIN_MS).unref();
   };
   // `ws` throws on send before open, so input stays paused until the socket is up.
   lines.pause();
@@ -151,7 +160,7 @@ export function talk(
       opened.on("open", () => {
         if (!typing || closed) return;
         lines.resume();
-        lines.prompt();
+        prompt();
       });
       opened.on("message", (frame: Buffer) => {
         const entry = JSON.parse(frame.toString()) as { call?: string | null; type?: string; data?: unknown };
@@ -161,13 +170,13 @@ export function talk(
         if (typeof entry.call === "string") call = entry.call;
         if (entry.type === "call.score") over = true;
         owed = owing(owed, entry);
-        if (closed && owed === "nothing") leave();
+        if (closed && settled(owed)) leave();
         // --events prints raw JSON entries, as `run --events` does.
         const line = events ? frame.toString() : lineOf(frame.toString());
         if (line === null) return;
         // Redraw the prompt: an entry may land mid-typing.
         process.stdout.write(`\r${line}\n`);
-        if (typing && !closed) lines.prompt();
+        if (typing && !closed) prompt();
       });
       // An error is followed by a close, and the close decides.
       opened.on("error", () => undefined);
@@ -196,13 +205,13 @@ export function talk(
     lines.on("line", (line) => {
       if (line.trim() !== "" && socket?.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ text: line.trim() }));
-        owed = "sent";
+        owed = { ...owed, lines: owed.lines + 1 };
       }
-      lines.prompt();
+      prompt();
     });
     lines.on("close", () => {
       closed = true;
-      if (owed === "nothing") return leave();
+      if (settled(owed)) return leave();
       setTimeout(leave, LONGEST_ANSWER_MS).unref();
     });
     dial();
@@ -212,12 +221,30 @@ export function talk(
 // How long ended input waits for the answer it is owed before it hangs up anyway.
 export const LONGEST_ANSWER_MS = 60_000;
 
-/** What the last line is still owed, after one more entry of the call. */
-export function owing(owed: "nothing" | "sent" | "thinking", entry: { type?: string; data?: unknown }): "nothing" | "sent" | "thinking" {
-  if (entry.type !== "agent.state" || owed === "nothing") return owed;
-  const state = (entry.data as { state?: string } | undefined)?.state;
-  if (state === "thinking") return "thinking";
-  return state === "listening" && owed === "thinking" ? "nothing" : owed;
+// How long a hang-up waits for the gateway to end the call and close the socket.
+const HANG_UP_WITHIN_MS = 5_000;
+
+/** Lines sent the gateway has not yet taken as a turn, and whether the agent is still answering one. */
+export interface Owed {
+  lines: number;
+  answering: boolean;
+}
+
+const NOTHING_OWED: Owed = { lines: 0, answering: false };
+
+/** Every line sent was heard and answered. */
+export function settled(owed: Owed): boolean {
+  return owed.lines === 0 && !owed.answering;
+}
+
+/**
+ * What is still owed after one more entry of the call. Lines sent together are taken one turn at a
+ * time: each `turn.user` is one of them heard, and the agent listening again is that one answered.
+ */
+export function owing(owed: Owed, entry: { type?: string; data?: unknown }): Owed {
+  if (entry.type === "turn.user") return { lines: Math.max(owed.lines - 1, 0), answering: true };
+  const state = entry.type === "agent.state" ? (entry.data as { state?: string } | undefined)?.state : undefined;
+  return state === "listening" && owed.answering ? { ...owed, answering: false } : owed;
 }
 
 // Reconnect budget: about a minute in total, enough for a gateway restart.
