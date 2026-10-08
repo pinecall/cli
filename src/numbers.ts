@@ -38,8 +38,8 @@ export const group: Group = {
   usage: `${USAGE}
 
   A number is one world's and reaches one agent: it is imported where it answers, and
-  \`list\` shows that world's — the sandbox's, or production's with --prod. Nothing moves a
-  number between the two.
+  \`list\` shows that world's — the sandbox's, or production's with --prod. No verb here moves a
+  number between the two; the console's Numbers screen does (Move to sandbox / production).
 
   \`available\` is every number the org's Twilio accounts own, and whether this world routes it. A
   number \`not routed here\` may still sit on another org's trunk: \`import --dry-run\` says.

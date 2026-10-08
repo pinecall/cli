@@ -1048,9 +1048,10 @@ $ pinecall numbers available --prod
 ```
 
 A number is **one world's** and reaches one agent: it is imported where it answers, and `list`
-shows that world's — the sandbox's, or production's with `--prod`. Nothing moves a number
-between the two: there is no such door, because a number is a trunk on the SFU and a route in one
-world's table, and a carrier call that matched two would be refused.
+shows that world's — the sandbox's, or production's with `--prod`. No verb here moves a number
+between the two; the console's Numbers screen does (`PUT /v1/numbers/{number}/env`, which re-routes the
+carrier's trunk), because a number is a route in one world's table and a carrier call that matched
+two would be refused.
 
 `import` takes a number the org's carrier account already owns and points it here: the carrier's
 trunk, the SFU's trunk, the route — `--dry-run` prints those steps and writes nothing, which is

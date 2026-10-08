@@ -1,10 +1,8 @@
 # Quickstart
 
-From nothing to an agent that answers, in ten minutes. The steps are the same for TypeScript and
-Ruby: the CLI is one, and only the line that creates the project and the one that installs it
-differ.
+From nothing to an agent that answers, in ten minutes.
 
-You need Node 24 for the CLI, Ruby 3.2 and Bundler for a Ruby agent, and a Pinecall account.
+You need Node 24 and a Pinecall account.
 
 ## 1. The CLI
 
@@ -15,25 +13,21 @@ npm i -g pinecall
 ## 2. A project
 
 ```bash
-pinecall new front-desk            # TypeScript
-pinecall new front-desk --ruby     # or Ruby
-
+pinecall new front-desk
 cd front-desk
-npm install                        # bundle install, for Ruby
+npm install
 ```
 
 `front-desk` is the agent's name on Pinecall, and the folder's. Inside:
 
 ```
 agents/front-desk/agent.tsx       the class: its state, its one tool, its prompt
-                                  (agent.rb and views/front-desk.erb, in Ruby)
-test/front-desk/                  ring 0: the class as software, no network (npm test · bundle exec rake)
-test/front-desk/goldens/          ring 1: a conversation the model must hold (pinecall test)
+test/front-desk/                  unit tests: the class as software, no network (npm test)
+test/front-desk/goldens/          goldens: a conversation the model must hold (pinecall test)
 ```
 
 The agent answers from the documents it is given and, for anything else, takes a message: the
-caller's name and what the call is about, written down by its `takeMessage` tool
-(`take_message` in Ruby).
+caller's name and what the call is about, written down by its `takeMessage` tool.
 
 ## 3. Your org
 
@@ -115,12 +109,8 @@ pinecall start
 This is the process that answers: on your laptop now, on your server later. It holds the agent
 until Ctrl-C, prints every call as it happens, and a link to the console.
 
-To ship it:
-
-- **TypeScript**: `pinecall deploy` uploads the project, and Pinecall runs it for you
-  ([deploying.md](deploying.md)).
-- **Ruby**: `pinecall start --prod` on a server of your own, with a server's token from the
-  console's Tokens screen in `PINECALL_KEY`.
+To ship it, `pinecall deploy` uploads the project and Pinecall runs it for you
+([deploying.md](deploying.md)).
 
 Everything above ran in your org's **sandbox**. `--prod` on any verb acts in production instead.
 Every verb and flag: [the-cli.md](the-cli.md).

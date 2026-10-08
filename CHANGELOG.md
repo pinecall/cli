@@ -6,6 +6,8 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.23] — `--version`, and help that says what the runtime answers
+
 ### Added
 
 - `pinecall --version` (`-v`, `version`) prints the CLI's version.
