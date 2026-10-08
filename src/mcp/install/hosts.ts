@@ -2,7 +2,7 @@
 
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { delimiter, dirname, join } from "node:path";
 
 export const SERVER = "pinecall";
 
@@ -20,7 +20,7 @@ export interface Host {
   key: string;
   /** What proves the assistant is installed even before it ever wrote its config. */
   sign: string;
-  /** A desktop app is launched without the shell's PATH, so it is given npx by its full path. */
+  /** A desktop app is launched without the shell's PATH: it is given npx by its full path, and node's folder on its PATH. */
   desktop?: true;
 }
 
@@ -28,6 +28,8 @@ export interface Host {
 export interface Entry {
   command: string;
   args: string[];
+  /** A desktop app's only: the PATH npx and the CLI need to find this machine's node. Never a key. */
+  env?: { PATH: string };
 }
 
 // Claude Desktop keeps its config where each system keeps an app's.
@@ -64,6 +66,9 @@ export function installed(host: Host): boolean {
  */
 export function entryFor(host: Host, production: boolean): Entry {
   const args = ["-y", PACKAGE, "mcp", ...(production ? ["--prod"] : [])];
-  const beside = join(dirname(process.execPath), process.platform === "win32" ? "npx.cmd" : "npx");
-  return { command: host.desktop === true && existsSync(beside) ? beside : "npx", args };
+  const nodes = dirname(process.execPath);
+  const beside = join(nodes, process.platform === "win32" ? "npx.cmd" : "npx");
+  if (host.desktop !== true || !existsSync(beside)) return { command: "npx", args };
+  // npx and the CLI both start with `#!/usr/bin/env node`: node has to be on the PATH they are given.
+  return { command: beside, args, env: { PATH: [nodes, "/usr/local/bin", "/usr/bin", "/bin"].join(delimiter) } };
 }

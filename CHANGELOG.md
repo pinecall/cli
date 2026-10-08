@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.27] — Claude Desktop finds node
+
+### Fixed
+
+- `pinecall mcp install` gives Claude Desktop the folder of this machine's `node` on its `PATH`: a desktop app starts without the shell's, so under nvm `npx` could not find `node` and the server never started.
+
 ## [0.9.26] — mcp install names the newest CLI
 
 ### Fixed

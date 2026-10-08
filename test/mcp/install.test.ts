@@ -2,7 +2,7 @@
 
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { inJson, inToml } from "../../src/mcp/install/configs.js";
@@ -76,6 +76,15 @@ describe("installing everywhere", () => {
     const [claude] = hosts(mkdtempSync(join(tmpdir(), "pinecall-hosts-")));
 
     expect(entryFor(claude!, false).args[1]).toBe("pinecall@latest");
+  });
+
+  it("gives a desktop app npx by its full path and node's folder on its PATH, which it launches without", () => {
+    const desktop = hosts(mkdtempSync(join(tmpdir(), "pinecall-hosts-"))).find((one) => one.name === "claude-desktop")!;
+
+    const entry = entryFor(desktop, false);
+
+    expect(entry.command).toBe(join(dirname(process.execPath), "npx"));
+    expect(entry.env?.PATH.split(":")[0]).toBe(dirname(process.execPath));
   });
 
   it("never writes a key, and carries --prod only when a person asked for it", () => {

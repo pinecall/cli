@@ -38,7 +38,8 @@ its config when it started. No key is written anywhere: the server reads the ope
 | Antigravity | `~/.gemini/antigravity/mcp_config.json` |
 | Gemini CLI | `~/.gemini/settings.json` |
 
-Claude Desktop is launched without the shell's `PATH`, so its entry names `npx` by its full path.
+Claude Desktop is launched without the shell's `PATH`, so its entry names `npx` by its full path and
+puts the folder of this machine's `node` on the `PATH` it gives the server.
 
 ## The project
 
