@@ -18,7 +18,7 @@ export const simulate = tool({
   name: "simulate",
   description: "A model plays one of the agent's personas against the agent this server holds, written or spoken, and the call is judged at hang-up.",
   schema: {
-    action: z.enum(["run", "wait"]),
+    action: z.enum(["run", "wait"]).describe("run starts a simulated call and waits up to wait_s; wait keeps waiting for the one in flight"),
     persona: z.string().optional().describe("`run`: the persona's name, from `personas`"),
     agent: z.string().optional().describe("the agent's name; the only one held when left out"),
     turns: z.number().int().min(1).max(40).optional().describe("how many turns the caller improvises; 15 when left out"),
@@ -83,7 +83,7 @@ export const personas = tool({
   name: "personas",
   description: "The agent's simulated callers: listed, shown, written (a goal, a manner, facts, a rule for hanging up satisfied), edited, dropped.",
   schema: {
-    action: z.enum(["list", "show", "add", "edit", "rm"]),
+    action: z.enum(["list", "show", "add", "edit", "rm"]).describe("list the agent's personas, show one, add one, edit one (only the fields named change), rm one"),
     agent: AGENT,
     name: z.string().optional().describe("the persona's name: lowercase letters, digits and dashes"),
     goal: z.string().optional().describe("what the caller wants"),
@@ -139,7 +139,7 @@ export const judges = tool({
   name: "judges",
   description: "Your own judges: a question asked of the agent's calls (or every agent's, with `org`) at hang-up, on every call or on simulations only.",
   schema: {
-    action: z.enum(["list", "add", "rm"]),
+    action: z.enum(["list", "add", "rm"]).describe("list the judges, add one (the same name again replaces it), rm one"),
     agent: AGENT,
     org: z.boolean().optional().describe("the org's judges, asked of every agent's calls"),
     name: z.string().optional().describe("the judge's name: lowercase letters, digits and dashes"),

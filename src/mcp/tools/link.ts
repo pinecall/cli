@@ -19,7 +19,7 @@ export const link = tool({
   name: "link",
   description: "List the person's orgs (`orgs`), or write the key of one of them into the open project's .env (`write`).",
   schema: {
-    action: z.enum(["orgs", "write"]),
+    action: z.enum(["orgs", "write"]).describe("orgs lists the person's orgs; write mints their key in one and writes it into the project's .env"),
     org: z.string().optional().describe("the org's slug, for `write`; may be left out when the person has one org"),
   },
   manual:

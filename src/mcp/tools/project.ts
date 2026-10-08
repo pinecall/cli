@@ -17,7 +17,7 @@ export const project = tool({
   name: "project",
   description: "The project the tools act on (`show`), another folder opened (`open`), a new project of one agent written (`new`), or one more agent or golden in it (`generate`).",
   schema: {
-    action: z.enum(["show", "open", "new", "generate"]),
+    action: z.enum(["show", "open", "new", "generate"]).describe("show the project the tools act on; open another folder; new writes a project of one agent; generate adds an agent or a golden to it"),
     path: z.string().optional().describe("`open`: the project's folder; `new`: the folder to write it in, beside the open project when left out"),
     name: z.string().optional().describe("`new` and `generate`: the agent's or the golden's name: lowercase letters, digits and dashes"),
     language: z.enum(["typescript", "ruby"]).optional().describe("`new` and `generate agent`: the agent's language; TypeScript for `new`, the project's for `generate`"),

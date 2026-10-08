@@ -15,7 +15,7 @@ export const line = tool({
   name: "line",
   description: "Who answers the agent's number right now and who could take it; which phone is the person's own, so their calls reach their copy.",
   schema: {
-    action: z.enum(["show", "from", "forget", "claim", "release"]),
+    action: z.enum(["show", "from", "forget", "claim", "release"]).describe("show whose process a ring lands in; from says which phone is the person's own; forget drops it; claim takes the line for this copy; release gives it back"),
     agent: AGENT,
     number: z.string().optional().describe("`from`: the person's own phone, in +E.164"),
     prod: PROD,
@@ -46,7 +46,7 @@ export const numbers = tool({
   name: "numbers",
   description: "The org's numbers and the agent each reaches; the numbers its carrier account owns; importing one, shown as steps before anything is written.",
   schema: {
-    action: z.enum(["list", "available", "import"]),
+    action: z.enum(["list", "available", "import"]).describe("list the org's numbers; available is what its carrier account owns; import points one at an agent, a dry run unless dry_run is false"),
     number: z.string().optional().describe("`import`: the number, in +E.164"),
     agent: z.string().optional().describe("`import`: the agent that answers it"),
     channel: z.enum(["phone", "whatsapp"]).optional().describe("`import`: phone unless it is a WhatsApp number"),
@@ -70,7 +70,7 @@ export const numbers = tool({
 export const carriers = tool({
   name: "carriers",
   description: "The org's carrier accounts — Twilio, a SIP peer, WhatsApp — and one account's networks and how outbound calls leave. Never a secret.",
-  schema: { action: z.enum(["list", "show"]), account: z.string().optional().describe("`show`: the account's id"), prod: PROD },
+  schema: { action: z.enum(["list", "show"]).describe("list the org's carrier accounts, or show one"), account: z.string().optional().describe("`show`: the account's id"), prod: PROD },
   manual: "`carriers` lists the org's carrier accounts and shows one. Adding one takes its secrets, so it is never a tool: the person types `pinecall carriers add` in a terminal, or uses the console's Numbers screen.",
   handler: async (args, session) => {
     const door = await session.door(args.prod);

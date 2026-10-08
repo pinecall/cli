@@ -11,7 +11,7 @@ const LONGEST_PAGE = 30_000;
 export const docsSearch = tool({
   name: "docs_search",
   description: "Search Pinecall's own docs (docs.pinecall.io) and answer the sections that best match, each with its address and a snippet.",
-  schema: { question: z.string().min(2).describe("what you want to know, in a few words"), limit: z.number().int().min(1).max(10).optional() },
+  schema: { question: z.string().min(2).describe("what you want to know, in a few words"), limit: z.number().int().min(1).max(10).optional().describe("how many sections, the best first; 5 when left out") },
   manual:
     "`docs_search` finds the sections of docs.pinecall.io that answer a question — a verb, a decorator, a setting, a judge — each with its address. Read the page whole with `get_doc` before writing code from it: a snippet has no imports and no caveats.",
   handler: async (args, session) => ({ found: searched(await pagesOf(session), args.question, args.limit ?? 5) }),

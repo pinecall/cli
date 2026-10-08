@@ -15,7 +15,7 @@ export const login = tool({
   name: "login",
   description: "Sign this machine in to Pinecall: `start` returns a link for the person to open; `status` waits for their approval.",
   schema: {
-    action: z.enum(["start", "status"]),
+    action: z.enum(["start", "status"]).describe("start opens a sign-in and answers its link; status waits for the person to approve it"),
     gateway: z.string().url().optional().describe("the gateway to sign in to; Pinecall Cloud when left out"),
     wait_s: WAIT,
   },

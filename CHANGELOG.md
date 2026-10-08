@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.34] — every MCP tool documented: its parameters and a real call
+
+### Added
+
+- The MCP's tools each have a reference: every parameter, read off the tool's own schema, and one real call answered by Pinecall Cloud — `docs/mcp/`, eight pages by stage, written by `scripts/mcp-pages` and failed by a test when they drift. Every `action` now says what each of its values does, in the schema the assistant reads.
+
 ## [0.9.33] — `haiku` is Claude Haiku 5.5
 
 ### Changed

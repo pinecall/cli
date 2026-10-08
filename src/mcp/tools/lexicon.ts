@@ -12,7 +12,7 @@ export const lexicon = tool({
   name: "lexicon",
   description: "The agent's words: how its voice says one (`add`), the words its ears must catch (`hear`), taking them out (`rm`), and its versions.",
   schema: {
-    action: z.enum(["show", "add", "hear", "rm", "history"]),
+    action: z.enum(["show", "add", "hear", "rm", "history"]).describe("show the words; add how the voice says one; hear the words the ears must catch; rm takes words out of both; history lists the versions"),
     agent: AGENT,
     word: z.string().optional().describe("`add`: the word as written"),
     say: z.string().optional().describe("`add`: how the voice says it"),

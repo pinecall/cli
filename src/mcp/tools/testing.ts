@@ -22,7 +22,7 @@ export const test = tool({
   name: "test",
   description: "Run the agent's goldens through the agent this server holds, under every model named, written or said out loud; waits for the matrix.",
   schema: {
-    action: z.enum(["run", "wait"]),
+    action: z.enum(["run", "wait"]).describe("run starts the goldens and waits up to wait_s; wait keeps waiting for the run in flight"),
     agent: z.string().optional().describe("the agent's name; the only one held when left out"),
     grep: z.string().optional().describe("only goldens whose name holds this"),
     models: z.array(z.string()).optional().describe("a column per model: vendor/model, a model, or a tier (haiku); the agent's own when left out"),
@@ -87,7 +87,7 @@ export const runs = tool({
   name: "runs",
   description: "The suites the gateway kept: the newest, one run's matrix, what moved between two, a real call written as a golden candidate, and each judge's drift.",
   schema: {
-    action: z.enum(["list", "show", "diff", "promote", "drift"]),
+    action: z.enum(["list", "show", "diff", "promote", "drift"]).describe("list the newest runs; show one; diff two; promote a real call to a golden candidate; drift compares each judge's held-rate over two windows"),
     agent: AGENT,
     run: z.string().optional().describe("`show`: the run's id"),
     before: z.string().optional().describe("`diff`: the earlier run"),

@@ -9,7 +9,7 @@ export const chat = tool({
   name: "chat",
   description: "Talk to the held agent as a caller: `say` a line (opening a call, or continuing one by its id) and get its whole answer; `end` hangs up.",
   schema: {
-    action: z.enum(["say", "end"]),
+    action: z.enum(["say", "end"]).describe("say a line as the caller, opening a call or continuing `call`; end hangs `call` up"),
     text: z.string().optional().describe("`say`: what the caller says"),
     call: z.string().optional().describe("the call to continue or end; a new call opens when left out"),
     agent: z.string().optional().describe("the agent's name; the only one held when left out"),

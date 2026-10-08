@@ -20,7 +20,7 @@ export const deploy = tool({
   name: "deploy",
   description: "Run the project on Pinecall: a release uploaded and followed until live; the apps, their releases, their logs, a rollback, stop and start.",
   schema: {
-    action: z.enum(["deploy", "wait", "list", "releases", "logs", "rollback", "stop", "start"]),
+    action: z.enum(["deploy", "wait", "list", "releases", "logs", "rollback", "stop", "start"]).describe("deploy uploads the project as a release; wait follows one further; list the org's apps; releases of one app; logs of its process; rollback sends a release's sources again; stop and start its process"),
     name: z.string().optional().describe("the app's name; the project folder's when left out"),
     note: z.string().optional().describe("`deploy`: a note kept with the release"),
     release: z.number().int().min(1).optional().describe("`wait`: the release to wait for; `rollback`: the release whose sources are sent again"),

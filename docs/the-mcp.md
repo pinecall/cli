@@ -63,6 +63,8 @@ carry the journey and the tools by stage, so nothing is said twice.
 
 ### Getting started
 
+Every parameter, and a real call of each: [Getting started](mcp/getting-started.md).
+
 | tool | actions | what it does |
 |---|---|---|
 | `whoami` | — | which org, gateway and environment the project's key acts in, and whether production is allowed for the key and for this server |
@@ -71,6 +73,8 @@ carry the journey and the tools by stage, so nothing is said twice.
 | `project` | `show` · `open` · `new` · `generate` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened (with nothing held: `stop` first); a new project of one agent written from `pinecall new`'s templates, in TypeScript or Ruby, and opened; `generate` adds a second agent (`kind: agent`) or a golden from the caller's lines and the tools that must be called (`kind: golden`), as `pinecall generate` does |
 
 ### Holding the agent, and talking to it
+
+Every parameter, and a real call of each: [Holding the agent, and talking to it](mcp/holding-and-talking.md).
 
 | tool | actions | what it does |
 |---|---|---|
@@ -82,24 +86,42 @@ carry the journey and the tools by stage, so nothing is said twice.
 | `prompt` | — | the exact prompt a state produces, offline (TypeScript; Ruby's is `pinecall prompt`) |
 | `console_url` | — | a link that opens the sandbox's console signed in, once, within five minutes: the one value no answer hides |
 
-### Settings and reading
+### The agent's settings
+
+Every parameter, and a real call of each: [The agent's settings](mcp/settings.md).
 
 | tool | actions | what it does |
 |---|---|---|
 | `agent` | `show` · `set` · `clear` · `history` · `diff` · `rollback` · `knowledge` | the agent's settings — voice, models, language, greeting, turn-taking, recording, memory policy — each change a version, checked as `pinecall agent set` checks it; `knowledge` reads or writes what it knows by heart |
+| `lexicon` | `show` · `add` · `hear` · `rm` · `history` | how the voice says a word, and the words the ears must catch |
+| `voices` | — | a vendor's voices in a language, the id first |
+| `voice_sample` | — | a line said by the gateway in a voice, saved as a WAV under `.pinecall/voices/`, with its timings |
+
+### Calls, and what they run on
+
+Every parameter, and a real call of each: [Calls, and what they run on](mcp/calls.md).
+
+| tool | actions | what it does |
+|---|---|---|
 | `calls` | — | the agent's newest calls, with their ids, how they ended, their cost and verdicts |
 | `call` | — | one call's log, entry by entry, paged by `after`, narrowed by `types` |
 | `pipeline` | — | the vendors and models the agent hears, decides and speaks with, and their latency |
 | `providers` | — | every vendor the gateway can run and whose key a call would use; never a key |
-| `voices` | — | a vendor's voices in a language, the id first |
-| `voice_sample` | — | a line said by the gateway in a voice, saved as a WAV under `.pinecall/voices/`, with its timings |
+
+### The phone
+
+Every parameter, and a real call of each: [The phone](mcp/phone.md).
+
+| tool | actions | what it does |
+|---|---|---|
 | `line` | `show` · `from` · `forget` · `claim` · `release` | whose process a ring lands in, and the person's own phone |
 | `numbers` | `list` · `available` · `import` | the org's numbers; what its carrier account owns; an import, shown as steps first (`dry_run` is the default) |
 | `carriers` | `list` · `show` | the org's carrier accounts; adding one takes secrets, so it is a terminal's |
 | `callbacks` | — | the people waiting for a call back |
-| `lexicon` | `show` · `add` · `hear` · `rm` · `history` | how the voice says a word, and the words the ears must catch |
 
 ### Testing
+
+Every parameter, and a real call of each: [Testing](mcp/testing.md).
 
 | tool | actions | what it does |
 |---|---|---|
@@ -109,11 +131,20 @@ carry the journey and the tools by stage, so nothing is said twice.
 | `personas` | `list` · `show` · `add` · `edit` · `rm` | the callers a model plays: a goal, a manner, facts, a rule for hanging up satisfied |
 | `judges` | `list` · `add` · `rm` | your own questions asked of the agent's calls, or every agent's with `org` |
 | `eval` | — | one finished call checked again by code, with `banned` words and a latency `budget` |
+
+### Knowledge and memory
+
+Every parameter, and a real call of each: [Knowledge and memory](mcp/knowledge-and-memory.md).
+
+| tool | actions | what it does |
+|---|---|---|
 | `docs` | `push` · `list` · `eval` · `attach` · `detach` · `attached` | a folder pushed as a base, attached to the agent, held to `goldens/docs.json`; `list` and `attached` are the org's and name no agent |
 | `memory` | `show` · `policy` · `eval` | what the agent kept about a caller (naming no agent), what it keeps and never keeps (`policy` with neither list reads them), and `goldens/memory.json` |
 | `remember` | — | the extraction cases under `test/<agent>/memory/`, run through the agent held |
 
 ### Going live, and the docs
+
+Every parameter, and a real call of each: [Going live, and the docs](mcp/going-live.md).
 
 | tool | actions | what it does |
 |---|---|---|

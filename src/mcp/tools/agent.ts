@@ -38,7 +38,7 @@ export const agent = tool({
   name: "agent",
   description: "The agent's settings — voice, models, language, greeting, memory policy, knowledge by heart: read, set, cleared, history, diff, rollback.",
   schema: {
-    action: z.enum(["show", "set", "clear", "history", "diff", "rollback", "knowledge"]),
+    action: z.enum(["show", "set", "clear", "history", "diff", "rollback", "knowledge"]).describe("show reads the settings; set writes the fields named as a new version; clear takes fields out; history lists the versions; diff compares with the team's or production's; rollback brings a version back; knowledge reads or writes what the agent knows by heart"),
     agent: AGENT,
     settings: SETTINGS.optional().describe("`set`: the fields to set, named as `pinecall agent set` names its flags"),
     fields: z.array(z.enum(FIELDS)).optional().describe("`clear`: the fields to take out; every one when left out"),

@@ -23,15 +23,20 @@ import { whoami } from "./whoami.js";
 /** One stage of the journey and its tools. */
 export interface Stage {
   stage: string;
+  /** Its page under docs/mcp/, every tool's parameters and a real answer. */
+  page: string;
   tools: readonly Tool[];
 }
 
 export const STAGES: readonly Stage[] = [
-  { stage: "Getting started", tools: [whoami, login, link, project] },
-  { stage: "Holding the agent, and talking to it", tools: [start, stop, status, logs, chat, prompt, consoleTool] },
-  { stage: "Settings and reading", tools: [agent, calls, call, pipeline, providers, voices, voiceSample, line, numbers, carriers, callbacks, lexicon] },
-  { stage: "Testing", tools: [test, runs, simulate, personas, judges, evalTool, docs, memory, remember] },
-  { stage: "Going live, and the docs", tools: [deploy, docsSearch, getDoc] },
+  { stage: "Getting started", page: "getting-started", tools: [whoami, login, link, project] },
+  { stage: "Holding the agent, and talking to it", page: "holding-and-talking", tools: [start, stop, status, logs, chat, prompt, consoleTool] },
+  { stage: "The agent's settings", page: "settings", tools: [agent, lexicon, voices, voiceSample] },
+  { stage: "Calls, and what they run on", page: "calls", tools: [calls, call, pipeline, providers] },
+  { stage: "The phone", page: "phone", tools: [line, numbers, carriers, callbacks] },
+  { stage: "Testing", page: "testing", tools: [test, runs, simulate, personas, judges, evalTool] },
+  { stage: "Knowledge and memory", page: "knowledge-and-memory", tools: [docs, memory, remember] },
+  { stage: "Going live, and the docs", page: "going-live", tools: [deploy, docsSearch, getDoc] },
 ];
 
 export const TOOLS: readonly Tool[] = STAGES.flatMap((one) => one.tools);

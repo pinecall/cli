@@ -39,6 +39,7 @@ checkout beside this one when its version satisfies that range, so nothing is bu
 |---|---|
 | a module, the import table, what the child is started with | `ARCHITECTURE.md` |
 | a verb, a flag, an exit code, a refusal | `docs/the-cli.md` — and `../docs/pages/guides/deploy-to-pinecall.md` for `deploy` and `secrets` |
+| an MCP tool: its schema, its manual, a stage | `scripts/mcp-pages` rewrites `docs/mcp/`; a new tool also needs its call in `docs/mcp/examples.json` and its row in `docs/the-mcp.md` |
 | an install step | `README.md` |
 | a procedure with a trap in it | the skill under `.claude/skills/` |
 | anything a tenant would notice | `CHANGELOG.md`, one line under `Unreleased` |

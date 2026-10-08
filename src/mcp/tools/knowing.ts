@@ -20,7 +20,7 @@ export const docs = tool({
   name: "docs",
   description: "The documents the agent searches: a folder pushed as a base, attached to the agent, held to its golden; the org's bases and who reads them.",
   schema: {
-    action: z.enum(["push", "list", "eval", "attach", "detach", "attached"]),
+    action: z.enum(["push", "list", "eval", "attach", "detach", "attached"]).describe("push the agent's docs folder as a base; list the org's bases; eval scores the docs golden; attach a base to the agent; detach it; attached says which agents read which base"),
     agent: AGENT,
     base: z.string().optional().describe("the base's name; the agent's own when left out"),
     k: z.number().int().min(1).max(50).optional().describe("`attach` and `eval`: how many chunks a turn reads"),
@@ -68,7 +68,7 @@ export const memory = tool({
   name: "memory",
   description: "What the agent remembers about a caller, what it is told to keep and never keep, and the recall golden held against it.",
   schema: {
-    action: z.enum(["show", "policy", "eval"]),
+    action: z.enum(["show", "policy", "eval"]).describe("show what memory kept about `contact`; policy reads, or with remember/forget writes, what the agent keeps; eval scores the memory golden"),
     agent: AGENT,
     contact: z.string().optional().describe("`show`: the caller, by number or id"),
     remember: z.array(z.string()).optional().describe("`policy`: what is worth keeping about a caller, in your own words, one phrase each"),

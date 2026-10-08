@@ -109,7 +109,7 @@ describe("an answer", () => {
       tool({ name: "says", description: "answers a key", manual: "a tool for this test", schema: {}, handler: async () => ({ key: A_PROJECTS_KEY }) }),
       tool({ name: "fails", description: "refuses with a key", manual: "a tool for this test", schema: {}, handler: async () => { throw new Error(`bad key ${A_PROJECTS_KEY}`); } }),
     ];
-    const server = serverOf("0", {}, false, { stages: [{ stage: "a test", tools: leaky }] });
+    const server = serverOf("0", {}, false, { stages: [{ stage: "a test", page: "a-test", tools: leaky }] });
     const [ours, theirs] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "a-test", version: "0" });
     await Promise.all([server.connect(theirs), client.connect(ours)]);

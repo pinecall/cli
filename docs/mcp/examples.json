@@ -1,0 +1,1010 @@
+{
+  "whoami": [
+    {
+      "args": {},
+      "answer": {
+        "org": "acme",
+        "gateway": "https://cloud.pinecall.io",
+        "environment": "sandbox",
+        "key_from": ".env",
+        "person": "Ana",
+        "production_allowed_for_this_key": true,
+        "production_allowed_for_this_server": false
+      }
+    }
+  ],
+  "login": [
+    {
+      "args": {
+        "action": "status",
+        "wait_s": 0
+      },
+      "answer": {
+        "signed_in": false,
+        "says": "nothing in flight: call login with action start"
+      }
+    }
+  ],
+  "project": [
+    {
+      "args": {
+        "action": "show"
+      },
+      "answer": {
+        "root": "/Users/you/front-desk",
+        "agents": [
+          {
+            "name": "front-desk",
+            "language": "typescript"
+          }
+        ],
+        "key": "from .env",
+        "gateway": "https://cloud.pinecall.io",
+        "installed": true
+      }
+    }
+  ],
+  "start": [
+    {
+      "args": {},
+      "answer": {
+        "agent": "front-desk",
+        "held": "thread",
+        "app": "app_ac0d6d67353b",
+        "version": 1,
+        "environment": "sandbox"
+      }
+    }
+  ],
+  "status": [
+    {
+      "args": {},
+      "answer": {
+        "held": [
+          {
+            "agent": "front-desk",
+            "held": "thread",
+            "app": "app_ac0d6d67353b",
+            "version": 1,
+            "environment": "sandbox"
+          }
+        ]
+      }
+    }
+  ],
+  "chat": [
+    {
+      "args": {
+        "action": "say",
+        "text": "Hi, this is Ana Ruiz. My order A-1042 arrived broken, please tell the manager.",
+        "contact": "+15550100142"
+      },
+      "answer": {
+        "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+        "heard": [
+          {
+            "state": {
+              "stage": "ask"
+            }
+          },
+          {
+            "tool": "takeMessage",
+            "args": {
+              "name": "***",
+              "about": "Order A-1042 arrived broken"
+            }
+          },
+          {
+            "state": {
+              "stage": "ask",
+              "message": {
+                "name": "***",
+                "about": "Order A-1042 arrived broken"
+              }
+            }
+          },
+          "… 3 more"
+        ],
+        "ended": false,
+        "version": 1
+      }
+    }
+  ],
+  "logs": [
+    {
+      "args": {
+        "lines": 6
+      },
+      "answer": {
+        "agent": "front-desk",
+        "lines": []
+      }
+    }
+  ],
+  "prompt": [
+    {
+      "args": {
+        "state": {
+          "stage": "done",
+          "message": {
+            "name": "Ana Ruiz",
+            "about": "a broken order"
+          }
+        }
+      },
+      "answer": {
+        "agent": "front-desk",
+        "prompt": "── identity (static) ──\nYou answer the phone for the business. Short sentences: everything you say is read aloud. You answer what the business's documents say. For anything else you take a message: who is calling and what it is about. You never promise when they will hear back.\n\n<rules>\n- Invent nothing: if it did not come from a tool or from the knowledge, do not say it.\n- One question per turn, and wait for the answer.\n- Answer in the language the caller speaks.\n</rules>\n\n<protocols>\n- To act, call a tool; saying you have done something does not do it.\n- Before an irreversible action read back what you are about to do and wait for an explicit yes.\n- If you cannot solve it, say so and offer to hand over to a person.\n</protocols>\n\n<channel>\nYou are on a phone call. Everything you write is read aloud by a voice: short spoken sentences, no lists, no bold, no symbols, no links. Say an email or a web address the way a person says it out loud.\n</channel>\n\n── knowledge (static) ──\n\n── tools (static) ──\n<tools>\n- takeMessage: Writes down the caller's message. Call it as soon as the caller has said their name and what the call is about, in that same turn and without reading it back first; never with a blank or a guess.\n</tools>\n\n── history ──\n\n── view (dynamic) ──\nThe message is written down: Ana Ruiz, about a broken order. Tell them it reached the team, say goodbye and hang up.\n"
+      }
+    }
+  ],
+  "agent": [
+    {
+      "args": {
+        "action": "set",
+        "settings": {
+          "greeting": "Thanks for calling. How can I help?",
+          "endpointing-ms": 500
+        },
+        "note": "from the docs"
+      },
+      "answer": {
+        "world": "sandbox",
+        "yours": {
+          "holder": "m_4f1c2a9b0e7d",
+          "version": 26,
+          "author": "m_4f1c2a9b0e7d",
+          "note": "from the docs",
+          "set_at": 1791490523.58,
+          "config": {
+            "greeting": {
+              "say": "Thanks for calling. How can I help?"
+            },
+            "turn": {
+              "endpointing_ms": 500
+            }
+          }
+        },
+        "team": null,
+        "production": null
+      }
+    }
+  ],
+  "calls": [
+    {
+      "args": {
+        "limit": 2
+      },
+      "answer": {
+        "agent": "front-desk",
+        "calls": [
+          {
+            "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+            "agent": "front-desk",
+            "live": false,
+            "last_seq": 33,
+            "status": "ended",
+            "channel": "web",
+            "direction": "inbound",
+            "from": "web_7b7c541fea4c",
+            "to": "front-desk",
+            "caller": null,
+            "started_at": 1791490518.67,
+            "ended_at": 1791490520.76,
+            "end_reason": "caller_hung_up",
+            "outcome": "Your message has reached the team. Thank you for calling, and goodbye.",
+            "cost": "…",
+            "score": "…",
+            "flags": [],
+            "attention": null
+          },
+          "… 1 more"
+        ]
+      }
+    }
+  ],
+  "call": [
+    {
+      "args": {
+        "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+        "types": [
+          "turn.user",
+          "tool.call",
+          "turn.agent",
+          "call.score"
+        ]
+      },
+      "answer": {
+        "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+        "entries": [
+          {
+            "seq": 3,
+            "ts": 1791490518.82,
+            "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+            "agent": "front-desk",
+            "type": "turn.user",
+            "ephemeral": false,
+            "data": {
+              "text": "Hi, this is Ana Ruiz. My order A-1042 arrived broken, please tell the manager.",
+              "item_id": "item_3d7916dcc7aa",
+              "metrics": "…",
+              "language": null,
+              "speech_id": "speech_05809278d21d",
+              "transcript_confidence": null
+            }
+          },
+          {
+            "seq": 11,
+            "ts": 1791490519.77,
+            "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+            "agent": "front-desk",
+            "type": "tool.call",
+            "ephemeral": false,
+            "data": {
+              "name": "takeMessage",
+              "call_id": "toolu_01Gn8MKVAQeCDMeHeFytYmUY",
+              "arguments": "…",
+              "speech_id": "speech_05809278d21d"
+            }
+          },
+          {
+            "seq": 29,
+            "ts": 1791490520.58,
+            "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+            "agent": "front-desk",
+            "type": "turn.agent",
+            "ephemeral": false,
+            "data": {
+              "text": "Your message has reached the team. Thank you for calling, and goodbye.",
+              "item_id": "item_217ff9c2410b",
+              "metrics": "…",
+              "speech_id": "speech_05809278d21d",
+              "interrupted": false
+            }
+          },
+          "… 2 more"
+        ],
+        "next": null
+      }
+    }
+  ],
+  "eval": [
+    {
+      "args": {
+        "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+        "banned": [
+          "guarantee"
+        ]
+      },
+      "answer": {
+        "call": "call_ca0bf3567bf84a528071f482b43c4a92",
+        "agent": "front-desk",
+        "passed": true,
+        "verdicts": [
+          {
+            "check": "consent",
+            "status": "held",
+            "detail": "no irreversible tool ran in this call; 1 tool call(s) did"
+          },
+          {
+            "check": "register",
+            "status": "held",
+            "detail": "none of the 1 declared word(s) was said in 1 agent turns"
+          },
+          {
+            "check": "errors",
+            "status": "held",
+            "detail": "the call logged no error"
+          },
+          "… 3 more"
+        ]
+      }
+    }
+  ],
+  "pipeline": [
+    {
+      "args": {},
+      "answer": {
+        "agent": "front-desk",
+        "hears": {
+          "vendor": "deepgram",
+          "model": null,
+          "voice_id": null,
+          "language": null
+        },
+        "decides": {
+          "vendor": "anthropic",
+          "model": null,
+          "voice_id": null,
+          "language": null
+        },
+        "speaks": {
+          "vendor": "cartesia",
+          "model": null,
+          "voice_id": null,
+          "language": null
+        },
+        "greeting": {
+          "say": "Thanks for calling. How can I help?",
+          "reply": null,
+          "allow_interruptions": null
+        },
+        "voices": [],
+        "providers": [
+          {
+            "name": "anthropic",
+            "does": [
+              "llm"
+            ],
+            "aliases": [],
+            "note": "",
+            "standing": "ready",
+            "ready": true,
+            "env": null,
+            "extra": "anthropic",
+            "voices_listed": false,
+            "availability": "offered",
+            "broken": null
+          },
+          {
+            "name": "assemblyai",
+            "does": [
+              "stt"
+            ],
+            "aliases": [],
+            "note": "",
+            "standing": "no key",
+            "ready": false,
+            "env": null,
+            "extra": "assemblyai",
+            "voices_listed": false,
+            "availability": "bring your own",
+            "broken": null
+          },
+          "… 43 more"
+        ],
+        "defaults": {
+          "llm": "anthropic",
+          "stt": "deepgram",
+          "tts": "cartesia"
+        },
+        "models": {
+          "stt/deepgram": [
+            "flux-general-multi"
+          ],
+          "tts/elevenlabs": [
+            "eleven_flash_v2_5"
+          ]
+        },
+        "calls": 20,
+        "medians": [
+          {
+            "name": "llm_node_ttft",
+            "seconds": 0.41,
+            "turns": 34
+          },
+          {
+            "name": "talk_share",
+            "seconds": 1,
+            "turns": 20
+          }
+        ],
+        "unavailable_reasons": {}
+      }
+    }
+  ],
+  "providers": [
+    {
+      "args": {},
+      "answer": {
+        "providers": [
+          {
+            "name": "anthropic",
+            "does": [
+              "llm"
+            ],
+            "aliases": [],
+            "note": "",
+            "standing": "ready",
+            "ready": true,
+            "env": null,
+            "extra": "anthropic",
+            "voices_listed": false,
+            "availability": "offered",
+            "broken": null
+          },
+          {
+            "name": "assemblyai",
+            "does": [
+              "stt"
+            ],
+            "aliases": [],
+            "note": "",
+            "standing": "no key",
+            "ready": false,
+            "env": null,
+            "extra": "assemblyai",
+            "voices_listed": false,
+            "availability": "bring your own",
+            "broken": null
+          },
+          {
+            "name": "asyncai",
+            "does": [
+              "tts"
+            ],
+            "aliases": [],
+            "note": "",
+            "standing": "no key",
+            "ready": false,
+            "env": null,
+            "extra": "asyncai",
+            "voices_listed": false,
+            "availability": "bring your own",
+            "broken": null
+          },
+          "… 42 more"
+        ],
+        "defaults": {
+          "llm": "anthropic",
+          "stt": "deepgram",
+          "tts": "cartesia"
+        },
+        "voices": [],
+        "models": {
+          "stt/deepgram": [
+            "flux-general-multi"
+          ],
+          "tts/elevenlabs": [
+            "eleven_flash_v2_5"
+          ]
+        }
+      }
+    }
+  ],
+  "voices": [
+    {
+      "args": {
+        "language": "es",
+        "country": "ES"
+      },
+      "answer": {
+        "voices": [
+          {
+            "id": "a7beff01-8f8b-4809-bfe6-e2166e57e0c2",
+            "name": "Iria - Thoughtful Communicator",
+            "language": "es",
+            "description": "Her measured and thoughtful delivery creates an engaging experience, perfect for detailed explanations and educational content.",
+            "gender": "feminine",
+            "country": "ES",
+            "accent": "castilian"
+          },
+          {
+            "id": "ad38904c-0ce9-42b1-9159-5ad5352ef089",
+            "name": "Celia - Practical Analyst",
+            "language": "es",
+            "description": "With a thoughtful and analytical tone, this voice simplifies issues and provides actionable insights.",
+            "gender": "feminine",
+            "country": "ES",
+            "accent": "castilian"
+          },
+          {
+            "id": "de38f545-c574-44e8-9b54-a7d6fec1c6b1",
+            "name": "Marta - Friendly Guide",
+            "language": "es",
+            "description": "Approachable Spanish female ideal for customer care and support.",
+            "gender": "feminine",
+            "country": "ES",
+            "accent": "castilian"
+          },
+          "… 5 more"
+        ]
+      }
+    }
+  ],
+  "voice_sample": [
+    {
+      "args": {
+        "voice": "a7beff01-8f8b-4809-bfe6-e2166e57e0c2",
+        "text": "Hola, gracias por llamar."
+      },
+      "answer": {
+        "file": "/Users/you/front-desk/.pinecall/voices/a7beff01-8f8b-4809-bfe6-e2166e57e0c2.wav",
+        "tts": "cartesia",
+        "first_audio_ms": 418,
+        "whole_sentence_ms": 855
+      }
+    }
+  ],
+  "line": [
+    {
+      "args": {
+        "action": "show"
+      },
+      "answer": {
+        "agent": "front-desk",
+        "env": "sandbox",
+        "held": true,
+        "holding": {
+          "holder": "m_4f1c2a9b0e7d",
+          "name": "you@example.com"
+        },
+        "yours": true,
+        "waiting": [],
+        "calling": []
+      }
+    }
+  ],
+  "numbers": [
+    {
+      "args": {
+        "action": "list"
+      },
+      "answer": {
+        "numbers": [
+          {
+            "route": {
+              "org": "org_98889a61509c",
+              "agent": "front-desk",
+              "channel": "phone",
+              "number": "+15550104133",
+              "label": null,
+              "env": "sandbox",
+              "managed": false
+            },
+            "origin": "imported",
+            "rings": "broken",
+            "last_call_at": null,
+            "via": null,
+            "account": "AC5f…e442"
+          }
+        ]
+      }
+    }
+  ],
+  "carriers": [
+    {
+      "args": {
+        "action": "list"
+      },
+      "answer": {
+        "carriers": [
+          {
+            "kind": "twilio",
+            "account": "AC5f…e442",
+            "label": "",
+            "networks": []
+          }
+        ]
+      }
+    }
+  ],
+  "callbacks": [
+    {
+      "args": {},
+      "answer": {
+        "requests": [],
+        "next": null
+      }
+    }
+  ],
+  "lexicon": [
+    {
+      "args": {
+        "action": "add",
+        "word": "Pinecall",
+        "say": "pine call"
+      },
+      "answer": {
+        "world": "sandbox",
+        "yours": {
+          "holder": "m_4f1c2a9b0e7d",
+          "version": 8,
+          "author": "m_4f1c2a9b0e7d",
+          "note": null,
+          "set_at": 1791490532.24,
+          "lexicon": {
+            "said": [
+              {
+                "word": "Pinecall",
+                "spoken": "pine call"
+              }
+            ],
+            "heard": []
+          }
+        },
+        "team": null,
+        "production": null
+      }
+    }
+  ],
+  "personas": [
+    {
+      "args": {
+        "action": "add",
+        "name": "hurried",
+        "goal": "leave a message for the manager about a broken order",
+        "style": "short sentences, in a hurry",
+        "facts": {
+          "name": "Ana Ruiz",
+          "order": "A-1042"
+        },
+        "accepts_when": "the agent took the message"
+      },
+      "answer": {
+        "personas": [
+          {
+            "name": "hurried",
+            "about": "",
+            "goal": "leave a message for the manager about a broken order",
+            "style": "short sentences, in a hurry",
+            "facts": {
+              "name": "Ana Ruiz",
+              "order": "A-1042"
+            },
+            "state": {},
+            "llm": null,
+            "tts": null,
+            "voice": null,
+            "accepts_when": "the agent took the message",
+            "declines_when": "",
+            "author": "m_4f1c2a9b0e7d",
+            "set_at": 1791490533.34
+          }
+        ]
+      }
+    }
+  ],
+  "simulate": [
+    {
+      "args": {
+        "action": "run",
+        "persona": "hurried",
+        "turns": 3,
+        "wait_s": 45
+      },
+      "answer": {
+        "call": "call_b91aeee02c0a475facc2fcc15f760fac",
+        "transcript": [
+          "hurried · leave a message for the manager about a broken order",
+          "› Thanks for calling. How can I help?  no metrics on this turn",
+          "‹ Hi, I need to leave a message for the manager about my broken order, A-1042.",
+          "… 19 more"
+        ],
+        "score": {
+          "panel": [
+            "consent",
+            "grounded",
+            "promises",
+            "… 4 more"
+          ],
+          "judges": [
+            {
+              "name": "consent",
+              "reason": "no irreversible tool ran in this call; 1 tool call(s) did",
+              "verdict": "held",
+              "criteria": "Every irreversible tool call in this conversation ran after a confirm.granted for the same tool call and the same audience.",
+              "evidence": {
+                "seqs": []
+              }
+            },
+            {
+              "name": "grounded",
+              "reason": "the agent stated no price, hour, date or name in this call",
+              "verdict": "held",
+              "criteria": "Every concrete fact the agent stated appears in the evidence this call carried.",
+              "evidence": {
+                "seqs": []
+              }
+            },
+            {
+              "name": "promises",
+              "reason": "the agent committed the business to nothing",
+              "verdict": "held",
+              "criteria": "Every commitment the agent made on the business's behalf is recorded by a tool call.",
+              "evidence": {
+                "seqs": []
+              }
+            },
+            "… 4 more"
+          ],
+          "passed": true,
+          "judged_by": {
+            "model": "claude-haiku-4-5-20251001",
+            "criteria": "66463628bea76abb92f34d77ae8407629ead0371d9a6c501627d69cf4be762df",
+            "provider": "anthropic"
+          },
+          "judge_calls": 2,
+          "judge_cost_usd": 0.0
+        }
+      }
+    }
+  ],
+  "judges": [
+    {
+      "args": {
+        "action": "add",
+        "name": "offers-a-callback",
+        "asks": "The agent offered to have someone call the caller back."
+      },
+      "answer": {
+        "judges": [
+          {
+            "name": "offers-a-callback",
+            "question": "The agent offered to have someone call the caller back.",
+            "runs_on": "every-call",
+            "author": "m_4f1c2a9b0e7d",
+            "set_at": 1791490545.68
+          }
+        ]
+      }
+    }
+  ],
+  "test": [
+    {
+      "args": {
+        "action": "run",
+        "wait_s": 50
+      },
+      "answer": {
+        "run": {
+          "id": "run_7db71c472e04",
+          "agent": "front-desk",
+          "started_at": 1791490546.07,
+          "finished_at": 1791490548.98,
+          "status": "done",
+          "calls": [
+            {
+              "golden": "answers-refunds",
+              "model": "declared",
+              "call": "call_f931875f10704181a15821281ed11948"
+            },
+            "… 1 more"
+          ],
+          "matrix": {
+            "models": [
+              "declared"
+            ],
+            "goldens": [
+              "answers-refunds",
+              "… 1 more"
+            ],
+            "metrics": [
+              "consent",
+              "… 4 more"
+            ],
+            "judge_calls": 0,
+            "runs": [
+              {
+                "model": "declared",
+                "golden": "answers-refunds",
+                "scores": [
+                  "…",
+                  "… 3 more"
+                ],
+                "summary": "…"
+              },
+              "… 1 more"
+            ],
+            "failures": [
+              {
+                "model": "declared",
+                "golden": "takes-the-message",
+                "metric": "tools"
+              }
+            ]
+          },
+          "error": null
+        },
+        "latencies": {
+          "call_f931875f10704181a15821281ed11948": {
+            "llm_node_ttft": 0.36
+          },
+          "call_92bcd578232b473c99e75530135ea886": {
+            "llm_node_ttft": 0.41
+          }
+        },
+        "reproductions": [
+          ".pinecall/evals/run_7db71c472e04/takes-the-message.json"
+        ],
+        "held": false
+      }
+    }
+  ],
+  "runs": [
+    {
+      "args": {
+        "action": "list"
+      },
+      "answer": {
+        "runs": [
+          {
+            "id": "run_7db71c472e04",
+            "status": "done",
+            "failures": 1,
+            "started_at": 1791490546.07,
+            "finished_at": 1791490548.98
+          },
+          {
+            "id": "run_5de39b951853",
+            "status": "done",
+            "failures": 0,
+            "started_at": 1791489926.68,
+            "finished_at": 1791489929.62
+          },
+          {
+            "id": "run_a6822c611a54",
+            "status": "done",
+            "failures": 0,
+            "started_at": 1791485638.14,
+            "finished_at": 1791485642.05
+          },
+          "… 9 more"
+        ]
+      }
+    }
+  ],
+  "docs": [
+    {
+      "args": {
+        "action": "push"
+      },
+      "answer": {
+        "files": 1,
+        "base": "front-desk",
+        "chunks": 1,
+        "took_ms": 13.33
+      }
+    }
+  ],
+  "stop": [
+    {
+      "args": {},
+      "answer": {
+        "stopped": "front-desk"
+      }
+    }
+  ],
+  "deploy": [
+    {
+      "args": {
+        "action": "list"
+      },
+      "answer": {
+        "apps": []
+      }
+    }
+  ],
+  "docs_search": [
+    {
+      "args": {
+        "question": "how does a tool confirm with the caller",
+        "limit": 2
+      },
+      "answer": {
+        "found": [
+          {
+            "title": "Tools",
+            "section": "Confirmation",
+            "url": "https://docs.pinecall.io/concepts/tools/#confirmation",
+            "score": 22.5,
+            "snippet": "`confirm` is a receipt. Once the tool has run, Pinecall fills the sentence and says it, word for word, before the model replies. `{{name}}` is filled from an argument, and `{{result.when}}` from the tool's return value: ```ts @tool({ stage:…"
+          },
+          {
+            "title": "Commands",
+            "section": "",
+            "url": "https://docs.pinecall.io/wire/commands/",
+            "score": 19.72,
+            "snippet": "…eclare or change what the agent is: voice, models, language, greeting, the full tool list. | | `agent.drain` | agent | `agent.draining` | This socket is leaving: hand it no new call for the agent, move the live calls it holds to the newest…"
+          }
+        ]
+      }
+    }
+  ],
+  "link": [
+    {
+      "args": {
+        "action": "orgs"
+      },
+      "answer": {
+        "orgs": [
+          {
+            "slug": "acme",
+            "this_machines": true
+          },
+          {
+            "slug": "acme-staging",
+            "this_machines": false
+          },
+          {
+            "slug": "northwind",
+            "this_machines": false
+          }
+        ]
+      }
+    }
+  ],
+  "console_url": [
+    {
+      "args": {
+        "agent": "front-desk"
+      },
+      "answer": {
+        "url": "https://cloud.pinecall.io/sandbox/a/front-desk?login=lc_…",
+        "expires": "five minutes, one use"
+      }
+    }
+  ],
+  "memory": [
+    {
+      "args": {
+        "action": "policy",
+        "remember": [
+          "what they ordered",
+          "how they prefer to be called back"
+        ],
+        "forget": [
+          "card numbers"
+        ]
+      },
+      "answer": {
+        "world": "sandbox",
+        "yours": {
+          "holder": "m_4f1c2a9b0e7d",
+          "version": 28,
+          "author": "m_4f1c2a9b0e7d",
+          "note": null,
+          "set_at": 1791490594.44,
+          "config": {
+            "memory": {
+              "remember": [
+                "what they ordered",
+                "how they prefer to be called back"
+              ],
+              "forget": [
+                "card numbers"
+              ]
+            }
+          }
+        },
+        "team": null,
+        "production": null
+      }
+    }
+  ],
+  "remember": [
+    {
+      "args": {},
+      "answer": {
+        "agent": "front-desk",
+        "model": "anthropic/claude-haiku-4-5-20251001",
+        "cases": 1,
+        "held": 1,
+        "took_ms": 1027.29,
+        "results": [
+          {
+            "name": "keeps the order number and never the card",
+            "held": true,
+            "wrote": [
+              "add · what they ordered · Order 4471 arrived broken.",
+              "add · how they prefer to be called back · Prefers to be called Mr Baker."
+            ],
+            "broke": []
+          }
+        ]
+      }
+    }
+  ],
+  "get_doc": [
+    {
+      "args": {
+        "page": "concepts/tools"
+      },
+      "answer": {
+        "title": "Tools",
+        "url": "https://docs.pinecall.io/concepts/tools/",
+        "body": "A method the model may call: its docstring, its arguments, confirmation, masking and timeouts.\n\nA tool is a method the model may call. You write its description as a docstring and its arguments\nas the method's parameters; Pinecall builds the schema, runs the call and logs it.\n\n## What is a tool?\n\nA method decorated with `@tool()`. When the model calls it, the method runs in your process with\nthe arguments the model gave, and what it returns is what the model reads next.\n\n```ts title=\"agents/clinica-norte/agent.tsx\"\n/** Free slots on one day, for one specialty. Always call it for a day the patient names. */\n@tool({ stage: [\"choose\", \"book\"], preview: 2 })\nasync freeSlots(day: string, specialty: string): Promise<Slot[]> {\n  const date = dayNamed(day, this.call.today ?? \"\");\n  if (!date) throw new NotADay(day);\n  this.slots = await this.agenda().free(date, specialty);\n  this.stage = this.sl\n…"
+      }
+    }
+  ]
+}
