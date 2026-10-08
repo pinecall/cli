@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { callingAs, degradedBy, exitCodeOf } from "../src/simulate.js";
+import { callingAs, degradedBy, exitCodeOf } from "../src/simulation.js";
 import { A_TURN_MAY_TAKE_MS, Heard } from "../src/testing/heard.js";
 import { DEGRADED } from "../src/testing/voice.js";
 import { written } from "./said.js";

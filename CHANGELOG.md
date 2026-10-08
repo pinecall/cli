@@ -6,6 +6,16 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.28] — every tool of the MCP
+
+### Added
+
+- `pinecall mcp` holds the agent and does all of it from an assistant: 35 tools. `start`, `stop`, `status` and `logs` hold a TypeScript agent in a worker thread of the server — no process — reloaded on every save (a save that does not load keeps the version before answering, and says why), or attach to a Ruby agent or a terminal already holding it; `chat` talks to it a line at a time, each answered whole; `prompt` and `console_url`. `agent`, `calls`, `call`, `pipeline`, `providers`, `voices`, `voice_sample`, `line`, `numbers` (import as a dry run first), `carriers`, `callbacks`, `lexicon`. `test` (a column per model, written or spoken), `runs` (list, show, diff, promote, drift), `simulate`, `personas`, `judges`, `eval`, `docs`, `memory`, `remember`. `deploy` and its family. `docs_search` and `get_doc` over docs.pinecall.io. No tool takes a secret, and none erases anything.
+
+### Changed
+
+- `pinecall deploy` packs what the project's `.gitignore` files leave in, read where each sits, and no longer asks git: a folder that is no checkout packs the same.
+
 ## [0.9.27] — Claude Desktop finds node
 
 ### Fixed

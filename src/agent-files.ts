@@ -5,7 +5,7 @@ import { readFile } from "node:fs/promises";
 import { type TuningAnswer, type TuningBody } from "@pinecall/agents/wire";
 
 import { readSettings, settingsPath, theCornerCalled, theCornerWritten, theRowToStartFrom } from "./agent-lines.js";
-import type { Typed } from "./agent.js";
+import type { Typed } from "./agent-setting.js";
 import { asked, type Door } from "./testing/gateway.js";
 
 /** A pulled settings file: agent, corner, version and the full config. */

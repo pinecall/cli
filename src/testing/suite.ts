@@ -61,6 +61,26 @@ export async function ranSuite(suite: Suite): Promise<number> {
   return await reported(door, run, goldens, DECLARED, suite.json, out);
 }
 
+/** A finished run as data: the run, each call's latency medians, and the reproductions written for what broke. */
+export interface Report {
+  run: EvalRun;
+  latencies: Latencies;
+  reproductions: string[];
+}
+
+/** Read every call's log once, measure its turns, and write a reproduction for each golden that broke. */
+export async function reportOfTheRun(door: Door, run: EvalRun, goldens: Golden[]): Promise<Report> {
+  const logs = await logsOf(door, run);
+  const latencies: Latencies = {};
+  for (const [call, entries] of Object.entries(logs)) latencies[call] = mediansOf(entries);
+  return { run, latencies, reproductions: writtenOut(run, goldens, logs) };
+}
+
+/** Whether every golden held. */
+export function held(run: EvalRun): boolean {
+  return run.status === "done" && (run.matrix?.failures.length ?? 0) === 0;
+}
+
 /** Print the report; returns 1 if any golden failed. */
 async function reported(
   door: Door,
@@ -70,13 +90,10 @@ async function reported(
   asJson: boolean,
   out: NodeJS.WritableStream,
 ): Promise<number> {
-  const logs = await logsOf(door, run);
-  const latencies: Latencies = {};
-  for (const [call, entries] of Object.entries(logs)) latencies[call] = mediansOf(entries);
-  const written = writtenOut(run, goldens, logs);
-  if (asJson) out.write(`${JSON.stringify({ run, latencies, reproductions: written })}\n`);
-  else out.write(`${[...reportOf(run, latencies, declaredAs), ...whereTheyAre(written)].join("\n")}\n`);
-  return run.status === "done" && (run.matrix?.failures.length ?? 0) === 0 ? 0 : 1;
+  const report = await reportOfTheRun(door, run, goldens);
+  if (asJson) out.write(`${JSON.stringify(report)}\n`);
+  else out.write(`${[...reportOf(run, report.latencies, declaredAs), ...whereTheyAre(report.reproductions)].join("\n")}\n`);
+  return held(run) ? 0 : 1;
 }
 
 // Each call's log by call id; per-turn metrics are only in the log.

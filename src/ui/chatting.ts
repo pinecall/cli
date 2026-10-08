@@ -5,7 +5,7 @@ import WebSocket from "ws";
 import type { CamelEvent } from "@pinecall/agents/client";
 import { signed } from "@pinecall/agents/client";
 
-import { BACK_TRIES, chatUrl, waitBack, type Opened } from "../chat.js";
+import { BACK_TRIES, chatUrl, waitBack, type Opened } from "../chat-url.js";
 import type { Served } from "../serving.js";
 import type { Door } from "../testing/gateway.js";
 import type { Golden } from "../testing/goldens.js";

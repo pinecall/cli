@@ -12,9 +12,9 @@ const SRC = fileURLToPath(new URL("../src", import.meta.url));
  * The packages src/ may import, besides node's own. A class runs in its language's serve entry,
  * so `@pinecall/agents` bare (the class) and `@pinecall/agents/serve` are never here. `tsx` loads a
  * project's legacy persona files and `@livekit/rtc-node` is `simulate --listen`'s; both lazily. The
- * MCP SDK and zod are the `mcp` group's alone.
+ * MCP SDK and zod are the `mcp` group's alone; `ignore` reads a project's .gitignore files for `deploy`.
  */
-const MAY_IMPORT = ["@pinecall/agents/client", "@pinecall/agents/wire", "ws", "tsx", "@livekit/rtc-node", "@modelcontextprotocol/sdk", "zod"];
+const MAY_IMPORT = ["@pinecall/agents/client", "@pinecall/agents/wire", "ws", "tsx", "@livekit/rtc-node", "@modelcontextprotocol/sdk", "zod", "ignore"];
 
 /** The MCP server's own packages: imported under src/mcp/ and nowhere else, so no verb pays for them. */
 const THE_MCPS = ["@modelcontextprotocol/sdk", "zod"];

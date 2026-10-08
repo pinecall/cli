@@ -49,15 +49,71 @@ the one `pinecall` itself reads: `PINECALL_KEY` from the environment, else from 
 
 ## The tools
 
+Every tool acts in the sandbox. A long one (`test`, `deploy`, `login`) answers within `wait_s`
+seconds (25 unless asked, at most 50) and says how to keep waiting, so no host gives up on it.
+
+### Getting started
+
 | tool | actions | what it does |
 |---|---|---|
 | `whoami` | — | which org, gateway and environment the project's key acts in, and whether production is allowed for the key and for this server |
-| `login` | `start` · `status` | signs this machine in: `start` answers a link the person opens in a browser; `status` waits (`wait_s`, at most 50) until they approved it. The key is kept in `~/.pinecall/session.json` and never answered |
+| `login` | `start` · `status` | signs this machine in: `start` answers a link the person opens in a browser; `status` waits until they approved it. The key is kept in `~/.pinecall/session.json` and never answered |
 | `link` | `orgs` · `write` | the person's orgs, and the key of one written into the project's `.env` (`PINECALL_KEY`, and `PINECALL_URL` when the gateway is not Pinecall Cloud); it warns when `.gitignore` does not name `.env` |
 | `project` | `show` · `open` · `new` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened; a new project of one agent written from `pinecall new`'s templates, in TypeScript or Ruby, and opened |
 
+### Holding the agent, and talking to it
+
+| tool | actions | what it does |
+|---|---|---|
+| `start` | — | holds the agent as `pinecall start` does. A TypeScript agent runs in a worker thread of this server — no process — and reloads on every save: the new version registers before the old one drains, a save that does not load keeps the version before answering. A Ruby agent, or one a terminal already holds, is attached to instead |
+| `stop` | — | drains the thread and lets the agent go; an attached process is left running |
+| `status` | — | each agent held, how (`thread` or `attached`), its app, the version answering, and the sentence a broken save was refused with |
+| `logs` | — | the last lines the agent printed: its own output, a load error, the versions as they replace each other |
+| `chat` | `say` · `end` | a written call with the agent held: each line answered whole — its turns, the tools it called with their arguments and results, the state it changed. `call` continues one, `contact` makes the caller someone, `state` opens it in a state |
+| `prompt` | — | the exact prompt a state produces, offline (TypeScript; Ruby's is `pinecall prompt`) |
+| `console_url` | — | a link that opens the sandbox's console signed in, once, within five minutes: the one value no answer hides |
+
+### Settings and reading
+
+| tool | actions | what it does |
+|---|---|---|
+| `agent` | `show` · `set` · `clear` · `history` · `diff` · `rollback` · `knowledge` | the agent's settings — voice, models, language, greeting, turn-taking, recording, memory policy — each change a version, checked as `pinecall agent set` checks it; `knowledge` reads or writes what it knows by heart |
+| `calls` | — | the agent's newest calls, with their ids, how they ended, their cost and verdicts |
+| `call` | — | one call's log, entry by entry, paged by `after`, narrowed by `types` |
+| `pipeline` | — | the vendors and models the agent hears, decides and speaks with, and their latency |
+| `providers` | — | every vendor the gateway can run and whose key a call would use; never a key |
+| `voices` | — | a vendor's voices in a language, the id first |
+| `voice_sample` | — | a line said by the gateway in a voice, saved as a WAV under `.pinecall/voices/`, with its timings |
+| `line` | `show` · `from` · `forget` · `claim` · `release` | whose process a ring lands in, and the person's own phone |
+| `numbers` | `list` · `available` · `import` | the org's numbers; what its carrier account owns; an import, shown as steps first (`dry_run` is the default) |
+| `carriers` | `list` · `show` | the org's carrier accounts; adding one takes secrets, so it is a terminal's |
+| `callbacks` | — | the people waiting for a call back |
+| `lexicon` | `show` · `add` · `hear` · `rm` · `history` | how the voice says a word, and the words the ears must catch |
+
+### Testing
+
+| tool | actions | what it does |
+|---|---|---|
+| `test` | `run` · `wait` | the goldens through the agent held, a column per model in `models`, written or spoken (`voice`, `background_noise`, `packet_loss` 0..1): the matrix, each call's latency, a reproduction for each golden that broke |
+| `runs` | `list` · `show` · `diff` · `promote` · `drift` | the suites kept, what moved between two, a real call written as a golden candidate under `test/candidates/`, each judge's drift |
+| `simulate` | — | a persona's call against the agent held, the conversation and every judge's verdict |
+| `personas` | `list` · `show` · `add` · `edit` · `rm` | the callers a model plays: a goal, a manner, facts, a rule for hanging up satisfied |
+| `judges` | `list` · `add` · `rm` | your own questions asked of the agent's calls, or every agent's with `org` |
+| `eval` | — | one finished call checked again by code, with `banned` words and a latency `budget` |
+| `docs` | `push` · `list` · `eval` · `attach` · `detach` · `attached` | a folder pushed as a base, attached to the agent, held to `goldens/docs.json` |
+| `memory` | `show` · `policy` · `eval` | what the agent kept about a caller, what it keeps and never keeps, and `goldens/memory.json` |
+| `remember` | — | the extraction cases under `test/<agent>/memory/`, run through the agent held |
+
+### Going live, and the docs
+
+| tool | actions | what it does |
+|---|---|---|
+| `deploy` | `deploy` · `wait` · `list` · `releases` · `logs` · `rollback` · `stop` · `start` | the project run on Pinecall in the sandbox: a release uploaded (what its `.gitignore` files leave in) and followed until live; TypeScript projects only |
+| `docs_search` | — | the sections of docs.pinecall.io that answer a question, each with its address |
+| `get_doc` | — | one page of the docs whole, by its address or its path |
+
 A refusal is one sentence that names what to do next: no project names `project`, no key names
-`link`, no sign-in names `login`.
+`link`, no sign-in names `login`, no agent held names `start`.
 
 ## Not in the MCP
 

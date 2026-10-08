@@ -33,20 +33,26 @@ describe("what a release carries", () => {
     expect(projectFiles(root)).toEqual(["agents/a/agent.ts", "package.json"]);
   });
 
-  it("is what git would commit in a checkout: an ignored file stays home", () => {
-    const root = aProject({ "package.json": "{}", ".gitignore": "notes.md\n", "notes.md": "mine", "agents/a/agent.ts": "x" });
-    execFileSync("git", ["init", "-q"], { cwd: root });
+  it("leaves home what a .gitignore names, read where it sits, with no git asked", () => {
+    const root = aProject({
+      "package.json": "{}",
+      ".gitignore": "notes.md\nbuild/\n",
+      "notes.md": "mine",
+      "build/out.js": "",
+      "agents/a/agent.ts": "x",
+      "agents/a/.gitignore": "scratch.ts\n",
+      "agents/a/scratch.ts": "",
+    });
 
-    expect(projectFiles(root)).toEqual([".gitignore", "agents/a/agent.ts", "package.json"]);
+    expect(projectFiles(root)).toEqual([".gitignore", "agents/a/.gitignore", "agents/a/agent.ts", "package.json"]);
   });
 
-  it("leaves out a tracked file deleted on disk instead of crashing on it", () => {
-    const root = aProject({ "package.json": "{}", "agents/a/agent.ts": "x", "gone.ts": "" });
+  it("packs a checkout the same as the folder it is: git is never asked", () => {
+    const root = aProject({ "package.json": "{}", ".gitignore": "notes.md\n", "notes.md": "mine", "agents/a/agent.ts": "x" });
+    const before = projectFiles(root);
     execFileSync("git", ["init", "-q"], { cwd: root });
-    execFileSync("git", ["add", "-A"], { cwd: root });
-    rmSync(join(root, "gone.ts"));
 
-    expect(projectFiles(root)).toEqual(["agents/a/agent.ts", "package.json"]);
+    expect(projectFiles(root)).toEqual(before);
   });
 });
 

@@ -3,7 +3,7 @@
 import { type TuningAnswer, type TuningBody, type TuningDiff, type TuningHistory, type TuningRow } from "@pinecall/agents/wire";
 
 import { FIELDS, linesOf, settingsPath, shown, versionLine, type Field } from "./agent-lines.js";
-import type { Typed } from "./agent.js";
+import type { Typed } from "./agent-setting.js";
 import { asked, type Door } from "./testing/gateway.js";
 
 /** Run `pinecall agent history`, `diff` or `rollback`. */

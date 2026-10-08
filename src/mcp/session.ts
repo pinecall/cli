@@ -6,8 +6,12 @@ import { join, resolve } from "node:path";
 import type { World } from "@pinecall/agents/client";
 
 import { doorIn, keyFrom, type Open } from "../env.js";
+import { agentFilesOfTheProject, homeOf, type Home } from "../home.js";
 import { pinecallHome, signedIn } from "../signed-in.js";
 import { PRODUCTION, SANDBOX } from "../world.js";
+import { Held } from "./holding/held.js";
+import type { Talk } from "./holding/talking.js";
+import type { SitePage } from "./site.js";
 import { Refused } from "./tool.js";
 
 export const NO_PROJECT =
@@ -29,6 +33,14 @@ export class Session {
   /** The project folder the tools act on, once known. */
   root: string | undefined;
   signing: Signing | undefined;
+  /** The agents this server holds, by slug. */
+  readonly held = new Map<string, Held>();
+  /** The written calls open, by call id. */
+  readonly talks = new Map<string, Talk>();
+  /** docs.pinecall.io's pages, read once. */
+  site: Promise<SitePage[]> | undefined;
+  /** A golden run in flight, by agent: it outlives one tool call. */
+  readonly runs = new Map<string, Promise<unknown>>();
 
   constructor(
     readonly env: NodeJS.ProcessEnv,
@@ -48,12 +60,47 @@ export class Session {
     return found;
   }
 
-  /** Open a folder as the project: it must exist. */
+  /**
+   * Open a folder as the project: it must exist. The server's cwd moves there, once, on the main
+   * thread: a thread cannot, and a tenant's relative path must mean what it means under `pinecall start`.
+   */
   open(path: string): string {
     const root = resolve(path);
     if (!existsSync(root) || !statSync(root).isDirectory()) throw new Refused(`${root} is not a folder`);
     this.root = root;
+    process.chdir(root);
     return root;
+  }
+
+  /** One agent of the project: the one named, or the only one. */
+  async home(agent?: string): Promise<Home> {
+    const homes = agentFilesOfTheProject(await this.project()).map(homeOf);
+    const names = homes.map((one) => one.name).join(", ");
+    if (agent !== undefined) {
+      const named = homes.find((one) => one.name === agent);
+      if (named === undefined) throw new Refused(`no agent ${agent} in this project: ${names || "it has none under agents/"}`);
+      return named;
+    }
+    if (homes.length === 1) return homes[0]!;
+    throw new Refused(homes.length === 0 ? "this project has no agent under agents/" : `name the agent: one of ${names}`);
+  }
+
+  /** The agent held, the one named or the only one; refused when none is. */
+  holding(agent?: string): Held {
+    if (agent !== undefined) {
+      const named = this.held.get(agent);
+      if (named === undefined) throw new Refused(`${agent} is not held: call start`);
+      return named;
+    }
+    const all = [...this.held.values()];
+    if (all.length === 1) return all[0]!;
+    throw new Refused(all.length === 0 ? "no agent is held: call start" : `name the agent: one of ${[...this.held.keys()].join(", ")}`);
+  }
+
+  /** Hang up every call and drain every thread: the server is closing. */
+  async close(): Promise<void> {
+    await Promise.allSettled([...this.talks.values()].map((talk) => talk.end()));
+    await Promise.allSettled([...this.held.values()].map((held) => held.stop()));
   }
 
   /** The project's door: its key, in the sandbox unless production was asked and allowed. */

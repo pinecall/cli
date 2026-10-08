@@ -1535,7 +1535,8 @@ The platform runs the project for you: the same `pinecall start` you would run o
 nothing to keep up. **The whole guide — preparing a project, secrets, limits, CI, every refusal —
 is [deploying.md](deploying.md)**; what follows is the verb's reference. What it takes:
 
-- **The project, packed.** What git would commit — or every file, outside a checkout — and never
+- **The project, packed.** Every file the project's `.gitignore` files leave in — each read where it
+  sits, with no git asked, so a folder that is no checkout packs the same — and never
   `node_modules`, `.git`, `dist` or any `.env`: the key in `.env` is yours, and the app gets one of
   its own. 10 MB packed at most, 100 MB unpacked, 5 000 files; a link or a path out of the folder is
   refused.

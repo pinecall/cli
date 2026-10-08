@@ -5,9 +5,11 @@ const SHAPED = /\b(?:pc_(?:live|test)_|pk_|lc_)[A-Za-z0-9_-]{6,}/g;
 
 export const HIDDEN = "***";
 
-/** The text with every secret it knows of, and every one shaped like a Pinecall key, hidden. */
-export function scrubbed(text: string, secrets: readonly string[] = []): string {
-  let clean = text;
+/** The text with every secret it knows of, and every one shaped like a Pinecall key, hidden — but for the values a tool reveals. */
+export function scrubbed(text: string, secrets: readonly string[] = [], revealed: readonly string[] = []): string {
+  const kept = revealed.filter((one) => one.length > 0);
+  let clean = kept.reduce((said, one, at) => said.replaceAll(one, `\u0000${at}\u0000`), text);
   for (const secret of secrets) if (secret.length >= 6) clean = clean.replaceAll(secret, HIDDEN);
-  return clean.replace(SHAPED, HIDDEN);
+  clean = clean.replace(SHAPED, HIDDEN);
+  return clean.replace(/\u0000(\d+)\u0000/g, (_whole, at: string) => kept[Number(at)] ?? "");
 }

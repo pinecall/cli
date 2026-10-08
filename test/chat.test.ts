@@ -2,7 +2,8 @@
 
 import { describe, expect, it } from "vitest";
 
-import { chatUrl, group, lineOf, run } from "../src/chat.js";
+import { chatUrl } from "../src/chat-url.js";
+import { group, lineOf, run } from "../src/chat.js";
 import { notASlug } from "../src/home.js";
 
 describe("the caller socket chat opens", () => {

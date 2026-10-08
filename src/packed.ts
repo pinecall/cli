@@ -1,9 +1,10 @@
 /** A project as a release: its files, never its secrets or its dependencies, as a gzipped tarball. */
 
-import { execFileSync } from "node:child_process";
-import { lstatSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { gzipSync } from "node:zlib";
+
+import ignore, { type Ignore } from "ignore";
 
 // The box installs the dependencies itself; .env holds the keys, which travel as secrets instead.
 const NEVER = new Set(["node_modules", ".git", "dist", ".pinecall", ".DS_Store"]);
@@ -18,13 +19,12 @@ export function isLeftOut(path: string): boolean {
 }
 
 /**
- * The project's files, relative and sorted: what git would commit when the folder is a checkout,
- * every file otherwise, and in both cases nothing `isLeftOut` names. A tracked file deleted on
- * disk is not a file.
+ * The project's files, relative and sorted: every file but what a `.gitignore` of the project names
+ * (each read where it sits, as git reads it) and what `isLeftOut` names. No git is asked: a folder
+ * that is no checkout, or a front that starts no process, packs the same release.
  */
 export function projectFiles(root: string): string[] {
-  const listed = gitFiles(root) ?? walked(root, root);
-  return listed.filter((path) => !isLeftOut(path) && isAFile(join(root, path))).sort();
+  return walked(root, root, []).filter((path) => !isLeftOut(path)).sort();
 }
 
 /** The files as one gzipped ustar archive: plain files, their paths and modes as the project has them. */
@@ -39,35 +39,28 @@ export function packed(root: string, files: readonly string[]): Buffer {
   return gzipSync(Buffer.concat(blocks));
 }
 
-function isAFile(path: string): boolean {
-  try {
-    return lstatSync(path).isFile();
-  } catch {
-    return false;
-  }
+/** One `.gitignore` and the folder its patterns are read from. */
+interface Ignored {
+  from: string;
+  rules: Ignore;
 }
 
-function gitFiles(root: string): string[] | undefined {
-  try {
-    const listed = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "-z"], {
-      cwd: root,
-      stdio: ["ignore", "pipe", "ignore"],
-    });
-    return listed.toString("utf8").split("\0").filter((path) => path !== "");
-  } catch {
-    return undefined;
-  }
-}
-
-function walked(root: string, folder: string): string[] {
+function walked(root: string, folder: string, ignoring: readonly Ignored[]): string[] {
+  const here = join(folder, ".gitignore");
+  const rules = existsSync(here) ? [...ignoring, { from: folder, rules: ignore().add(readFileSync(here, "utf8")) }] : ignoring;
   const found: string[] = [];
   for (const entry of readdirSync(folder, { withFileTypes: true })) {
     const path = join(folder, entry.name);
-    if (NEVER.has(entry.name)) continue;
-    if (entry.isDirectory()) found.push(...walked(root, path));
+    if (NEVER.has(entry.name) || ignored(rules, path, entry.isDirectory())) continue;
+    if (entry.isDirectory()) found.push(...walked(root, path, rules));
     else if (entry.isFile()) found.push(relative(root, path).split(sep).join("/"));
   }
   return found;
+}
+
+// A folder is matched with a trailing slash, so `build/` names it and not a file called build.
+function ignored(rules: readonly Ignored[], path: string, folder: boolean): boolean {
+  return rules.some(({ from, rules: one }) => one.ignores(`${relative(from, path).split(sep).join("/")}${folder ? "/" : ""}`));
 }
 
 // ustar: a name over 100 bytes is split at a slash into prefix (155) and name (100).

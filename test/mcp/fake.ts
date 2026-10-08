@@ -19,6 +19,9 @@ export const A_PROJECTS_KEY = "pc_live_the_projects_own_key_0002";
 export class FakeGateway {
   approved = false;
   url = "";
+  /** More doors for one test: `METHOD /path?query` → status and body; every body asked is kept in `asked`. */
+  readonly doors = new Map<string, [number, unknown]>();
+  readonly asked: { door: string; body: unknown }[] = [];
   #server!: Server;
 
   async open(): Promise<void> {
@@ -28,6 +31,17 @@ export class FakeGateway {
         response.end(JSON.stringify(body));
       };
       const key = (request.headers.authorization ?? "").replace("Bearer ", "");
+      const door = `${request.method} ${request.url}`;
+      const extra = this.doors.get(door);
+      if (extra !== undefined) {
+        let body = "";
+        request.on("data", (chunk: Buffer) => (body += chunk.toString()));
+        request.on("end", () => {
+          this.asked.push({ door, body: body === "" ? null : (JSON.parse(body) as unknown) });
+          answer(extra[0], extra[1]);
+        });
+        return;
+      }
       if (request.url === "/v1/login/pairings") return answer(200, { code: A_WORD });
       if (request.url === `/v1/login/pairings/${A_WORD}/key`) return this.approved ? answer(200, { key: THE_MACHINES_KEY }) : answer(202, {});
       if (request.url === "/v1/login/orgs") return answer(200, { orgs: [{ org: "org_1", slug: "clinica", here: false }] });
@@ -47,10 +61,10 @@ export class FakeGateway {
 }
 
 /** A folder that is a project: `agents/<name>/agent.tsx`, and a .env with the key when one is given. */
-export function aProject(key?: string, url?: string): string {
+export function aProject(key?: string, url?: string, file = "agent.tsx"): string {
   const root = mkdtempSync(join(tmpdir(), "pinecall-mcp-"));
   mkdirSync(join(root, "agents", "front-desk"), { recursive: true });
-  writeFileSync(join(root, "agents", "front-desk", "agent.tsx"), "// the class\n");
+  writeFileSync(join(root, "agents", "front-desk", file), "// the class\n");
   if (key !== undefined) writeFileSync(join(root, ".env"), `PINECALL_KEY=${key}\n${url === undefined ? "" : `PINECALL_URL=${url}\n`}`);
   return root;
 }

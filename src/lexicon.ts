@@ -20,7 +20,7 @@ const USAGE = [
   "       pinecall lexicon history [--agent <slug>] [--team]",
 ].join("\n");
 
-const lexiconOf = (agent: string): string => `/v1/agents/${encodeURIComponent(agent)}/lexicon`;
+export const lexiconOf = (agent: string): string => `/v1/agents/${encodeURIComponent(agent)}/lexicon`;
 
 export const group: Group = {
   purpose: "an agent's words: how the voice says them and what the ears must know",
@@ -101,7 +101,7 @@ export async function run(argv: string[], how: Wording = {}): Promise<number> {
 }
 
 /** Editable form of the lexicon: word → spoken form, plus the heard list. */
-interface Words {
+export interface Words {
   said: Record<string, string>;
   heard: string[];
 }
@@ -115,7 +115,7 @@ function bodyOf(words: Words): LexiconBody {
 }
 
 // Read-modify-write of the whole row, guarded by the version it was read at.
-async function changed(door: Door, lexicon: string, team: boolean, note: string | undefined, change: (words: Words) => Words): Promise<LexiconAnswer> {
+export async function changed(door: Door, lexicon: string, team: boolean, note: string | undefined, change: (words: Words) => Words): Promise<LexiconAnswer> {
   const standing = await asked<LexiconAnswer>(door, lexicon);
   // The words start from what this key reads; the guard is the version of the corner the gateway
   // writes, or two saves at once overwrite each other, or a person's first one is refused.

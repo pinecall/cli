@@ -37,8 +37,8 @@ export const group: Group = {
   install, exits, or registers nothing is reported with its last lines, and the one before keeps
   serving.
 
-  What travels is what git would commit — or every file, outside a checkout — never node_modules,
-  .git, dist or any .env. The sandbox's box unless --prod.
+  What travels is every file the project's .gitignore files leave in — read where each sits, no git
+  asked — never node_modules, .git, dist or any .env. The sandbox's box unless --prod.
 
   (none)             upload this folder as the app's next release, and follow it until it is live
   list               the org's hosted apps: the newest release, the one serving, and why one failed
@@ -73,25 +73,25 @@ const VERBS = ["up", "list", "releases", "rollback", "logs", "stop", "start", "r
 
 type Verb = (typeof VERBS)[number];
 
-const A_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+export const A_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 // The runner beats every five seconds, installs within five minutes and waits two for a register.
 const EVERY_MS = 3000;
 
 const WITHIN_MS = 8 * 60 * 1000;
 
-const NOT_A_NAME = (name: string): string =>
+export const NOT_A_NAME = (name: string): string =>
   `${name} is no name for an app: lower-case letters and digits joined by dashes — pass --name support`;
 
-const NOTHING_TO_SEND = "nothing to send: this folder holds no file a release would carry";
+export const NOTHING_TO_SEND = "nothing to send: this folder holds no file a release would carry";
 
 // The box installs the project and runs its own `pinecall start`, which serves through its own framework.
 const SERVED_BY = ["pinecall", "@pinecall/agents"] as const;
 
-const NOT_SERVABLE = (missing: readonly string[]): string =>
+export const NOT_SERVABLE = (missing: readonly string[]): string =>
   `Pinecall starts this project with its own \`pinecall start\`, and its package.json does not list ${missing.join(" or ")} in dependencies: npm i ${missing.join(" ")}`;
 
-const NOT_HOSTED = (file: string): string =>
+export const NOT_HOSTED = (file: string): string =>
   `Pinecall hosts TypeScript projects, and ${file} is not one: run \`pinecall start\` on a server of your own, with a server's token in PINECALL_KEY`;
 
 const NOT_A_RELEASE = (said: string): string => `rollback ${said}: a release is its number, from \`pinecall deploy releases\``;
@@ -192,7 +192,7 @@ export async function run(argv: string[], how: Deploying = {}): Promise<number> 
   }
 }
 
-function notDependedOn(cwd: string): string[] {
+export function notDependedOn(cwd: string): string[] {
   const manifest = join(cwd, "package.json");
   const listed = existsSync(manifest)
     ? ((JSON.parse(readFileSync(manifest, "utf8")) as { dependencies?: Record<string, string> }).dependencies ?? {})
@@ -200,13 +200,13 @@ function notDependedOn(cwd: string): string[] {
   return SERVED_BY.filter((name) => !(name in listed));
 }
 
-function sourcesOf(cwd: string): Buffer {
+export function sourcesOf(cwd: string): Buffer {
   const files = projectFiles(cwd);
   return files.length === 0 ? Buffer.alloc(0) : packed(cwd, files);
 }
 
 // The body is the tarball itself: `knocked` sends JSON.
-async function uploaded(door: Door, name: string, source: Buffer, note: string): Promise<Release> {
+export async function uploaded(door: Door, name: string, source: Buffer, note: string): Promise<Release> {
   const query = note === "" ? "" : `?note=${encodeURIComponent(note.slice(0, 200))}`;
   const answered = await fetch(`${door.url.replace(/\/$/, "")}${appPath(name)}/releases${query}`, {
     method: "POST",
@@ -241,7 +241,7 @@ async function followed(door: Door, sent: Release, following: Following): Promis
   return 1;
 }
 
-function standing(app: HostedApp, ours: number): { line: string; code: number } | undefined {
+export function standing(app: HostedApp, ours: number): { line: string; code: number } | undefined {
   if (app.live_release === ours) return { line: `${app.name}: release ${ours} is live`, code: 0 };
   if (app.release !== null && app.release > ours) return { line: REPLACED(ours, app.release), code: 1 };
   if (app.release === ours && app.failed_why !== null) {
@@ -280,7 +280,7 @@ function releasesOf(answered: ReleaseList, asJson: boolean, out: NodeJS.Writable
   return 0;
 }
 
-function appPath(name: string): string {
+export function appPath(name: string): string {
   return `/v1/hosted/${encodeURIComponent(name)}`;
 }
 

@@ -1,6 +1,6 @@
 /** HTTP client for the gateway's eval endpoints: run a suite, read runs, read a call log. */
 
-import { type ModelConfig } from "@pinecall/agents/wire";
+import { type ExtractionGolden, type ExtractionRun, type ModelConfig } from "@pinecall/agents/wire";
 import { type Camel } from "@pinecall/agents/wire";
 import { type SessionLine } from "@pinecall/agents/wire";
 
@@ -111,6 +111,14 @@ export interface Door {
 /** Run and score every golden through the app holding the agent. */
 export async function aRun(door: Door, wanted: Wanted): Promise<EvalRun> {
   return await asked<EvalRun>(door, "/v1/evals/run", { method: "POST", body: wanted });
+}
+
+/** Run each case through one extraction on the gateway, scored by code. */
+export async function extracted(door: Door, agent: string, cases: ExtractionGolden[]): Promise<ExtractionRun> {
+  return await asked<ExtractionRun>(door, `/v1/agents/${encodeURIComponent(agent)}/memory/extraction`, {
+    method: "POST",
+    body: { cases },
+  });
 }
 
 /** Recent runs, newest first, optionally for one agent. */

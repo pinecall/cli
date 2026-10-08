@@ -10,7 +10,8 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { type ExtractionGolden, type ExtractionRun } from "@pinecall/agents/wire";
 
-import { CASES, extracted, linesOf, NO_CASES, run } from "../src/remember.js";
+import { CASES, linesOf, NO_CASES, run } from "../src/remember.js";
+import { extracted } from "../src/testing/gateway.js";
 import type { Child } from "../src/child.js";
 import type { Started } from "../src/language.js";
 import { pointingAt } from "./home.js";

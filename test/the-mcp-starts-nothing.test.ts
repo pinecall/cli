@@ -20,7 +20,8 @@ function withoutComments(text: string): string {
 /** The modules a file imports: relative ones resolved to their .ts file, packages as written. */
 function importsOf(file: string, dynamic: boolean): string[] {
   const text = withoutComments(readFileSync(file, "utf8"));
-  const found = [...text.matchAll(STATIC)].map((match) => match[1] ?? match[2] ?? "");
+  // `import type` is erased when compiled: it never loads the module it names.
+  const found = [...text.matchAll(STATIC)].filter((match) => !/^(?:import|export)\s+type\b/.test(match[0])).map((match) => match[1] ?? match[2] ?? "");
   if (dynamic) found.push(...[...text.matchAll(DYNAMIC)].map((match) => match[1] ?? ""));
   return found.filter((spec) => spec !== "").map((spec) => (spec.startsWith(".") ? resolve(dirname(file), spec.replace(/\.js$/, ".ts")) : spec));
 }

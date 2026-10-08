@@ -8,6 +8,7 @@ import { signed } from "@pinecall/agents/client";
 import WebSocket from "ws";
 
 import { answered, NOTHING_OWED, owing, sent, type Owed } from "./answered.js";
+import { BACK_TRIES, chatUrl, waitBack, type Opened } from "./chat-url.js";
 import { spawnServing, whileServing, type Spawns } from "./child.js";
 import { theDoor, type Open } from "./env.js";
 import type { Group } from "./groups.js";
@@ -89,32 +90,6 @@ export async function run(argv: string[], spawns: Spawns = spawnServing): Promis
     };
     return await talk(address, door, values.events === true);
   }, spawns);
-}
-
-/** How a written call opens: which process serves it, who calls, who plays them, in what state. */
-export interface Opened {
-  /** Pin the serving process; otherwise the gateway picks the newest socket holding the agent. */
-  app?: string;
-  /** The contact memory files the call under. */
-  contact?: string;
-  /** The simulated persona; the gateway records it on `call.started` for attribution. */
-  persona?: string;
-  /** The state the call opens in, carried on its `call.started`. */
-  state?: Record<string, unknown>;
-}
-
-/** The `/v1/chat` WebSocket URL for a gateway base URL. */
-export function chatUrl(base: string, agent: string, opened: Opened = {}): string {
-  const url = new URL(base);
-  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-  url.pathname = `${url.pathname.replace(/\/$/, "")}/v1/chat`;
-  url.searchParams.set("agent", agent);
-  // searchParams encodes each value: a raw `+` in a contact would arrive as a space.
-  if (opened.app !== undefined) url.searchParams.set("app", opened.app);
-  if (opened.contact !== undefined) url.searchParams.set("contact", opened.contact);
-  if (opened.persona !== undefined) url.searchParams.set("persona", opened.persona);
-  if (opened.state !== undefined) url.searchParams.set("state", JSON.stringify(opened.state));
-  return url.toString();
 }
 
 // Each typed line is one turn; each frame is one log entry. The key goes in the Authorization
@@ -224,16 +199,6 @@ export const LONGEST_ANSWER_MS = 60_000;
 
 // How long a hang-up waits for the gateway to end the call and close the socket.
 const HANG_UP_WITHIN_MS = 5_000;
-
-// Reconnect budget: about a minute in total, enough for a gateway restart.
-export const BACK_TRIES = 15;
-const BACK_FIRST_MS = 500;
-const BACK_CAP_MS = 5_000;
-
-/** Exponential backoff before the `back`-th reconnect attempt. */
-export function waitBack(back: number): number {
-  return Math.min(BACK_FIRST_MS * 2 ** (back - 1), BACK_CAP_MS);
-}
 
 /** The chat URL with `call` set, to resume that call. */
 function withCall(address: string, call: string): string {

@@ -1,6 +1,6 @@
 /** Console door for simulated calls against the agent class in this directory. */
 
-import { aSimulation, degradedBy, ONLY_ON_A_LINE, TURNS, type Simulated, type Simulation } from "../simulate.js";
+import { aSimulation, degradedBy, ONLY_ON_A_LINE, TURNS, type Simulated, type Simulation } from "../simulation.js";
 import type { Served } from "../serving.js";
 import { NOBODY, personaNamed, type Persona } from "../testing/personas.js";
 import type { Door } from "../testing/gateway.js";

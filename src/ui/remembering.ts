@@ -7,7 +7,8 @@ import { type ExtractionGolden, type ExtractionRun, type MemoryScore } from "@pi
 
 import { theQuestionsIn } from "../docs.js";
 import { AN_EMPTY_GOLDEN, NO_GOLDEN, recalledOn } from "../memory.js";
-import { CASES, extracted, NO_CASES } from "../remember.js";
+import { CASES, NO_CASES } from "../remember.js";
+import { extracted } from "../testing/gateway.js";
 import type { Door } from "../testing/gateway.js";
 import { casesIn } from "../testing/goldens.js";
 import { MEMORY_GOLDEN, type Home } from "../home.js";

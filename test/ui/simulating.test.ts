@@ -2,7 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { TURNS, type Simulated, type Simulation } from "../../src/simulate.js";
+import { TURNS, type Simulated, type Simulation } from "../../src/simulation.js";
 
 /** A simulation as the door asks for one: the agent served is the piece's to add. */
 type Asked = Omit<Simulation, "served">;

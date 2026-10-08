@@ -1,0 +1,125 @@
+/** An agent the MCP server holds: in a thread of its own, or attached to the process that already holds it, and reloaded on a save. */
+
+import { type FSWatcher, watch } from "node:fs";
+import { hostname } from "node:os";
+import { basename, sep } from "node:path";
+
+import type { AppList } from "@pinecall/agents/wire";
+
+import type { Open } from "../../env.js";
+import type { Home } from "../../home.js";
+import { languageOf, servingOne } from "../../language.js";
+import { asked } from "../../testing/gateway.js";
+import { Refused } from "../tool.js";
+import { Logs, threadServing, type Thread } from "./thread.js";
+
+// A save is a burst of writes: one reload after it settles.
+const SETTLES_MS = 300;
+const NEVER_WATCHED = new Set(["node_modules", ".git", "dist", ".pinecall", "test", "docs"]);
+
+export const RUN_IT_YOURSELF = (language: string, root: string): string =>
+  `a ${language} agent is run by ${language}: \`pinecall start --watch\` in ${root}, then call start again`;
+
+/** One agent held: who serves its calls, which version, and why the newest one did not load if it did not. */
+export class Held {
+  readonly logs = new Logs();
+  version = 0;
+  /** The load's own sentence when the newest save does not load; the version before keeps answering. */
+  broken: string | undefined;
+  private thread: Thread | undefined;
+  private attached: string | undefined;
+  private watcher: FSWatcher | undefined;
+  private reloading: Promise<void> = Promise.resolve();
+
+  constructor(
+    readonly door: Open,
+    readonly home: Home,
+  ) {}
+
+  /** The app id the agent's calls reach, held here or found. */
+  app(): string | undefined {
+    return this.attached ?? this.thread?.app(this.home.name);
+  }
+
+  /** Whether this server runs the agent itself or talks to a process somebody else started. */
+  how(): "thread" | "attached" | "stopped" {
+    if (this.attached !== undefined) return "attached";
+    return this.thread === undefined ? "stopped" : "thread";
+  }
+
+  /** Attach to a process of this machine already holding the slug, else start a thread (TypeScript only) and watch the folder. */
+  async start(): Promise<void> {
+    const found = await theAppHere(this.door, this.home.name);
+    if (found !== undefined) {
+      this.attached = found;
+      return;
+    }
+    const language = languageOf(this.home.file);
+    if (language !== "typescript") throw new Refused(RUN_IT_YOURSELF(language === "ruby" ? "Ruby" : "Python", this.home.root));
+    this.thread = await this.started();
+    this.version = 1;
+    this.watcher = watch(this.home.root, { recursive: true }, (_event, file) => {
+      if (file !== null && !String(file).split(sep).some((part) => NEVER_WATCHED.has(part)) && basename(String(file)) !== ".env") this.saved();
+    });
+  }
+
+  /** Every tool that talks to the agent awaits a reload in flight first, then refuses with the load's sentence if the save broke it. */
+  async ready(): Promise<string> {
+    await this.reloading;
+    if (this.broken !== undefined) throw new Refused(`the newest save does not load, so nothing was asked of the version before: ${this.broken}`);
+    const app = this.app();
+    if (app === undefined) throw new Refused(`${this.home.name} is not held: call start`);
+    return app;
+  }
+
+  /** Drain the thread and stop watching; an attached process is left as it was. */
+  async stop(): Promise<void> {
+    this.watcher?.close();
+    this.watcher = undefined;
+    this.attached = undefined;
+    const thread = this.thread;
+    this.thread = undefined;
+    if (thread !== undefined) await thread.stop();
+  }
+
+  private timer: NodeJS.Timeout | undefined;
+
+  private saved(): void {
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => (this.reloading = this.reloading.then(() => this.reload())), SETTLES_MS);
+  }
+
+  // A release in miniature: the new thread registers, then the one before drains; one that does not load never replaces it.
+  private async reload(): Promise<void> {
+    let next: Thread | undefined;
+    try {
+      next = await this.started();
+    } catch (failed) {
+      this.broken = failed instanceof Error ? failed.message : String(failed);
+      return;
+    }
+    const before = this.thread;
+    this.thread = next;
+    this.version += 1;
+    this.broken = undefined;
+    this.logs.add(`── version ${this.version} answering`);
+    await before?.stop();
+  }
+
+  private async started(): Promise<Thread> {
+    const thread = threadServing(servingOne(this.door, this.home, { console: false }), this.logs);
+    try {
+      await thread.registered(this.home.name);
+      return thread;
+    } catch (failed) {
+      await thread.stop();
+      throw failed;
+    }
+  }
+}
+
+/** The app of this machine already holding the slug, so two windows never fight for the line. */
+export async function theAppHere(door: Open, slug: string): Promise<string | undefined> {
+  const { apps } = await asked<AppList>(door, "/v1/apps");
+  return apps.find((one) => one.agents.includes(slug) && one.host === hostname() && one.holder !== null)?.app;
+}

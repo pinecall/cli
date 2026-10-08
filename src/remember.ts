@@ -11,7 +11,7 @@ import { theDoor } from "./env.js";
 import type { Group } from "./groups.js";
 import { AGENT_FLAG, oneHome } from "./home.js";
 import { servingOne } from "./language.js";
-import { asked, type Door } from "./testing/gateway.js";
+import { extracted } from "./testing/gateway.js";
 import { casesIn, matching } from "./testing/goldens.js";
 import { BROKEN, HELD } from "./testing/score.js";
 import { refusal } from "./whoami.js";
@@ -95,13 +95,6 @@ export async function run(argv: string[], how: Running = {}): Promise<number> {
   }, how.spawns);
 }
 
-/** Run each case through one extraction on the gateway, scored by code. */
-export async function extracted(door: Door, agent: string, cases: ExtractionGolden[]): Promise<ExtractionRun> {
-  return await asked<ExtractionRun>(door, `/v1/agents/${encodeURIComponent(agent)}/memory/extraction`, {
-    method: "POST",
-    body: { cases },
-  });
-}
 
 /** Format a run: a summary line, then details for each failed case. */
 export function linesOf(answer: ExtractionRun): string[] {

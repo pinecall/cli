@@ -13,6 +13,8 @@ interface Declared<Shape extends z.ZodRawShape> {
   /** When to use it and what it answers, read by the model once, in the server's instructions. */
   manual: string;
   handler: (args: z.infer<z.ZodObject<Shape>>, session: Session) => Promise<unknown>;
+  /** The values of its answer no scrubbing may hide: a console link's one-use code, and nothing else. */
+  reveals?: (result: unknown) => string[];
 }
 
 /** A tool as the server lists it: its schema checks what a host sends before the handler sees it. */
@@ -22,6 +24,7 @@ export interface Tool {
   manual: string;
   schema: z.ZodRawShape;
   call(args: unknown, session: Session): Promise<unknown>;
+  reveals?: ((result: unknown) => string[]) | undefined;
 }
 
 /** Declare a tool; its handler receives arguments already checked against its schema. */
@@ -33,6 +36,7 @@ export function tool<Shape extends z.ZodRawShape>(declared: Declared<Shape>): To
     manual: declared.manual,
     schema: declared.schema,
     call: (args, session) => declared.handler(checked.parse(args ?? {}), session),
+    reveals: declared.reveals,
   };
 }
 
