@@ -29,7 +29,7 @@ checkout beside this one when its version satisfies that range, so nothing is bu
   its process), `companion.ts` + `ui/` (what answers a console), `testing/`, `runs/`
 - `test/` mirrors `src/`; `the-tree` and `the-imports` are the tree's rules; `clinic/` and
   `bidfire/` are projects the verbs run against
-- `docs/` `the-cli.md` and `deploying.md` — published on docs.pinecall.io
+- `docs/` `quickstart.md`, `the-cli.md` and `deploying.md` — published on docs.pinecall.io
 
 ## Docs are part of the change
 
