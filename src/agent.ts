@@ -9,7 +9,7 @@ import { filesRun } from "./agent-files.js";
 import { knowledgeRun } from "./agent-knowledge.js";
 import { listed, stopped } from "./agent-processes.js";
 import { versionsRun } from "./agent-versions.js";
-import type { Editor } from "./agent-knowledge.js";
+import { inTheEditor, type Editor } from "./editor.js";
 import { theDoor } from "./env.js";
 import type { Group } from "./groups.js";
 import { agentOfThisDirectory, notASlug } from "./home.js";
@@ -197,7 +197,7 @@ export async function run(argv: string[], how: Setting = {}): Promise<number> {
       return await versionsRun(door, agent, verb, rest, values, out, err);
     }
     if (verb === "pull" || verb === "push") return await filesRun(door, agent, verb, rest, values, out, err);
-    if (verb === "knowledge") return await knowledgeRun(door, agent, rest[0], values, out, err, how.editor);
+    if (verb === "knowledge") return await knowledgeRun(door, agent, rest[0], values, out, err, how.editor ?? inTheEditor);
   } catch (refused) {
     // The gateway's refusal message is specific; print it as-is.
     err.write(`${refusal(refused)}\n`);
