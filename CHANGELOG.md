@@ -10,6 +10,7 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - `pinecall test --case <name>` (repeatable) plays cases of the org's dataset by name, a pending one too; `--dataset` plays every approved case; with either and no paths, only the cases run and `test/goldens` is not needed. `--version n` runs every call on that version of the agent's settings. A golden's `expect` takes `judges`: hang-up judges asked again by name.
 - `pinecall cases`: the org's dataset, real calls kept as cases — the inbox (`--status`), `show` one whole with the commands that come next, `approve`, `dismiss` (`--judge-was-wrong <judge>`, `--note`), `reopen`, `pull` its golden into `test/<agent>/goldens/` and mark it kept in the repository, `keep <call> --name x` a finished call, `forget` one. A case is named within the agent.
+- `pinecall mcp` has `cases`, the same verbs for an assistant (`list`, `show`, `approve`, `dismiss`, `reopen`, `pull`, `keep`, `forget`), and `test` takes `case`, `dataset` and `version`.
 
 ### Changed
 

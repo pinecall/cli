@@ -8,7 +8,7 @@ import { replayed } from "../../eval.js";
 import { CANDIDATES, promotedTo } from "../../runs/candidate.js";
 import { theDrift } from "../../runs/drift.js";
 import { movedBetween } from "../../runs/suites.js";
-import { aRun, oneRun, theRuns, type EvalRun, type Wanted } from "../../testing/gateway.js";
+import { aRun, oneRun, theRuns, type EvalRun, type Played, type Wanted } from "../../testing/gateway.js";
 import { goldensIn, matching } from "../../testing/goldens.js";
 import { modelOf } from "../../testing/models.js";
 import { held, reportOfTheRun } from "../../testing/suite.js";
@@ -29,10 +29,13 @@ export const test = tool({
     voice: z.boolean().optional().describe("say the goldens out loud on a real line"),
     background_noise: z.number().optional().describe("spoken runs: dB of noise under the caller"),
     packet_loss: z.number().min(0).max(1).optional().describe("spoken runs: the share of the caller's packets lost, 0 to 1"),
+    case: z.array(z.string().min(1)).optional().describe("cases of the org's dataset to play, by name, whatever their status (`cases` lists them); with `case` or `dataset`, only the cases are played, not the goldens"),
+    dataset: z.boolean().optional().describe("play every case a person approved, not held out and not kept in the repository: the nightly"),
+    version: z.number().int().min(1).optional().describe("play every call on this version of the agent's settings instead of the one standing"),
     wait_s: WAIT,
   },
   manual:
-    "`test run` runs the goldens in `test/<agent>/goldens/` through the agent `start` holds, the gateway driving and scoring each conversation, a column per model in `models`. It answers the matrix once done — every golden held or broken, with the evidence, each call's latency, and a reproduction written under `.pinecall/evals/` for each that broke — or, past `wait_s`, the run's id: call `test wait` to keep waiting. One run per agent at a time. A spoken run (`voice`) can add noise and packet loss.",
+    "`test run` runs the goldens in `test/<agent>/goldens/` through the agent `start` holds, the gateway driving and scoring each conversation, a column per model in `models`. It answers the matrix once done — every golden held or broken, with the evidence, each call's latency, and a reproduction written under `.pinecall/evals/` for each that broke — or, past `wait_s`, the run's id: call `test wait` to keep waiting. One run per agent at a time. A spoken run (`voice`) can add noise and packet loss. `case` names cases of the org's dataset to play instead of the goldens — a pending one too, which reproduces the call that broke — and `dataset` plays every approved one; cases play in the sandbox only. `version` runs every call on that version of the agent's settings. The run plays on the key's corner: a person's own in the sandbox, where CI's server token plays on the team's.",
   handler: async (args, session) => {
     const held_ = session.holding(args.agent);
     const waitS = args.wait_s ?? WAIT_S;
@@ -43,8 +46,15 @@ export const test = tool({
     }
     if (pending !== undefined) throw new Refused(`a run of ${held_.home.name} is in flight: call test with action wait for it`);
     const app = await held_.ready();
-    const goldens = matching(await goldensIn([held_.home.goldens]), args.grep);
-    if (goldens.length === 0) throw new Refused(`no golden${args.grep === undefined ? "" : ` matching ${args.grep}`} in ${held_.home.goldens}`);
+    const played: Played = {
+      ...(args.case === undefined ? {} : { cases: [...new Set(args.case)] }),
+      ...(args.dataset === true ? { dataset: true } : {}),
+      ...(args.version === undefined ? {} : { version: args.version }),
+    };
+    // Cases asked: only the cases, as `pinecall test --case` with no paths.
+    const onlyCases = played.cases !== undefined || played.dataset === true;
+    const goldens = onlyCases ? [] : matching(await goldensIn([held_.home.goldens]), args.grep);
+    if (goldens.length === 0 && !onlyCases) throw new Refused(`no golden${args.grep === undefined ? "" : ` matching ${args.grep}`} in ${held_.home.goldens}`);
     const models = (args.models ?? []).map((one) => {
       const model = modelOf(one);
       if (model === undefined) throw new Refused(`${one} names no model: vendor/model, a vendor's model, or haiku, sonnet, opus`);
@@ -53,6 +63,7 @@ export const test = tool({
     const wanted: Wanted = {
       agent: held_.home.name,
       goldens,
+      ...played,
       app,
       ...(models.length > 0 ? { models } : {}),
       ...(args.voice === true ? { voice: true } : {}),

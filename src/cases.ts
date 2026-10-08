@@ -6,7 +6,7 @@ import { caseLines, inboxLines } from "./case-lines.js";
 import { theDoor } from "./env.js";
 import type { Group } from "./groups.js";
 import { AGENT_FLAG, oneHome, slugOfAgentFile } from "./home.js";
-import { casesOf, caseNamed, decided, forgotten, keptAsCase, pulled, STATUSES, type CaseStatus, type EvalCase } from "./testing/cases.js";
+import { A_NOTE_ALONE, casesOf, caseNamed, decided, forgotten, keptAsCase, pulled, STATUSES, type CaseStatus, type EvalCase } from "./testing/cases.js";
 import type { Door } from "./testing/gateway.js";
 import { refusal } from "./whoami.js";
 
@@ -75,8 +75,6 @@ const FLAGS: Record<Verb, readonly string[]> = {
 const NOT_A_STATUS = (said: string): string => `--status ${said}: ${STATUSES.join(", ")}`;
 
 const NOT_ITS_FLAG = (flag: string, verb: Verb): string => `--${flag} means nothing to \`cases ${verb}\`: \`pinecall cases --help\` says which verb takes it`;
-
-const A_NOTE_ALONE = "--note is kept on the judge's calibration label, so it goes with --judge-was-wrong <judge>";
 
 const KEEP_NEEDS_A_NAME = "keep names the case it makes: --name x, the name `pinecall test --case` plays it by";
 
@@ -147,7 +145,7 @@ function whyNot(verb: Verb, values: Asked): string | undefined {
   const stray = Object.keys(values).find((flag) => !taken.has(flag));
   if (stray !== undefined) return NOT_ITS_FLAG(stray, verb);
   if (values.status !== undefined && !isStatus(values.status)) return NOT_A_STATUS(values.status);
-  if (values.note !== undefined && values["judge-was-wrong"] === undefined) return A_NOTE_ALONE;
+  if (values.note !== undefined && values["judge-was-wrong"] === undefined) return `--${A_NOTE_ALONE}`;
   if (verb === "keep" && (values.name === undefined || values.name.trim() === "")) return KEEP_NEEDS_A_NAME;
   return undefined;
 }

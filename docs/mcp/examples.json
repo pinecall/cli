@@ -844,6 +844,56 @@
       }
     }
   ],
+  "cases": [
+    {
+      "args": {
+        "action": "list"
+      },
+      "answer": {
+        "cases": [
+          {
+            "id": "case_5b1e2d7a90c4",
+            "agent": "front-desk",
+            "name": "promises-will-you-call-me-back-4c81e2",
+            "golden": {
+              "name": "promises-will-you-call-me-back-4c81e2",
+              "state": {},
+              "input": [
+                "Will you call me back tomorrow about my refund?",
+                "… 1 more"
+              ],
+              "memory": [],
+              "events": [],
+              "today": "2026-10-08",
+              "expect": {
+                "judges": [
+                  "promises"
+                ]
+              },
+              "promoted_from": "call_9a4c0f2e7b1d4c6e8f3a5b7c9d4c81e2"
+            },
+            "source_call": "call_9a4c0f2e7b1d4c6e8f3a5b7c9d4c81e2",
+            "source_env": "production",
+            "held_out": false,
+            "author": "the hang-up panel",
+            "created_at": 1791490546.07,
+            "status": "pending",
+            "broke": [
+              {
+                "judge": "promises",
+                "reason": "the agent promised a call back tomorrow, and no tool scheduled one"
+              }
+            ],
+            "source_version": 3,
+            "kept_in_repo": false,
+            "decided_by": null
+          }
+        ],
+        "pending": 1,
+        "pending_at_most": 50
+      }
+    }
+  ],
   "docs": [
     {
       "args": {

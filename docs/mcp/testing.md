@@ -7,7 +7,7 @@ tool's own schema, as the assistant sees it — and one real call, answered by P
 
 Run the agent's goldens through the agent this server holds, under every model named, written or said out loud; waits for the matrix.
 
-`test run` runs the goldens in `test/<agent>/goldens/` through the agent `start` holds, the gateway driving and scoring each conversation, a column per model in `models`. It answers the matrix once done — every golden held or broken, with the evidence, each call's latency, and a reproduction written under `.pinecall/evals/` for each that broke — or, past `wait_s`, the run's id: call `test wait` to keep waiting. One run per agent at a time. A spoken run (`voice`) can add noise and packet loss.
+`test run` runs the goldens in `test/<agent>/goldens/` through the agent `start` holds, the gateway driving and scoring each conversation, a column per model in `models`. It answers the matrix once done — every golden held or broken, with the evidence, each call's latency, and a reproduction written under `.pinecall/evals/` for each that broke — or, past `wait_s`, the run's id: call `test wait` to keep waiting. One run per agent at a time. A spoken run (`voice`) can add noise and packet loss. `case` names cases of the org's dataset to play instead of the goldens — a pending one too, which reproduces the call that broke — and `dataset` plays every approved one; cases play in the sandbox only. `version` runs every call on that version of the agent's settings. The run plays on the key's corner: a person's own in the sandbox, where CI's server token plays on the team's.
 
 | parameter | takes | | what it is |
 |---|---|---|---|
@@ -18,6 +18,9 @@ Run the agent's goldens through the agent this server holds, under every model n
 | `voice` | true or false |  | say the goldens out loud on a real line |
 | `background_noise` | a number |  | spoken runs: dB of noise under the caller |
 | `packet_loss` | a number 0–1 |  | spoken runs: the share of the caller's packets lost, 0 to 1 |
+| `case` | a list of texts |  | cases of the org's dataset to play, by name, whatever their status (`cases` lists them); with `case` or `dataset`, only the cases are played, not the goldens |
+| `dataset` | true or false |  | play every case a person approved, not held out and not kept in the repository: the nightly |
+| `version` | a whole number 1 or more |  | play every call on this version of the agent's settings instead of the one standing |
 | `wait_s` | a whole number 0–50 |  | how long to wait before answering what is known so far, in seconds; 25 when left out |
 
 ```json title="called with"
@@ -145,6 +148,76 @@ The suites the gateway kept: the newest, one run's matrix, what moved between tw
     },
     "… 9 more"
   ]
+}
+```
+
+## `cases`
+
+The org's dataset: real calls kept as cases — the inbox, one case whole, approved into the nightly, dismissed, reopened, pulled into the repository as a golden, a call kept, one forgotten.
+
+`cases` is the dataset real calls make: a call a judge broke on is kept at hang-up as a pending case — its caller's lines, the state it opened in, and an expect that says what must not happen again. `list` answers the agent's cases and how many wait; `show` one whole. Reproduce one with `test` and `case`, fix the agent, then `approve` it (the nightly, `test` with `dataset`, plays it) or `dismiss` it — `judge_was_wrong` when the judge that broke should have held. `pull` writes its golden into `test/<agent>/goldens/` and marks it kept in the repository, so the nightly plays the file. `keep` keeps a finished call as an approved case. A case is named within the agent.
+
+| parameter | takes | | what it is |
+|---|---|---|---|
+| `action` | `list` · `show` · `approve` · `dismiss` · `reopen` · `pull` · `keep` · `forget` | required | list the agent's cases, the pending first; show one whole; approve it into the nightly; dismiss it; reopen it as pending; pull its golden into the agent's goldens folder and mark it kept in the repository; keep a finished call as a case; forget one |
+| `agent` | text |  | the agent's name; the project's only agent when left out |
+| `name` | text |  | the case's name within the agent; `keep`: the name the new case is played by |
+| `status` | `pending` · `approved` · `dismissed` |  | `list`: only the cases in this status; every status when left out |
+| `call` | text |  | `keep`: the finished call to keep as an approved case |
+| `held_out` | true or false |  | `keep`: played only when a run names it, never by the nightly |
+| `judge_was_wrong` | text |  | `dismiss`: the judge that broke and should have held, kept as a calibration label of the call |
+| `note` | text |  | `dismiss`: why, kept on that label; only beside judge_was_wrong |
+| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+
+```json title="called with"
+{
+  "action": "list"
+}
+```
+
+```json title="answered"
+{
+  "cases": [
+    {
+      "id": "case_5b1e2d7a90c4",
+      "agent": "front-desk",
+      "name": "promises-will-you-call-me-back-4c81e2",
+      "golden": {
+        "name": "promises-will-you-call-me-back-4c81e2",
+        "state": {},
+        "input": [
+          "Will you call me back tomorrow about my refund?",
+          "… 1 more"
+        ],
+        "memory": [],
+        "events": [],
+        "today": "2026-10-08",
+        "expect": {
+          "judges": [
+            "promises"
+          ]
+        },
+        "promoted_from": "call_9a4c0f2e7b1d4c6e8f3a5b7c9d4c81e2"
+      },
+      "source_call": "call_9a4c0f2e7b1d4c6e8f3a5b7c9d4c81e2",
+      "source_env": "production",
+      "held_out": false,
+      "author": "the hang-up panel",
+      "created_at": 1791490546.07,
+      "status": "pending",
+      "broke": [
+        {
+          "judge": "promises",
+          "reason": "the agent promised a call back tomorrow, and no tool scheduled one"
+        }
+      ],
+      "source_version": 3,
+      "kept_in_repo": false,
+      "decided_by": null
+    }
+  ],
+  "pending": 1,
+  "pending_at_most": 50
 }
 ```
 

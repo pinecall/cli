@@ -3,6 +3,7 @@
 import type { Tool } from "../tool.js";
 import { agent } from "./agent.js";
 import { judges, personas, simulate } from "./callers.js";
+import { cases } from "./cases.js";
 import { chat } from "./chat.js";
 import { consoleTool } from "./console.js";
 import { logs, start, status, stop } from "./holding.js";
@@ -36,7 +37,7 @@ export const STAGES: readonly Stage[] = [
   { stage: "Calls, and what they run on", page: "calls", tools: [calls, call, pipeline, providers] },
   { stage: "The phone", page: "phone", tools: [line, numbers, carriers, callbacks] },
   { stage: "Supervising a live call", page: "supervising", tools: [supervise] },
-  { stage: "Testing", page: "testing", tools: [test, runs, simulate, personas, judges, evalTool] },
+  { stage: "Testing", page: "testing", tools: [test, runs, cases, simulate, personas, judges, evalTool] },
   { stage: "Knowledge and memory", page: "knowledge-and-memory", tools: [docs, memory, remember] },
   { stage: "Going live, and the docs", page: "going-live", tools: [deploy, docsSearch, getDoc] },
 ];

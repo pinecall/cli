@@ -133,8 +133,9 @@ Every parameter, and a real call of each: [Testing](mcp/testing.md).
 
 | tool | actions | what it does |
 |---|---|---|
-| `test` | `run` · `wait` | the goldens through the agent held, a column per model in `models`, written or spoken (`voice`, `background_noise`, `packet_loss` 0..1): the matrix, each call's latency, a reproduction for each golden that broke. One run per agent at a time |
-| `runs` | `list` · `show` · `diff` · `promote` · `drift` | the suites kept, what moved between two, a real call written as a golden candidate under `test/candidates/`, each judge's drift |
+| `test` | `run` · `wait` | the goldens through the agent held, a column per model in `models`, written or spoken (`voice`, `background_noise`, `packet_loss` 0..1): the matrix, each call's latency, a reproduction for each golden that broke. `case` plays cases of the org's dataset by name instead, `dataset` every approved one, `version` a version of the agent's settings. One run per agent at a time |
+| `runs` | `list` · `show` · `diff` · `promote` · `drift` | the suites kept, what moved between two, the golden the gateway derives from a real call written as a candidate under `test/candidates/`, each judge's drift |
+| `cases` | `list` · `show` · `approve` · `dismiss` · `reopen` · `pull` · `keep` · `forget` | the org's dataset — real calls kept as cases, the pending ones a judge broke on: the inbox, one whole, approved into the nightly, dismissed (`judge_was_wrong` labels the judge), reopened, pulled into `test/<agent>/goldens/` and marked kept in the repository, a finished call kept, one forgotten, by name |
 | `simulate` | `run` · `wait` | a persona's call against the agent held, the conversation and every judge's verdict; past `wait_s`, the transcript so far, and `wait` picks the rest up. One per agent at a time |
 | `personas` | `list` · `show` · `add` · `edit` · `rm` | the callers a model plays: a goal, a manner, facts, a rule for hanging up satisfied |
 | `judges` | `list` · `add` · `rm` | your own questions asked of the agent's calls, or every agent's with `org` |

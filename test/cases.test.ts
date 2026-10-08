@@ -241,7 +241,7 @@ describe("what is refused before the gateway is asked", () => {
     [["list", "--status", "waiting"], "--status waiting: pending, approved, dismissed"],
     [["show", "x", "--status", "pending"], "--status means nothing to `cases show`"],
     [["approve", "x", "--judge-was-wrong", "promises"], "--judge-was-wrong means nothing to `cases approve`"],
-    [["dismiss", "x", "--note", "why"], "--note is kept on the judge's calibration label"],
+    [["dismiss", "x", "--note", "why"], "--note is kept on the judge's calibration label, so it goes with the judge that was wrong"],
     [["keep", "call_1"], "keep names the case it makes: --name x"],
   ])("%j", async (argv, sentence) => {
     const { code, err } = await cases(argv);

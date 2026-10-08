@@ -65,6 +65,9 @@ export interface Decision {
   note?: string;
 }
 
+/** Why a note alone is refused: the gateway keeps it on the judge's label, and with no judge it would be dropped. */
+export const A_NOTE_ALONE = "note is kept on the judge's calibration label, so it goes with the judge that was wrong";
+
 /** A finished call to keep as an approved case; an expect left out is the one its broken verdicts give. */
 export interface Keeping {
   call: string;
