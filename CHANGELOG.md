@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.31] — `memory forget` asks for `--yes` where nobody can be asked
+
+### Changed
+
+- `pinecall memory forget` with nobody at a terminal erases only with `--yes`, as `pinecall data erase` does; before, a script erased without asking. `--yes` also skips the question on a terminal.
+
 ## [0.9.30] — the MCP reviewed against the plan: `prod` honoured, `simulate` waits, one packet-loss unit
 
 ### Changed

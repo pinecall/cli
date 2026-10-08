@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { factLine, recallLines, run } from "../src/memory.js";
+import { factLine, recallLines, run, SAY_YES } from "../src/memory.js";
 import { pointingAt } from "./home.js";
 import { written } from "./said.js";
 
@@ -134,6 +134,33 @@ describe("forgetting a contact", () => {
     expect(asked).toEqual([`forget everything memory kept about ${ANA}? [y/N] `]);
     expect(gateway.heard).toEqual([{ method: "DELETE", path: `/v1/contacts/${encodeURIComponent(ANA)}/memory`, body: null }]);
     expect(out.text()).toBe("forgotten: 2\n");
+  });
+
+  it("erases on --yes without asking, as a script must", async () => {
+    gateway.facts = [CURRENT, GONE];
+    const out = written();
+    const asked: string[] = [];
+
+    const code = await run(["forget", ANA, "--yes"], { out: out.stream, env, confirm: async (question) => (asked.push(question), false) });
+
+    expect(code).toBe(0);
+    expect(asked).toEqual([]);
+    expect(out.text()).toBe("forgotten: 2\n");
+  });
+
+  it("erases nothing with nobody at a terminal and no --yes, and says what to add", async () => {
+    const err = written();
+    const tty = process.stdin.isTTY;
+    process.stdin.isTTY = false;
+    try {
+      const code = await run(["forget", ANA], { err: err.stream, env });
+
+      expect(code).toBe(2);
+      expect(err.text()).toBe(`${SAY_YES(ANA)}\n`);
+      expect(gateway.heard).toEqual([]);
+    } finally {
+      process.stdin.isTTY = tty;
+    }
   });
 
   it("deletes nothing when the answer is no", async () => {

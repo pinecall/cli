@@ -1487,7 +1487,7 @@ golden is fixed and the index is the variable: never soften a question so a chan
 
 ```
 pinecall memory <contact>
-pinecall memory forget <contact>
+pinecall memory forget <contact> [--yes]
 pinecall memory policy [--agent <slug>] [--remember '…' …] [--forget '…' …] [--team] [--note '…']
 pinecall memory eval [golden.json] [--k <n>] [--agent <name>] [--file agent.tsx]
 ```
@@ -1495,7 +1495,8 @@ pinecall memory eval [golden.json] [--k <n>] [--agent <name>] [--file agent.tsx]
 Everything memory kept about one contact — the caller's number, or the id the app named — with the
 current facts first and the ones a later call superseded dimmed, with the date they stopped
 holding. `forget` erases all of it, the right to be forgotten; on a terminal it asks once, and
-prints how many facts went.
+prints how many facts went. With nobody at a terminal — a script, CI — it erases only with
+`--yes`, as `data erase` does, and exits 2 without it; `--yes` also skips the question.
 
 `eval` holds **recall** to a golden of `{holds, asks, expects}` — `test/<name>/goldens/memory.json`:
 each question brings its own facts, so no

@@ -15,7 +15,7 @@ import { asked, type Door } from "./testing/gateway.js";
 import { refusal } from "./whoami.js";
 
 const USAGE = `usage: pinecall memory <contact>
-       pinecall memory forget <contact>
+       pinecall memory forget <contact> [--yes]
        pinecall memory policy [--remember '…' …] [--forget '…' …] [--team] [--note '…'] [--agent <slug>]
        pinecall memory eval [golden.json] [--k <n>] [--agent <name>] [--file agent.tsx]`;
 
@@ -26,6 +26,10 @@ const EVAL = "/v1/contacts/memory/eval";
 export const NO_GOLDEN = (golden: string): string => `no golden at ${golden}: a JSON list of {holds, asks, expects}`;
 export const AN_EMPTY_GOLDEN = (golden: string): string =>
   `${golden} holds no questions: a golden is a JSON list of {holds, asks, expects}`;
+
+// An erasure is never done on nobody's word: `data erase` asks for --yes the same way.
+export const SAY_YES = (contact: string): string =>
+  `forgetting ${contact} cannot be undone, and nobody is at a terminal to say so: run it again with --yes`;
 
 // Superseded facts are dimmed on a TTY.
 const DIM = "\u001b[2m";
@@ -38,7 +42,8 @@ export const group: Group = {
   With a contact — the caller's number, or the id the app named — prints everything memory ever
   kept about them: the current facts first, then the ones a later call superseded, with the date
   they stopped holding. forget erases all of it, the right to be forgotten; on a terminal it asks
-  once, and it prints how many facts went.
+  once, and it prints how many facts went. Without a terminal (a script, CI) it erases only with
+  --yes, which also skips the question.
 
   eval asks recall every question of a golden — a JSON list of {holds, asks, expects}, where holds
   is what memory holds about that question's contact — and prints recall@k and nDCG@10, computed by
@@ -57,7 +62,7 @@ export interface Recalling {
   out?: NodeJS.WritableStream;
   err?: NodeJS.WritableStream;
   env?: NodeJS.ProcessEnv;
-  /** Ask the person to confirm a forget. */
+  /** Ask the person to confirm a forget; without it, a terminal is asked, and no terminal is no. */
   confirm?: (question: string) => Promise<boolean>;
 }
 
@@ -70,9 +75,15 @@ export async function run(argv: string[], how: Recalling = {}): Promise<number> 
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: { file: { type: "string" }, k: { type: "string" }, ...AGENT_FLAG },
+    options: { file: { type: "string" }, k: { type: "string" }, yes: { type: "boolean", default: false }, ...AGENT_FLAG },
   });
   const [verb, second] = positionals;
+  // Refused before the gateway is asked: nothing is read or erased on nobody's word.
+  const asking = values.yes === true ? undefined : (how.confirm ?? (process.stdin.isTTY === true ? askOnATerminal : undefined));
+  if (verb === "forget" && second !== undefined && values.yes !== true && asking === undefined) {
+    err.write(`${SAY_YES(second)}\n`);
+    return 2;
+  }
   const door = await theDoor(how.env ?? process.env, err);
   if (door === undefined) return 2;
   try {
@@ -81,7 +92,7 @@ export async function run(argv: string[], how: Recalling = {}): Promise<number> 
       return await evaluate(door, second, values.k, file, out, err);
     }
     if (verb === "forget" && second !== undefined) {
-      return await forget(door, second, how.confirm ?? askOnATerminal, out);
+      return await forget(door, second, asking, out);
     }
     if (verb !== undefined && verb !== "forget") return await history(door, verb, out);
   } catch (refused) {
@@ -108,10 +119,10 @@ async function history(door: Door, contact: string, out: NodeJS.WritableStream):
 async function forget(
   door: Door,
   contact: string,
-  confirm: (question: string) => Promise<boolean>,
+  confirm: ((question: string) => Promise<boolean>) | undefined,
   out: NodeJS.WritableStream,
 ): Promise<number> {
-  if (!(await confirm(`forget everything memory kept about ${contact}? [y/N] `))) {
+  if (confirm !== undefined && !(await confirm(`forget everything memory kept about ${contact}? [y/N] `))) {
     out.write("nothing forgotten\n");
     return 0;
   }
@@ -176,9 +187,7 @@ function memoryPath(contact: string): string {
   return `/v1/contacts/${encodeURIComponent(contact)}/memory`;
 }
 
-// Without a TTY (scripts, CI) the forget proceeds without asking.
 async function askOnATerminal(question: string): Promise<boolean> {
-  if (!process.stdin.isTTY) return true;
   const reading = createInterface({ input: process.stdin, output: process.stdout });
   const answer = await new Promise<string>((typed) => reading.question(question, typed));
   reading.close();
