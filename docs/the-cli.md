@@ -42,6 +42,7 @@ path end to end, with every output under it.
 | [`eval`](#eval) | one real call re-checked by code | yes |
 | [`sessions`](#sessions) | the calls this agent has run, and one of them whole | yes |
 | [`runs`](#runs) | the suites: list, show, diff, promote a call, watch the drift | yes |
+| [`cases`](#cases) | the org's dataset — real calls kept as cases: list, show, approve, dismiss, reopen, pull, keep, forget | yes |
 | [`agent`](#agent) | the agent's settings — yours, the team's, production's — set, knowledge, history, diff, rollback, pull, push | yes |
 | [`lexicon`](#lexicon) | an agent's words: how the voice says them and what the ears must know | yes |
 | [`pipeline`](#pipeline) | what it hears, decides and speaks with, as the next call would be built | yes |
@@ -561,7 +562,7 @@ at that many dB under them, and `--packet-loss` drops that share of their packet
 from 0 to 1 here (`0.05` is one in twenty), where `simulate` takes a percent.
 
 **The org's cases play beside the goldens.** A case is a real call kept as a golden by the
-gateway (`pinecall cases`). `--case <name>`, repeated, plays those cases by name, whatever their
+gateway ([`cases`](#cases)). `--case <name>`, repeated, plays those cases by name, whatever their
 status — a `pending` one too, which is how the call that broke is reproduced before anybody
 approves it. `--dataset` plays every case of the agent a person approved that is not held out and
 not kept in the repository: what a nightly asks for. With `--case` or `--dataset` and **no
@@ -783,6 +784,69 @@ verdicts `call.score` already carries. The window is the last `--window`; the ba
 before it, back to `--baseline` ago, so `--baseline` must be longer than `--window` or it is refused
 with exit 2. It reads the agent's newest `--limit` calls, **200** by default, which is the sessions
 endpoint's own ceiling, so a window wider than that is counted over those 200.
+
+## `cases`
+
+```
+pinecall cases [list] [--status pending|approved|dismissed] [--agent <name>] [--json]
+pinecall cases show <name> · approve <name> · reopen <name> · forget <name>
+pinecall cases dismiss <name> [--judge-was-wrong <judge>] [--note '…']
+pinecall cases pull <name> [--out test/<agent>/goldens]
+pinecall cases keep <call-id> --name x [--held-out]
+```
+
+**Real calls are the dataset.** A call a judge broke on is kept by the gateway at hang-up as a
+**pending** case — its caller's lines, the state it opened in, the facts the app gave it, what
+memory recalled, the day it ran — with an `expect` that says what must not happen again: the tool
+a broken `consent` ran unasked in `not_tools`, `grounded: true`, and every other judge that broke
+(`promises`, the compliance judges, the org's and the agent's own) in `judges`, asked again of
+the replay by name. A person reads it, reproduces it, fixes the agent, and approves it into the
+nightly or dismisses it:
+
+```console
+$ pinecall cases
+1 waiting of at most 50
+pending    promises-me-llaman-manana-por-29d7c7  promises  production  3h
+approved   jueves-tarde                          —         sandbox     2d
+
+$ pinecall cases show promises-me-llaman-manana-por-29d7c7
+promises-me-llaman-manana-por-29d7c7 · pending · clinica-norte
+  from call_29d7c7b6cdd643de9c659984a0125c8c (production, settings v4) · kept by the hang-up panel · 2026-10-08 11:02
+
+  broke
+    promises  it promised a call back nobody will make
+  the caller
+    "Me llaman mañana por lo del jueves"
+  state   {"stage":"book"}
+  today   2026-10-08
+  expect  {"judges":["promises"]}
+
+  pinecall test --case promises-me-llaman-manana-por-29d7c7     play it again through the agent this terminal serves
+  pinecall cases approve promises-me-llaman-manana-por-29d7c7   the nightly plays it from now on
+  pinecall cases dismiss promises-me-llaman-manana-por-29d7c7   nothing to fix; --judge-was-wrong <judge> when the judge was
+```
+
+The inbox lists the agent's cases, the pending first, newest first: status, name, the judges that
+broke, the world the call ran in, its age — and above them how many wait of the most that may
+(past it a broken call is judged as ever and not kept until a person decides some). `--status`
+lists one. A case is addressed by its **name** within the agent — the project's one, or the one
+`--agent` names; a name the agent has none of is said and **exit 1**.
+
+`approve` puts it in the nightly (`pinecall test --dataset`). `dismiss` takes it out:
+`--judge-was-wrong <judge>` says the judge that broke should have held, which the gateway keeps as
+a calibration label of the call, `--note` beside it; a judge the case did not break on is the
+gateway's refusal, and `--note` without a judge is refused here, since it is kept on that label.
+`reopen` makes it pending again. **`pull`** writes the case's golden as `<name>.json` in
+`test/<agent>/goldens/` (`--out` moves it) — the golden as the case holds it, `promoted_from` and
+all — and only then marks the case as kept in the repository, so the nightly plays the file and
+not the case. **`keep <call-id> --name x`** keeps a finished call as an approved case, with the
+`expect` its broken verdicts give; `--held-out` plays it only when a run names it — a release's
+check rather than the nightly's. **`forget`** drops the case; the call it came from stays.
+
+A case is the org's, kept from either world, and played in the sandbox only. `--json` prints what
+the gateway answered — the list, or the case — with the fields it leaves at their defaults written
+in; `pull --json` prints `{path, case}`. A flag that is another verb's is refused with **exit 2**,
+before anything travels.
 
 ---
 
@@ -1668,6 +1732,7 @@ code can call — over HTTP, in any language, with the same key.
 | `simulate --listen` | `POST /v1/calls/{call}/listen`, then the LiveKit room |
 | `simulate --voice` · `test --voice` | `POST /v1/evals/voice`, `POST /v1/evals/caller` |
 | `test` · `runs` | `POST /v1/evals/run`, `GET /v1/evals/runs[/{id}]` |
+| `cases` | `GET /v1/evals/cases?agent=&status=` (a case is found by its name there), `PATCH`·`DELETE /v1/evals/cases/{id}`, `POST /v1/evals/cases` |
 | `runs drift` | `GET /v1/agents/{slug}/sessions` — a held-rate is counted off the verdicts the calls already carry, so it asks the sessions endpoint and no evals endpoint at all |
 | `eval` | `POST /v1/evals/replay/{call}` |
 | `agent` | `GET`·`PUT /v1/agents/{slug}/settings`, `GET …/settings/history`, `GET …/settings/diff`, `POST …/settings/rollback`; `list` and `stop` are `GET /v1/apps` and `POST /v1/apps/{app}/stop` |

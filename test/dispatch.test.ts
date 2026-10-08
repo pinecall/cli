@@ -22,7 +22,7 @@ describe("the groups the CLI answers to", () => {
 
     expect(declared).not.toContain("phones");
 
-    for (const group of ["new", "generate", "link", "start", "chat", "prompt", "test", "simulate", "runs", "personas", "eval", "sessions", "docs", "memory", "login", "whoami", "tokens", "numbers", "agent", "lexicon", "supervise", "observe", "call", "costs", "deploy"]) {
+    for (const group of ["new", "generate", "link", "start", "chat", "prompt", "test", "simulate", "runs", "cases", "personas", "eval", "sessions", "docs", "memory", "login", "whoami", "tokens", "numbers", "agent", "lexicon", "supervise", "observe", "call", "costs", "deploy"]) {
       expect(declared).toContain(group);
     }
   });

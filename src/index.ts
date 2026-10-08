@@ -10,7 +10,7 @@ import { version } from "./version.js";
 import { inTheWorld, withoutTheWorldFlag } from "./world.js";
 
 // Order is the help order: first-day verbs first.
-const BUILT = ["new", "generate", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "login", "whoami", "mcp"] as const;
+const BUILT = ["new", "generate", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "cases", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "login", "whoami", "mcp"] as const;
 
 /** Every group name, built and planned, in help order. */
 export function groupNames(): string[] {
@@ -78,6 +78,7 @@ export async function groupFor(name: string, out: NodeJS.WritableStream = proces
   if (name === "simulate") return (await import("./simulate.js")).group;
   if (name === "eval") return (await import("./eval.js")).group;
   if (name === "runs") return (await import("./runs/index.js")).group;
+  if (name === "cases") return (await import("./cases.js")).group;
   if (name === "agent") return (await import("./agent.js")).group;
   if (name === "lexicon") return (await import("./lexicon.js")).group;
   if (name === "pipeline") return (await import("./pipeline.js")).group;
@@ -120,6 +121,7 @@ export function usage(): string {
     "  eval      ring 3: one real call, re-evaluated by the runtime's code checks",
     "  sessions  list | show a call's log, with what it cost and how it was judged",
     "  runs      list | show | diff the suites, promote a call, and watch the drift",
+    "  cases     the org's dataset: real calls kept as cases — show, approve, dismiss, pull into the repo",
     "  agent     the agent's settings — yours, the team's, production's — set, knowledge, history, rollback",
     "  lexicon   an agent's words: how the voice says them and what the ears must know",
     "  pipeline  what the agent hears, decides and speaks with, and the knobs over it",
