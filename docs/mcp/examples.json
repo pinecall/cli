@@ -42,6 +42,26 @@
         "gateway": "https://cloud.pinecall.io",
         "installed": true
       }
+    },
+    {
+      "args": {
+        "action": "new",
+        "name": "front-desk",
+        "language": "python"
+      },
+      "answer": {
+        "root": "/Users/you/front-desk",
+        "agents": [
+          {
+            "name": "front-desk",
+            "language": "python"
+          }
+        ],
+        "key": "none: call link",
+        "gateway": "https://cloud.pinecall.io",
+        "installed": false,
+        "next": "uv sync in /Users/you/front-desk, then `link` writes its key"
+      }
     }
   ],
   "start": [
@@ -715,7 +735,7 @@
             "provider": "anthropic"
           },
           "judge_calls": 2,
-          "judge_cost_usd": 0.0
+          "judge_cost_usd": 0
         }
       }
     }

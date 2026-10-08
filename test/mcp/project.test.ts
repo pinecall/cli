@@ -1,6 +1,6 @@
 // The project the tools act on: shown, opened, and written new from the same templates `pinecall new` uses.
 
-import { existsSync, mkdtempSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -37,6 +37,19 @@ describe("project", () => {
 
     expect(made.agents).toEqual([{ name: "desk", language: "ruby" }]);
     expect(made.next).toContain("bundle install");
+  });
+
+  it("writes a Python one when asked, installed once its .venv is there", async () => {
+    const { client } = await aClient();
+    const parent = mkdtempSync(join(tmpdir(), "pinecall-new-"));
+
+    const made = JSON.parse((await called(client, "project", { action: "new", name: "desk", path: parent, language: "python" })).text);
+    mkdirSync(join(made.root, ".venv"));
+
+    expect(made.agents).toEqual([{ name: "desk", language: "python" }]);
+    expect(made.next).toContain("uv sync");
+    expect(made.installed).toBe(false);
+    expect(JSON.parse((await called(client, "project", { action: "show" })).text).installed).toBe(true);
   });
 
   it("refuses a name the gateway would not take, in its words", async () => {

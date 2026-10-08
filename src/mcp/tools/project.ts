@@ -66,6 +66,6 @@ function shown(session: Session, root: string): Record<string, unknown> {
     agents: agentFilesOfTheProject(root).map((file) => ({ name: homeOf(file).name, language: languageOf(file) })),
     key: held.apiKey === undefined ? "none: call link" : `from ${held.source}`,
     gateway: held.url,
-    installed: existsSync(join(root, "node_modules", "@pinecall", "agents")) || existsSync(join(root, "Gemfile.lock")),
+    installed: [join("node_modules", "@pinecall", "agents"), "Gemfile.lock", ".venv"].some((made) => existsSync(join(root, made))),
   };
 }

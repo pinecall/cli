@@ -128,3 +128,27 @@ The project the tools act on (`show`), another folder opened (`open`), a new pro
   "installed": true
 }
 ```
+
+```json title="called with"
+{
+  "action": "new",
+  "name": "front-desk",
+  "language": "python"
+}
+```
+
+```json title="answered"
+{
+  "root": "/Users/you/front-desk",
+  "agents": [
+    {
+      "name": "front-desk",
+      "language": "python"
+    }
+  ],
+  "key": "none: call link",
+  "gateway": "https://cloud.pinecall.io",
+  "installed": false,
+  "next": "uv sync in /Users/you/front-desk, then `link` writes its key"
+}
+```
