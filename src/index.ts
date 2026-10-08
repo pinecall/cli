@@ -109,7 +109,7 @@ export function usage(): string {
   const lines = [
     "usage: pinecall <group> [args]",
     "",
-    "  new       a new project of one agent, in TypeScript or Ruby (--ruby)",
+    "  new       a new project of one agent: TypeScript, or --ruby, or --python",
     "  generate  one more agent in this project, or one more golden (g for short)",
     "  link      this project's folder to one of your orgs: your key, in its .env",
     "  start     the app and its doors: the process you deploy (--prod for production)",
