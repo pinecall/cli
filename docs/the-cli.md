@@ -527,7 +527,8 @@ clinica-norte · 2 goldens · anthropic/claude-haiku-4-5-20251001
 
 `--model vendor/model` repeated is a column of the matrix per model. `--voice` says the same
 goldens out loud on a real line (ring 2); `--background-noise` puts a television behind the caller
-at that many dB under them, and `--packet-loss` drops that share of their packets.
+at that many dB under them, and `--packet-loss` drops that share of their packets — a fraction
+from 0 to 1 here (`0.05` is one in twenty), where `simulate` takes a percent.
 
 ## `simulate`
 
@@ -561,9 +562,11 @@ rule adds a `persona` row to the score — `held` when it hung up satisfied, `br
 declined, which is exit 1 like any broken judge.
 
 `--voice` is a real line: a room, the agent dispatched into it, and the caller read out in the
-persona's own `tts` and `voice` when it set them — else an **ElevenLabs voice the agent does not
-have** — in the agent's language, so the two sides are told apart by ear. The caller waits for the opening to be said before its first line, as a person does.
-`--background-noise` and `--packet-loss` spoil that line on purpose and are refused without it.
+persona's own `tts` and `voice` when it set them — else the box's default voice vendor and **a
+voice from the operator's list for the agent's language that the agent does not have** (English's
+when that language has none), so the two sides are told apart by ear. The caller waits for the opening to be said before its first line, as a person does.
+`--background-noise` and `--packet-loss` spoil that line on purpose and are refused without it;
+`--packet-loss` here is a percent (`5`), where `test` takes a fraction from 0 to 1.
 
 `--listen` puts the call on **this machine's speakers** while it happens: the same hidden `observe`
 seat the console's listen button takes, joined from Node, both tracks mixed onto whichever of
@@ -666,9 +669,9 @@ under the box's judging ceiling. Its verdict lands in `call.score` beside the pa
 judge's name; `sessions <call>` and `simulate --judge` print it.
 
 The agent is the project's one, or the one `--agent` names by its folder's name; `--org`
-names the org's list instead, needs no project, and beside `--agent` is refused. A panel's name
-(`consent`…), a name the org and an agent would share, or a question left blank is the gateway's
-refusal. A name is
+names the org's list instead, needs no project, and beside `--agent` is refused. One of the four
+reserved names — `consent`, `grounded`, `promises`, `persona` — a name the org and an agent would
+share, or a question left blank is the gateway's refusal. A name is
 lower-case letters and digits joined by hyphens, as a verdict names it; anything else, an `add`
 without `--asks`, or an `--on` that is neither word is refused here with **exit 2**, before it
 travels. `--json` prints what the gateway answered, `{"judges": […]}`, for every verb.
@@ -679,27 +682,34 @@ travels. `--json` prints what the gateway answered, `{"judges": […]}`, for eve
 pinecall eval <call-id> [--policy policy.json] [--json]
 ```
 
-Ring 3: one finished call rebuilt from its log and answered by the runtime's four **code** checks.
-Nothing is re-run and no model is asked. Exits 1 when a check did not hold.
+Ring 3: one finished call rebuilt from its log and answered by the runtime's six **code** checks —
+`consent`, `register`, `errors`, `latency`, `talk` and `interruptions`. Nothing is re-run and no
+model is asked. Each answers `held`, `broken`, `deferred` or `skipped`; exits 1 when one is `broken`.
 
 ```console
 $ pinecall eval call_29d7c7b6cdd643de9c659984a0125c8c
 call_29d7c7b6cdd643de9c659984a0125c8c  clinica-norte
-  consent   passed    no irreversible tool ran in this call; 1 tool call(s) did
-  register  skipped   no words were declared for this call: send them as `banned` …
-  errors    passed    the call logged no error
-  latency   failed    llm_node_ttft 1.209s > 1.000s over 1 turns; e2e_latency 2.638s > 2.000s
+  consent        held      no irreversible tool ran in this call; 1 tool call(s) did
+  register       skipped   no words were declared for this call: send them as `banned` …
+  errors         held      the call logged no error
+  latency        broken    llm_node_ttft 1.209s > 1.000s at its worst of 1 turns; e2e_latency 2.638s > 2.000s at its worst of 1 turns
+  talk           skipped   no talk_share in the budget: send one, the most of the talking the agent may do (0 to 1)
+  interruptions  skipped   no reply of the agent's was cut off in this call
 ```
 
-`--policy` is `{"banned": ["tarifa plana"], "budget": {"llm_ttft": 1.5}}`: the words this business
-will not have its agent say, and the latencies it holds a call to.
+`--policy` is `{"banned": ["tarifa plana"], "budget": {"e2e_latency": 2.0, "llm_node_ttft": 1.0,
+"tts_node_ttfb": 0.6, "talk_share": 0.6}}`: the words this business will not have its agent say,
+the seconds it holds each turn's worst latency to (livekit's own names; `interruption_delay` too),
+and the most of the talking the agent may do. A budget replaces the defaults — those three latencies
+at those values — so a key it does not name is not checked, and a budget with no latency key it
+recognises leaves `latency` `skipped`.
 
 ## `runs`
 
 ```
 pinecall runs list [--limit n] | show <id> | diff <a> <b>
 pinecall runs promote <call-id> [--name x] [--out test/candidates] [--from-seq n]
-pinecall runs drift --agent <slug> [--window 7d] [--baseline 30d] [--threshold 10]
+pinecall runs drift --agent <slug> [--window 7d] [--baseline 30d] [--threshold 10] [--limit 200]
                 … any of them with --json: what the gateway answered, for a pipe
 ```
 
@@ -718,8 +728,10 @@ making is printed too, so a golden nobody ran is never read as a fix. **`promote
 derived from what the judges answered — for a person to edit before it counts as a golden.
 **`drift`** counts each judge's held-rate over two windows of finished calls and exits 1 when one
 fell further than `--threshold` points: nothing is judged again, a held-rate is a count of the
-verdicts `call.score` already carries. It reads the agent's newest **200** calls, which is the
-sessions door's own ceiling, so a window wider than that is counted over those 200.
+verdicts `call.score` already carries. The window is the last `--window`; the baseline is the time
+before it, back to `--baseline` ago, so `--baseline` must be longer than `--window` or it is refused
+with exit 2. It reads the agent's newest `--limit` calls, **200** by default, which is the sessions
+door's own ceiling, so a window wider than that is counted over those 200.
 
 ---
 
