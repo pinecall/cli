@@ -9,8 +9,8 @@ The journey: \`project\` (show, open or new) → \`whoami\`, which is refused na
 project has no key, and \`link\` names \`login\` when this machine is not signed in → \`start\` holds
 the agent → \`chat\` talks to it, \`test\` runs its goldens, \`simulate\` plays a caller → \`agent\`,
 \`voices\`, \`lexicon\`, \`docs\` and \`memory\` tune it → \`deploy\` runs it on Pinecall →
-\`console_url\` opens the console for the person. \`docs_search\` and \`get_doc\` read
-docs.pinecall.io: read a page whole before writing code from it.
+\`supervise\` watches a live call and moves on it → \`console_url\` opens the console for the person.
+\`docs_search\` and \`get_doc\` read docs.pinecall.io: read a page whole before writing code from it.
 
 Every tool acts in the sandbox. A server a person installed with \`pinecall mcp install --prod\`
 takes \`prod: true\` on a tool, and the org's own switch still decides; any other server refuses it.

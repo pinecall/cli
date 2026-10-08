@@ -1006,5 +1006,49 @@
         "body": "A method the model may call: its docstring, its arguments, confirmation, masking and timeouts.\n\nA tool is a method the model may call. You write its description as a docstring and its arguments\nas the method's parameters; Pinecall builds the schema, runs the call and logs it.\n\n## What is a tool?\n\nA method decorated with `@tool()`. When the model calls it, the method runs in your process with\nthe arguments the model gave, and what it returns is what the model reads next.\n\n```ts title=\"agents/clinica-norte/agent.tsx\"\n/** Free slots on one day, for one specialty. Always call it for a day the patient names. */\n@tool({ stage: [\"choose\", \"book\"], preview: 2 })\nasync freeSlots(day: string, specialty: string): Promise<Slot[]> {\n  const date = dayNamed(day, this.call.today ?? \"\");\n  if (!date) throw new NotADay(day);\n  this.slots = await this.agenda().free(date, specialty);\n  this.stage = this.sl\n…"
       }
     }
+  ],
+  "supervise": [
+    {
+      "args": {
+        "action": "watch",
+        "call": "call_bf4f00ba21b3410ca6bbedcd6c963269",
+        "after": 42,
+        "wait_s": 5
+      },
+      "answer": {
+        "call": "call_bf4f00ba21b3410ca6bbedcd6c963269",
+        "live": true,
+        "lines": [
+          {
+            "seq": 43,
+            "desk": "whispered",
+            "said": "Offer to have the manager call her back today."
+          },
+          {
+            "seq": 45,
+            "caller": "Can someone call me about it?"
+          },
+          {
+            "seq": 56,
+            "agent": "Would you like a manager to call you back today? I can note that request, but I can't promise the call will happen."
+          }
+        ],
+        "next": 57
+      }
+    },
+    {
+      "args": {
+        "action": "whisper",
+        "call": "call_bf4f00ba21b3410ca6bbedcd6c963269",
+        "text": "Offer to have the manager call her back today."
+      },
+      "answer": {
+        "call": "call_bf4f00ba21b3410ca6bbedcd6c963269",
+        "sent": {
+          "verb": "whisper",
+          "text": "Offer to have the manager call her back today."
+        }
+      }
+    }
   ]
 }

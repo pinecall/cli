@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.37] — the desk, as an MCP tool
+
+### Added
+
+- `pinecall mcp` has `supervise`: the desk `pinecall supervise` is in a terminal, for an assistant. `watch` reads a live call since a cursor — the caller, the agent, its tool calls, every move of a desk, the end — waiting up to `wait_s` for more; `whisper`, `say`, `takeover`, `release`, `transfer` and `end` move it, each landing in the call's log as a `supervisor.*` entry. An ended call is refused.
+
 ## [0.9.36] — an assistant's agent runs before anything is installed
 
 ### Added

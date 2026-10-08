@@ -119,6 +119,14 @@ Every parameter, and a real call of each: [The phone](mcp/phone.md).
 | `carriers` | `list` · `show` | the org's carrier accounts; adding one takes secrets, so it is a terminal's |
 | `callbacks` | — | the people waiting for a call back |
 
+### Supervising a live call
+
+Every parameter, and a real call of each: [Supervising a live call](mcp/supervising.md).
+
+| tool | actions | what it does |
+|---|---|---|
+| `supervise` | `watch` · `whisper` · `say` · `takeover` · `release` · `transfer` · `end` | a live call as a desk sees it: what the caller, the agent and its tools said since `after`, waiting up to `wait_s` for more; a whisper the caller never hears, a line in the agent's voice, the line taken and given back, a transfer, an end — each a `supervisor.*` entry in the call's log. The audio is the console's Live screen |
+
 ### Testing
 
 Every parameter, and a real call of each: [Testing](mcp/testing.md).

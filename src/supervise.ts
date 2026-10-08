@@ -151,7 +151,8 @@ export function moveOf(typed: string): Verb | "leave" | null {
   return null;
 }
 
-async function sent(door: Door, call: string, verb: Verb): Promise<void> {
+/** Send one supervisor verb to a live call; it lands in the call's log as its own `supervisor.*` entry. */
+export async function sent(door: Door, call: string, verb: Verb): Promise<void> {
   await asked(door, `/v1/calls/${encodeURIComponent(call)}/verbs`, { method: "POST", body: verb });
 }
 

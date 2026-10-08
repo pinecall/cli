@@ -1036,6 +1036,8 @@ the console's Live screen, which has a room; this is the transcript and the desk
 A desk opens on a call that is **happening**: one that has ended, and an id this gateway has no
 log for, are refused before the prompt — what a finished call was is `pinecall sessions show`.
 
+An assistant has the same desk as the MCP's `supervise` tool ([Supervising a live call](mcp/supervising.md)).
+
 It takes its moves from a **pipe** too, one per line, which is how a script moves a call:
 `printf 't\ns Le paso con recepción.\nq\n' | pinecall supervise <call>`. Through a pipe there is
 no prompt drawn, and the desk leaves when the lines run out.
