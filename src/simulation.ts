@@ -12,7 +12,7 @@ import type { Persona } from "./testing/personas.js";
 import { type Door, entriesOf, type Entry, type Persona as Calling, theNextLine } from "./testing/gateway.js";
 import { latencyLine, mediansOf } from "./testing/latency.js";
 import { linesOfScore } from "./testing/score.js";
-import { aCallId, aVoiceCall, DEGRADED, type Degraded, watching } from "./testing/voice.js";
+import { aCallId, aVoiceCall, DEGRADED, packetLossOf, type Degraded, watching } from "./testing/voice.js";
 import { after, Heard, SETTLE_MS } from "./testing/heard.js";
 
 // Refused on written calls rather than silently ignored.
@@ -35,12 +35,12 @@ export interface Simulated {
   score?: CallScore | undefined;
 }
 
-/** Parse --background-noise (dB) and --packet-loss (percent); undefined when neither is set. */
+/** Parse --background-noise (dB) and --packet-loss (a share from 0 to 1, as `test` takes it); undefined when neither is set. */
 export function degradedBy(noise: string | undefined, loss: string | undefined): Degraded | undefined {
   if (noise === undefined && loss === undefined) return undefined;
   return {
     interferer_db: noise === undefined || noise === "" ? DEGRADED.interferer_db : Number(noise),
-    packet_loss: loss === undefined || loss === "" ? DEGRADED.packet_loss : Number(loss) / 100,
+    packet_loss: packetLossOf(loss),
   };
 }
 

@@ -4,10 +4,10 @@ import { parseArgs } from "node:util";
 
 import { type TuningAnswer } from "@pinecall/agents/wire";
 
-import { readSettings, theCornerToWrite } from "./agent-lines.js";
+import { readSettings } from "./agent-lines.js";
+import { set } from "./agent-setting.js";
 import { theDoor } from "./env.js";
 import { agentOfThisDirectory, notASlug } from "./home.js";
-import { asked } from "./testing/gateway.js";
 import { refusal } from "./whoami.js";
 
 const USAGE = "usage: pinecall memory policy [--agent <slug>] [--remember '…' …] [--forget '…' …] [--team] [--note '…']";
@@ -19,7 +19,7 @@ export interface Keeping {
   env?: NodeJS.ProcessEnv;
 }
 
-// No lists given: print each corner's policy. Given lists replace the field whole.
+// No lists given: print each corner's policy. Given lists replace the field whole, as `agent set --remember` does.
 export async function policy(argv: string[], how: Keeping = {}): Promise<number> {
   const out = how.out ?? process.stdout;
   const err = how.err ?? process.stderr;
@@ -46,21 +46,8 @@ export async function policy(argv: string[], how: Keeping = {}): Promise<number>
     return 2;
   }
   try {
-    const standing = await readSettings(door, agent);
-    if (values.remember === undefined && values.forget === undefined) return said(agent, standing, out);
-    // Written like any settings field (agent-lines.ts): the whole config with this field changed.
-    const corner = await theCornerToWrite(door, agent, values.team === true);
-    const answer = await corner.write(
-      (config) => ({
-        ...config,
-        memory: {
-          remember: values.remember ?? config.memory?.remember ?? [],
-          forget: values.forget ?? config.memory?.forget ?? [],
-        },
-      }),
-      values.note ?? null,
-    );
-    return said(agent, answer, out);
+    if (values.remember === undefined && values.forget === undefined) return said(agent, await readSettings(door, agent), out);
+    return said(agent, await set(door, agent, { ...values, json: false }), out);
   } catch (refused) {
     err.write(`${refusal(refused)}\n`);
     return 1;

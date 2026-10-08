@@ -6,6 +6,13 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.30] — the MCP reviewed against the plan: `prod` honoured, `simulate` waits, one packet-loss unit
+
+### Changed
+
+- `pinecall simulate --packet-loss` takes the share of the caller's packets lost, from 0 to 1, as `pinecall test --voice` does and as the wire carries it; a percent is refused. The console's Simulations screen still says a percent.
+- `pinecall mcp`: every tool that opens the project's door takes `prod: true`, honoured by a server installed with `--prod` and refused by any other — before, `--prod` changed nothing. `simulate` runs as `test` does (`run`, then `wait` past `wait_s`, with the transcript so far); a second `test run` or `simulate run` on an agent with one in flight is refused. `docs list`, `docs attached` and `memory show` name no agent, so a project of two needs none; `memory policy` reads the two lists, not the whole settings. `start` attaches to the agent's own process, never to the companion a terminal keeps beside it; a save landing as `stop` runs is dropped, so nothing runs after it; `project open` is refused while an agent is held. Each tool's manual rides its description, and the instructions name the tools by stage instead of repeating them. One line per call on stderr: the tool, the time, ok or refused.
+
 ## [0.9.29] — the console reaches the agent an assistant holds
 
 ### Added

@@ -1,4 +1,4 @@
-// The MCP server as a host sees it: its tools and their manuals, refusals a model can act on, and no key in any answer.
+// The MCP server as a host sees it: its tools and their manuals, refusals a model can act on, no key in any answer, and a trace per call.
 
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -10,7 +10,7 @@ import { instructions } from "../../src/mcp/instructions.js";
 import { serve, serverOf } from "../../src/mcp/server.js";
 import { tool } from "../../src/mcp/tool.js";
 import { NO_KEY_HERE, NO_PRODUCTION, NO_PROJECT, Session } from "../../src/mcp/session.js";
-import { TOOLS } from "../../src/mcp/tools/all.js";
+import { STAGES, TOOLS } from "../../src/mcp/tools/all.js";
 import { A_PROJECTS_KEY, aClient, aProject, called, FakeGateway } from "./fake.js";
 
 let gateway: FakeGateway;
@@ -25,28 +25,45 @@ afterEach(async () => {
 });
 
 describe("the tools a host is offered", () => {
-  it("are every tool, each with a sentence a host lists it by", async () => {
+  it("are every tool, each described by its sentence and its manual, said once", async () => {
     const { client } = await aClient();
 
     const listed = (await client.listTools()).tools;
 
     expect(listed.map((one) => one.name)).toEqual(TOOLS.map((one) => one.name));
-    expect(listed.every((one) => (one.description ?? "").length > 20)).toBe(true);
-  });
-
-  it("each carry a manual, and the instructions carry every one of them", () => {
-    const said = instructions(TOOLS);
-
     for (const one of TOOLS) {
       expect(one.manual.length, one.name).toBeGreaterThan(40);
-      expect(said).toContain(one.manual);
+      expect(listed.find((shown) => shown.name === one.name)?.description).toBe(`${one.description}\n\n${one.manual}`);
     }
+  });
+
+  it("are named by stage in the instructions, which carry the journey and no manual twice", () => {
+    const said = instructions(STAGES);
+
+    for (const one of TOOLS) {
+      expect(said).toContain(`\`${one.name}\``);
+      expect(said).not.toContain(one.manual);
+    }
+    expect(said).toContain("Every tool acts in the sandbox");
   });
 
   it("each have a row on the page that documents them", () => {
     const page = readFileSync(new URL("../../docs/the-mcp.md", import.meta.url), "utf8");
 
     expect(TOOLS.filter((one) => !page.includes(`| \`${one.name}\``)).map((one) => one.name)).toEqual([]);
+  });
+
+  it("take `prod` wherever they open the project's door, and nowhere they act on the agent held", async () => {
+    const { client } = await aClient();
+
+    const listed = (await client.listTools()).tools;
+    const takesProd = listed.filter((one) => "prod" in ((one.inputSchema as { properties?: Record<string, unknown> }).properties ?? {})).map((one) => one.name);
+
+    expect(takesProd).toContain("whoami");
+    expect(takesProd).toContain("agent");
+    expect(takesProd).toContain("deploy");
+    expect(takesProd).toContain("start");
+    for (const one of ["chat", "test", "simulate", "remember", "stop", "status", "logs", "login", "link", "project", "prompt", "docs_search", "get_doc"]) expect(takesProd).not.toContain(one);
   });
 });
 
@@ -92,13 +109,27 @@ describe("an answer", () => {
       tool({ name: "says", description: "answers a key", manual: "a tool for this test", schema: {}, handler: async () => ({ key: A_PROJECTS_KEY }) }),
       tool({ name: "fails", description: "refuses with a key", manual: "a tool for this test", schema: {}, handler: async () => { throw new Error(`bad key ${A_PROJECTS_KEY}`); } }),
     ];
-    const server = serverOf("0", {}, false, leaky);
+    const server = serverOf("0", {}, false, { stages: [{ stage: "a test", tools: leaky }] });
     const [ours, theirs] = InMemoryTransport.createLinkedPair();
     const client = new Client({ name: "a-test", version: "0" });
     await Promise.all([server.connect(theirs), client.connect(ours)]);
 
     expect((await called(client, "says")).text).toBe('{\n  "key": "***"\n}');
     expect(await called(client, "fails")).toEqual({ text: "bad key ***", refused: true });
+  });
+
+  it("leaves one line in the trace per call: the tool, how long, how it ended, and nothing it was asked or answered", async () => {
+    const traced: string[] = [];
+    const { client } = await aClient(false, (line) => traced.push(line));
+    await called(client, "project", { action: "open", path: aProject(A_PROJECTS_KEY, gateway.url) });
+
+    await called(client, "whoami");
+    await called(client, "chat", { action: "say", text: "a secret line" });
+
+    expect(traced).toHaveLength(3);
+    expect(traced[1]).toMatch(/^pinecall-mcp · whoami · \d+ ms · ok$/);
+    expect(traced[2]).toMatch(/^pinecall-mcp · chat · \d+ ms · refused$/);
+    expect(traced.join("\n")).not.toContain("a secret line");
   });
 });
 
@@ -111,11 +142,19 @@ describe("production", () => {
     expect((await session.door()).world).toBe("sandbox");
   });
 
-  it("is the door's world on a server started with --prod, when a tool asks for it", async () => {
-    const session = new Session({}, true, async () => []);
-    session.open(aProject(A_PROJECTS_KEY, gateway.url));
+  it("is where a tool acts when it says `prod`, on a server started with --prod", async () => {
+    const { client } = await aClient(true);
+    await called(client, "project", { action: "open", path: aProject(A_PROJECTS_KEY, gateway.url) });
 
-    expect((await session.door(true)).world).toBe("production");
+    expect(JSON.parse((await called(client, "whoami")).text).environment).toBe("sandbox");
+    expect(JSON.parse((await called(client, "whoami", { prod: true })).text)).toMatchObject({ environment: "production", production_allowed_for_this_server: true });
+  });
+
+  it("is refused on a tool, in the same words, by any other server", async () => {
+    const { client } = await aClient();
+    await called(client, "project", { action: "open", path: aProject(A_PROJECTS_KEY, gateway.url) });
+
+    expect(await called(client, "calls", { prod: true })).toEqual({ text: NO_PRODUCTION, refused: true });
   });
 });
 

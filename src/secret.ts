@@ -1,4 +1,4 @@
-/** Terminal input: a secret without echo, a plain line, or a line of stdin. */
+/** Terminal input: a secret without echo, or a line of stdin. */
 
 import { createInterface } from "node:readline";
 
@@ -14,14 +14,6 @@ export async function typedInSilence(prompt: string, out: NodeJS.WritableStream)
   reading.close();
   out.write("\n");
   return secret;
-}
-
-/** Read one line with echo, for input that is not a secret. */
-export async function typedAloud(prompt: string, out: NodeJS.WritableStream): Promise<string> {
-  const reading = createInterface({ input: process.stdin, output: out, terminal: true });
-  const said = await new Promise<string>((typed) => reading.question(prompt, typed));
-  reading.close();
-  return said;
 }
 
 /** Whether stdin is not a TTY; a prompt then returns "" at once, which callers must report as such. */

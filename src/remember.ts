@@ -16,8 +16,6 @@ import { CASES, casesIn, matching, NO_CASES } from "./testing/goldens.js";
 import { BROKEN, HELD } from "./testing/score.js";
 import { refusal } from "./whoami.js";
 
-/** Default location of extraction goldens, separate from the conversation goldens. */
-
 const USAGE = "usage: pinecall remember [paths] [--agent <name>] [--file agent.tsx] [--grep x] [--json]";
 
 export const group: Group = {

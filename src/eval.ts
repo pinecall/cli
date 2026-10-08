@@ -81,11 +81,6 @@ export function replayPath(call: string): string {
   return `/v1/evals/replay/${encodeURIComponent(call)}`;
 }
 
-/** The full replay URL for a call. */
-export function replayUrl(base: string, call: string): string {
-  return `${base.replace(/\/$/, "")}${replayPath(call)}`;
-}
-
 /** Format the answer: a header line, then one aligned line per check. */
 export function linesOf(answer: Answer): string[] {
   const width = Math.max(...answer.verdicts.map((verdict) => verdict.check.length));

@@ -2,6 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 
+import { cannotRun } from "../cannot-run.js";
 import type { Door, Entry, Persona } from "./gateway.js";
 import { asked, entriesOf } from "./gateway.js";
 
@@ -15,6 +16,17 @@ export interface Degraded {
 
 // Background TV at 15 dB below the caller: measured to leak into `turn.user`.
 export const DEGRADED: Degraded = { interferer_db: 15, packet_loss: 0 };
+
+// Refused rather than sent as NaN, or as a percent the wire would read as every packet lost.
+export const NOT_A_SHARE = (said: string): string => `--packet-loss ${said} is not a share of the packets: a number from 0 to 1, such as 0.05`;
+
+/** `--packet-loss` as typed, a share from 0 to 1, as the wire carries it; the clean line's when it was given no number. */
+export function packetLossOf(said: string | undefined): number {
+  if (said === undefined || said === "") return DEGRADED.packet_loss;
+  const share = Number(said);
+  if (!Number.isFinite(share) || share < 0 || share > 1) throw cannotRun(NOT_A_SHARE(said));
+  return share;
+}
 
 /** Result of a finished spoken call. */
 export interface Called {

@@ -1,8 +1,10 @@
 /** `pinecall callbacks`: list callback requests left when every seat was taken. */
 
+import { parseArgs } from "node:util";
+
 import { doorLine, theDoor } from "./env.js";
 import type { Group } from "./groups.js";
-import { notASlug } from "./home.js";
+import { AGENT_FLAG, notASlug } from "./home.js";
 import { asked, type Door } from "./testing/gateway.js";
 import { refusal } from "./whoami.js";
 
@@ -41,18 +43,17 @@ export async function run(
   err: NodeJS.WritableStream = process.stderr,
   env: NodeJS.ProcessEnv = process.env,
 ): Promise<number> {
+  const { values } = parseArgs({ args: argv, options: { ...AGENT_FLAG, after: { type: "string" } } });
   const door = await theDoor(env, err);
   if (door === undefined) return 2;
-  const query = new URLSearchParams();
-  const agent = flag(argv, "--agent");
-  const aFile = notASlug(agent);
+  const aFile = notASlug(values.agent);
   if (aFile !== undefined) {
     err.write(`${aFile}\n`);
     return 2;
   }
-  const after = flag(argv, "--after");
-  if (agent !== undefined) query.set("agent", agent);
-  if (after !== undefined) query.set("after", after);
+  const query = new URLSearchParams();
+  if (values.agent !== undefined) query.set("agent", values.agent);
+  if (values.after !== undefined) query.set("after", values.after);
   let page: Page;
   try {
     page = await callbacks(door, query);
@@ -81,9 +82,4 @@ export function lineOf(one: Callback): string {
   const when = new Date(one.ts * 1000).toISOString().slice(0, 16).replace("T", " ");
   const took = one.via === "overflow" ? `overflow on ${one.call ?? "?"}` : one.via === "agent" ? `the agent on ${one.call ?? "?"}` : "the widget";
   return `${when}  ${one.agent}  ${one.number}  ${one.channel}  via ${took}`;
-}
-
-function flag(argv: string[], name: string): string | undefined {
-  const at = argv.indexOf(name);
-  return at === -1 ? undefined : argv[at + 1];
 }

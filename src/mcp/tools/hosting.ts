@@ -12,26 +12,26 @@ import { languageOf } from "../../language.js";
 import { asked, knocked, type Door } from "../../testing/gateway.js";
 import { collected } from "../collected.js";
 import { Refused, tool } from "../tool.js";
-import { LONGEST_WAIT_S } from "./login.js";
+import { PROD, WAIT, WAIT_S } from "./fields.js";
 
-const WAIT_S = 25;
 const EVERY_MS = 3000;
 
 export const deploy = tool({
   name: "deploy",
-  description: "Run the project on Pinecall, in the sandbox: a release uploaded and followed until live; the apps, their releases, their logs, a rollback, stop and start.",
+  description: "Run the project on Pinecall: a release uploaded and followed until live; the apps, their releases, their logs, a rollback, stop and start.",
   schema: {
     action: z.enum(["deploy", "wait", "list", "releases", "logs", "rollback", "stop", "start"]),
     name: z.string().optional().describe("the app's name; the project folder's when left out"),
     note: z.string().optional().describe("`deploy`: a note kept with the release"),
     release: z.number().int().min(1).optional().describe("`wait`: the release to wait for; `rollback`: the release whose sources are sent again"),
-    wait_s: z.number().int().min(0).max(LONGEST_WAIT_S).optional().describe("how long to follow the release before answering"),
+    wait_s: WAIT,
+    prod: PROD,
   },
   manual:
     "`deploy` uploads the project as a release — what its `.gitignore` files leave in, never `node_modules`, `.git`, `dist` or any `.env` — and Pinecall installs it and starts its agents; the release before keeps answering until the new one's agents register, so no call is cut. It follows the release for `wait_s` and answers whether it is live or why it failed; `wait` follows it further. `logs` reads the app's last lines. TypeScript projects only. Removing an app is never a tool: `pinecall deploy rm` in a terminal.",
   handler: async (args, session) => {
     const root = await session.project();
-    const door = await session.door();
+    const door = await session.door(args.prod);
     const name = args.name ?? basename(root).toLowerCase();
     if (args.action === "list") return await asked<HostedAppList>(door, "/v1/hosted");
     if (!A_SLUG.test(name)) throw new Refused(NOT_A_NAME(name));

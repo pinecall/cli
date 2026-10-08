@@ -6,10 +6,10 @@ import { z } from "zod";
 import { knowledgeWritten } from "../../agent-knowledge.js";
 import { FIELDS, readSettings, settingsPath, theRowToStartFrom } from "../../agent-lines.js";
 import { clear, fraction, limitOf, set, switched, type Typed } from "../../agent-setting.js";
-import { asked } from "../../testing/gateway.js";
+import { asked, type Door } from "../../testing/gateway.js";
 import { NOT_A_MODEL, theModelNamed } from "../../testing/models.js";
-import type { Session } from "../session.js";
 import { Refused, tool } from "../tool.js";
+import { AGENT, PROD } from "./fields.js";
 
 // What `set` takes, under the CLI's own flag names, so one function turns either into a version.
 const SETTINGS = z
@@ -39,7 +39,7 @@ export const agent = tool({
   description: "The agent's settings — voice, models, language, greeting, memory policy, knowledge by heart: read, set, cleared, history, diff, rollback.",
   schema: {
     action: z.enum(["show", "set", "clear", "history", "diff", "rollback", "knowledge"]),
-    agent: z.string().optional().describe("the agent's name; the project's only agent when left out"),
+    agent: AGENT,
     settings: SETTINGS.optional().describe("`set`: the fields to set, named as `pinecall agent set` names its flags"),
     fields: z.array(z.enum(FIELDS)).optional().describe("`clear`: the fields to take out; every one when left out"),
     team: z.boolean().optional().describe("write the team's settings (the org's own) instead of your own"),
@@ -47,12 +47,13 @@ export const agent = tool({
     version: z.number().int().min(1).optional().describe("`rollback`: the version to bring back"),
     text: z.string().optional().describe("`knowledge`: what the agent knows by heart, written whole; read when left out; empty takes it out"),
     note: z.string().optional().describe("a note kept with the version written"),
+    prod: PROD,
   },
   manual:
     "`agent` reads and writes the agent's settings in the sandbox — the voice, the models, the language, the greeting, the memory policy, what it knows by heart — each change a new version, changed without a deploy. They are your own settings unless `team` writes the team's. `history`, `diff` and `rollback` read and undo versions. A model is named as `vendor/model`, a vendor, a model, or a tier (`haiku`).",
   handler: async (args, session) => {
     const name = (await session.home(args.agent)).name;
-    const door = await session.door();
+    const door = await session.door(args.prod);
     const team = args.team === true;
     switch (args.action) {
       case "set":
@@ -67,7 +68,7 @@ export const agent = tool({
         if (args.version === undefined) throw new Refused("rollback takes the version to bring back: `history` lists them");
         return await asked<TuningAnswer>(door, `${settingsPath(name)}/rollback`, { method: "POST", body: { version: args.version, team } });
       case "knowledge":
-        return await knowledgeOf(session, name, team, args.text, args.note);
+        return await knowledgeOf(door, name, team, args.text, args.note);
       default:
         return await readSettings(door, name);
     }
@@ -101,8 +102,7 @@ function flagsOf(settings: z.infer<typeof SETTINGS>, team: boolean, note: string
   return flags;
 }
 
-async function knowledgeOf(session: Session, name: string, team: boolean, text: string | undefined, note: string | undefined): Promise<unknown> {
-  const door = await session.door();
+async function knowledgeOf(door: Door, name: string, team: boolean, text: string | undefined, note: string | undefined): Promise<unknown> {
   if (text === undefined) {
     const row = theRowToStartFrom(await readSettings(door, name), team);
     return { agent: name, knowledge: row?.config.knowledge ?? null };

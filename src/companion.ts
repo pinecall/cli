@@ -26,6 +26,14 @@ const { version } = createRequire(import.meta.url)("../package.json") as { versi
 /** How the companion names itself in the org's list of processes, apart from the agent's own. */
 export const COMPANION_SDK = `pinecall-cli/${version}`;
 
+/** The same companion beside an agent `pinecall mcp` holds in a thread. */
+export const MCP_COMPANION_SDK = `pinecall-mcp/${version}`;
+
+/** Whether an app of the org's list is a companion: it answers the console and takes no call, so nothing attaches to it. */
+export function aCompanion(sdk: string | null): boolean {
+  return sdk !== null && (sdk.startsWith("pinecall-cli/") || sdk.startsWith("pinecall-mcp/"));
+}
+
 /** The companion socket, and what closing it lets go. */
 export interface Companion {
   pc: Pinecall;

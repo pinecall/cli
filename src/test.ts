@@ -13,6 +13,7 @@ import type { Served } from "./serving.js";
 import type { Wanted } from "./testing/gateway.js";
 import { GOLDENS, goldensIn, matching, NO_GOLDENS } from "./testing/goldens.js";
 import { ranSuite } from "./testing/suite.js";
+import { packetLossOf } from "./testing/voice.js";
 
 const USAGE =
   "usage: pinecall test [paths] [--agent <name>] [--file agent.tsx] [--model m]… [--grep x] [--watch] [--json]\n" +
@@ -34,7 +35,7 @@ export const group: Group = {
   --json              the run as one JSON document instead of the matrix
   --voice             ring 2: the same goldens said out loud on a real line
   --background-noise  dB under the caller, on a spoken run: a television behind them
-  --packet-loss       the share of the caller's packets that never arrive, 0 to 1
+  --packet-loss       the share of the caller's packets that never arrive, 0 to 1; a percent is refused
   --inspect           Node's own flag, given to the agent's process (a TypeScript agent's alone)`,
   run,
 };
@@ -43,11 +44,10 @@ export const group: Group = {
 function aLine(values: { voice?: boolean; "background-noise"?: string; "packet-loss"?: string }): Partial<Wanted> {
   if (values.voice !== true) return {};
   const noise = numberOf(values["background-noise"]);
-  const loss = numberOf(values["packet-loss"]);
   return {
     voice: true,
     ...(noise === undefined ? {} : { interferer_db: noise }),
-    ...(loss === undefined ? {} : { packet_loss: loss }),
+    ...(values["packet-loss"] === undefined ? {} : { packet_loss: packetLossOf(values["packet-loss"]) }),
   };
 }
 

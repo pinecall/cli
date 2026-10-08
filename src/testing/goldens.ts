@@ -41,12 +41,12 @@ export interface Golden {
   promoted_from?: string;
 }
 
-/** Default goldens directory. */
 /** Where memory's extraction cases live, one written call each, and what is said when there are none. */
 export const CASES = "test/<name>/memory";
 
 export const NO_CASES = `no extraction goldens at ${CASES}: write one, or name the file or directory to run`;
 
+/** Default goldens directory. */
 export const GOLDENS = "test/goldens";
 
 /** Message shown when the default directory is missing. */

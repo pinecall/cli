@@ -11,7 +11,7 @@ import { instructions } from "./instructions.js";
 import { scrubbed } from "./scrubbed.js";
 import { Session } from "./session.js";
 import type { Tool } from "./tool.js";
-import { TOOLS } from "./tools/all.js";
+import { STAGES, type Stage } from "./tools/all.js";
 
 /** The text content a tool answers with. */
 interface Answer {
@@ -20,13 +20,26 @@ interface Answer {
   isError?: boolean;
 }
 
+/** One line per call, for the host's log: the tool, how long, how it ended — never its arguments or its answer. */
+export type Trace = (line: string) => void;
+
+/** How a server is built: its stages of tools, a session of its own, and where its trace goes. */
+export interface Serving {
+  stages?: readonly Stage[];
+  session?: Session;
+  trace?: Trace;
+}
+
 /** A server over these tools, its session in the sandbox unless `production` was allowed. */
-export function serverOf(version: string, env: NodeJS.ProcessEnv, production: boolean, tools: readonly Tool[] = TOOLS, given?: Session): McpServer {
-  const server = new McpServer({ name: "pinecall", version }, { instructions: instructions(tools) });
-  const session = given ?? new Session(env, production, () => declaredRoots(server));
-  for (const one of tools) {
-    server.registerTool(one.name, { description: one.description, inputSchema: one.schema }, async (args: unknown) =>
-      answered(session, () => one.call(args, session), one.reveals),
+export function serverOf(version: string, env: NodeJS.ProcessEnv, production: boolean, how: Serving = {}): McpServer {
+  const stages = how.stages ?? STAGES;
+  const server = new McpServer({ name: "pinecall", version }, { instructions: instructions(stages) });
+  const session = how.session ?? new Session(env, production, () => declaredRoots(server));
+  const trace = how.trace ?? (() => undefined);
+  for (const one of stages.flatMap((stage) => stage.tools)) {
+    // The manual rides the description: the one place a host shows the model what a tool is for.
+    server.registerTool(one.name, { description: `${one.description}\n\n${one.manual}`, inputSchema: one.schema }, async (args: unknown) =>
+      answered(session, one, args, trace),
     );
   }
   return server;
@@ -35,7 +48,7 @@ export function serverOf(version: string, env: NodeJS.ProcessEnv, production: bo
 /** Serve on this process's stdin and stdout until the host closes them: stdout is the protocol, and nothing else writes to it. */
 export async function serve(version: string, env: NodeJS.ProcessEnv, production: boolean, transport: Transport = onStdio()): Promise<void> {
   const session = new Session(env, production, () => declaredRoots(server));
-  const server = serverOf(version, env, production, TOOLS, session);
+  const server = serverOf(version, env, production, { session, trace: (line) => process.stderr.write(`${line}\n`) });
   const closed = new Promise<void>((ended) => (server.server.onclose = ended));
   await server.connect(transport);
   await closed;
@@ -51,12 +64,15 @@ function onStdio(): Transport {
 }
 
 // A refusal is the model's to act on: its sentence, scrubbed, and never a stack.
-async function answered(session: Session, calling: () => Promise<unknown>, reveals?: (result: unknown) => string[]): Promise<Answer> {
+async function answered(session: Session, tool: Tool, args: unknown, trace: Trace): Promise<Answer> {
+  const started = Date.now();
   try {
-    const result = await calling();
-    return { content: [{ type: "text", text: scrubbed(JSON.stringify(result, null, 2), session.secrets(), reveals?.(result) ?? []) }] };
+    const result = await tool.call(args, session);
+    trace(`pinecall-mcp · ${tool.name} · ${Date.now() - started} ms · ok`);
+    return { content: [{ type: "text", text: scrubbed(JSON.stringify(result, null, 2), session.secrets(), tool.reveals?.(result) ?? []) }] };
   } catch (failed) {
     const said = failed instanceof ZodError ? failed.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ") : refusal(failed);
+    trace(`pinecall-mcp · ${tool.name} · ${Date.now() - started} ms · refused`);
     return { content: [{ type: "text", text: scrubbed(said, session.secrets()) }], isError: true };
   }
 }

@@ -14,7 +14,7 @@ import { type Door, type Spoken } from "./testing/gateway.js";
 
 const USAGE =
   "usage: pinecall simulate --persona <name> [--judge] [--turns n] [--voice] [--listen]\n" +
-  "       [--background-noise <dB under the caller>] [--packet-loss <percent>] [--agent <name>] [--file agent.tsx]\n" +
+  "       [--background-noise <dB under the caller>] [--packet-loss 0.05] [--agent <name>] [--file agent.tsx]\n" +
   "       [--inspect[=host:port] | --inspect-brk]\n";
 
 export const group: Group = {
@@ -30,7 +30,7 @@ export const group: Group = {
   --voice             a real line: a room, and the caller in a person's voice, not the agent's
   --listen            the call on this machine's speakers while it happens; turns --voice on
   --background-noise  dB under the caller: a television behind them. Spoken runs only
-  --packet-loss       percent of the caller's packets that never arrive. Spoken runs only
+  --packet-loss       the share of the caller's packets that never arrive, 0 to 1. Spoken runs only
   --agent <name>      which agent of a project of several plays the other half
   --file agent.tsx    which class to serve, when the directory holds more than one
   --inspect           Node's own flag, given to the agent's process (a TypeScript agent's alone)`,

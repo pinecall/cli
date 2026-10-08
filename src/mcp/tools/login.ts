@@ -7,10 +7,8 @@ import { keptAs, paired } from "../../pairing.js";
 import { refusal } from "../../whoami.js";
 import type { Session, Signing } from "../session.js";
 import { tool } from "../tool.js";
+import { WAIT, WAIT_S } from "./fields.js";
 
-// A host that waits longer than this for one tool call gives up on it.
-export const LONGEST_WAIT_S = 50;
-const WAIT_S = 25;
 const POLL_MS = 250;
 
 export const login = tool({
@@ -19,7 +17,7 @@ export const login = tool({
   schema: {
     action: z.enum(["start", "status"]),
     gateway: z.string().url().optional().describe("the gateway to sign in to; Pinecall Cloud when left out"),
-    wait_s: z.number().int().min(0).max(LONGEST_WAIT_S).optional().describe("how long `status` waits for the approval, in seconds"),
+    wait_s: WAIT,
   },
   manual:
     "`login` signs this machine in, once: `start` answers a link — show it to the person, who signs in there, in a browser, where a password belongs — then call `status` until it says signed in. No password and no key ever passes through you. Then `link` writes the project's key.",

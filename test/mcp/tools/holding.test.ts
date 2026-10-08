@@ -4,7 +4,8 @@ import { hostname } from "node:os";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { RUN_IT_YOURSELF } from "../../../src/mcp/holding/held.js";
-import { A_PROJECTS_KEY, aClient, aProject, called, FakeGateway } from "../fake.js";
+import { STOP_FIRST } from "../../../src/mcp/session.js";
+import { A_PROJECTS_KEY, aClient, aProject, aServedProject, called, FakeGateway } from "../fake.js";
 
 let gateway: FakeGateway;
 
@@ -41,6 +42,35 @@ describe("start", () => {
     expect(JSON.parse((await called(client, "status")).text).held).toHaveLength(1);
     expect(JSON.parse((await called(client, "stop")).text)).toEqual({ stopped: "front-desk" });
     expect(JSON.parse((await called(client, "status")).text)).toEqual({ held: [] });
+  });
+});
+
+describe("a TypeScript agent", () => {
+  it("is held in a thread of the server, shown by status, and let go by stop", async () => {
+    gateway.doors.set("GET /v1/apps", APPS([]));
+    const { client } = await aClient();
+    await called(client, "project", { action: "open", path: aServedProject(A_PROJECTS_KEY, gateway.url) });
+
+    const started = JSON.parse((await called(client, "start")).text);
+
+    expect(started).toMatchObject({ agent: "front-desk", held: "thread", version: 1, environment: "sandbox" });
+    expect(started.app).toMatch(/^app_/);
+    expect(JSON.parse((await called(client, "start")).text)).toEqual(started);
+    expect(await called(client, "project", { action: "open", path: aProject() })).toEqual({ text: STOP_FIRST(["front-desk"]), refused: true });
+    expect(JSON.parse((await called(client, "stop")).text)).toEqual({ stopped: "front-desk" });
+    expect(JSON.parse((await called(client, "status")).text)).toEqual({ held: [] });
+  });
+
+  it("refuses a second run or simulation while one is in flight, and a wait when none is", async () => {
+    gateway.doors.set("GET /v1/apps", APPS([]));
+    const { client } = await aClient();
+    await called(client, "project", { action: "open", path: aServedProject(A_PROJECTS_KEY, gateway.url) });
+    await called(client, "start");
+
+    expect((await called(client, "test", { action: "wait" })).text).toBe("no run of front-desk in flight: call test with action run");
+    expect((await called(client, "simulate", { action: "wait" })).text).toBe("no simulation of front-desk in flight: call simulate with action run");
+    expect((await called(client, "simulate", { action: "run" })).text).toBe("run takes the persona's name: `personas` lists them");
+    await called(client, "stop");
   });
 });
 

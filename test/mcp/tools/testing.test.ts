@@ -86,6 +86,26 @@ describe("docs", () => {
   });
 });
 
+describe("in a project of two agents", () => {
+  it("the org's bases and who reads them are listed naming no agent, where the agent's own actions ask for one", async () => {
+    gateway.doors.set("GET /v1/knowledge", [200, { bases: [] }]);
+    const client = await opened(aProject(A_PROJECTS_KEY, gateway.url, "agent.tsx", ["front-desk", "after-hours"]));
+
+    expect(JSON.parse((await called(client, "docs", { action: "list" })).text)).toEqual({ bases: [] });
+    expect((await called(client, "docs", { action: "push" })).text).toBe("name the agent: one of after-hours, front-desk");
+    expect((await called(client, "memory", { action: "show", contact: "+15550100" })).text).not.toContain("name the agent");
+  });
+});
+
+describe("memory", () => {
+  it("reads the policy as the two lists, from the corner this key reads", async () => {
+    gateway.doors.set("GET /v1/agents/front-desk/settings", [200, { world: "sandbox", yours: null, team: { holder: null, version: 3, author: "m_1", note: null, set_at: 0, config: { memory: { remember: ["their pet's name"], forget: ["card numbers"] } } }, production: null }]);
+    const client = await opened();
+
+    expect(JSON.parse((await called(client, "memory", { action: "policy" })).text)).toEqual({ agent: "front-desk", remember: ["their pet's name"], forget: ["card numbers"] });
+  });
+});
+
 describe("deploy", () => {
   it("refuses a Ruby project, which Pinecall does not host", async () => {
     const client = await opened(aProject(A_PROJECTS_KEY, gateway.url, "agent.rb"));

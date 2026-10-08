@@ -1,4 +1,4 @@
-/** Every tool the MCP server offers, in the order a person meets them. */
+/** Every tool the MCP server offers, by the stage a person meets it at. */
 
 import type { Tool } from "../tool.js";
 import { agent } from "./agent.js";
@@ -20,10 +20,18 @@ import { evalTool, runs, test } from "./testing.js";
 import { voices, voiceSample } from "./voicing.js";
 import { whoami } from "./whoami.js";
 
-export const TOOLS: readonly Tool[] = [
-  whoami, login, link, project,
-  start, stop, status, logs, chat, prompt, consoleTool,
-  agent, calls, call, pipeline, providers, voices, voiceSample, line, numbers, carriers, callbacks, lexicon,
-  test, runs, simulate, personas, judges, evalTool, docs, memory, remember,
-  deploy, docsSearch, getDoc,
+/** One stage of the journey and its tools. */
+export interface Stage {
+  stage: string;
+  tools: readonly Tool[];
+}
+
+export const STAGES: readonly Stage[] = [
+  { stage: "Getting started", tools: [whoami, login, link, project] },
+  { stage: "Holding the agent, and talking to it", tools: [start, stop, status, logs, chat, prompt, consoleTool] },
+  { stage: "Settings and reading", tools: [agent, calls, call, pipeline, providers, voices, voiceSample, line, numbers, carriers, callbacks, lexicon] },
+  { stage: "Testing", tools: [test, runs, simulate, personas, judges, evalTool, docs, memory, remember] },
+  { stage: "Going live, and the docs", tools: [deploy, docsSearch, getDoc] },
 ];
+
+export const TOOLS: readonly Tool[] = STAGES.flatMap((one) => one.tools);

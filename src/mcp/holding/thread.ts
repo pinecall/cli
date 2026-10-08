@@ -1,6 +1,7 @@
 /** An agent served in a worker thread of this process: the project's own serve entry, its `main` called with the thread's streams. */
 
 import { PassThrough, Writable } from "node:stream";
+import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 
 import type { Started } from "../../language.js";
@@ -64,7 +65,7 @@ export function threadServing(started: Started, logs: Logs, registersWithinMs?: 
   const tsx = entry.endsWith(".ts") ? import.meta.resolve("tsx/esm/api") : undefined;
   const worker = new Worker(ENTRY, {
     eval: true,
-    workerData: { entry: new URL(`file://${entry}`).href, argv, tsx },
+    workerData: { entry: pathToFileURL(entry).href, argv, tsx },
     env: started.env,
     stdin: true,
     stdout: true,
@@ -108,7 +109,7 @@ export function threadServing(started: Started, logs: Logs, registersWithinMs?: 
 export async function threadOnce(started: Started): Promise<{ code: number; out: string; err: string }> {
   const { entry, argv } = threadArgs(started);
   const tsx = entry.endsWith(".ts") ? import.meta.resolve("tsx/esm/api") : undefined;
-  const worker = new Worker(ENTRY, { eval: true, workerData: { entry: new URL(`file://${entry}`).href, argv, tsx }, env: started.env, stdout: true, stderr: true });
+  const worker = new Worker(ENTRY, { eval: true, workerData: { entry: pathToFileURL(entry).href, argv, tsx }, env: started.env, stdout: true, stderr: true });
   let out = "";
   let err = "";
   worker.stdout.on("data", (chunk: Buffer) => (out += chunk.toString()));

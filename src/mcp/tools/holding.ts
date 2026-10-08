@@ -4,20 +4,19 @@ import { z } from "zod";
 
 import { Held } from "../holding/held.js";
 import { tool } from "../tool.js";
-
-const AGENT = z.string().optional().describe("the agent's name; the project's only agent when left out");
+import { AGENT, PROD } from "./fields.js";
 
 export const start = tool({
   name: "start",
   description: "Hold the project's agent so it answers calls: in a thread of this server, reloaded on every save, or attached to a process already holding it.",
-  schema: { agent: AGENT },
+  schema: { agent: AGENT, prod: PROD },
   manual:
     "`start` holds the agent the way `pinecall start` does: it answers written calls (`chat`), spoken ones from the console, and a phone ring when a number points at it. A TypeScript agent runs inside this server and reloads on every save; a save that does not load keeps the version before answering, and `status` says why. A Ruby agent is held by `pinecall start --watch` in a terminal: `start` then attaches to it. Already held on this machine (a terminal, another window), it attaches instead of fighting for the line. The console's screens reach the agent held here, through a companion this server keeps beside the thread.",
   handler: async (args, session) => {
     const home = await session.home(args.agent);
     const already = session.held.get(home.name);
     if (already !== undefined) return statusOf(already);
-    const held = new Held(await session.door(), home);
+    const held = new Held(await session.door(args.prod), home, session.beside === undefined ? {} : { beside: session.beside });
     await held.start();
     session.held.set(home.name, held);
     return statusOf(held);

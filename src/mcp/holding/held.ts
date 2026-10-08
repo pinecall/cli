@@ -6,13 +6,12 @@ import { basename, sep } from "node:path";
 
 import type { AppList } from "@pinecall/agents/wire";
 
-import { companionFor, type Companion } from "../../companion.js";
+import { aCompanion, companionFor, MCP_COMPANION_SDK } from "../../companion.js";
 import type { Open } from "../../env.js";
 import type { Home } from "../../home.js";
 import { languageOf, servingOne } from "../../language.js";
 import type { Serving } from "../../serving.js";
 import { asked } from "../../testing/gateway.js";
-import { version } from "../../version.js";
 import { Refused } from "../tool.js";
 import { Logs, threadServing, type Thread } from "./thread.js";
 
@@ -23,6 +22,26 @@ const NEVER_WATCHED = new Set(["node_modules", ".git", "dist", ".pinecall", "tes
 export const RUN_IT_YOURSELF = (language: string, root: string): string =>
   `a ${language} agent is run by ${language}: \`pinecall start --watch\` in ${root}, then call start again`;
 
+/** What answers the console beside the thread: connected once the agent registered, closed with it. */
+export interface Beside {
+  connect(): Promise<void>;
+  close(): Promise<void>;
+}
+
+/** Makes the companion beside a held agent; the server's is `companionFor`, a test's is nothing. */
+export type MakesBeside = (door: Open, home: Home, serving: Serving, out: NodeJS.WritableStream) => Beside;
+
+export const aCompanionBeside: MakesBeside = (door, home, serving, out) => {
+  const companion = companionFor(door, [home], serving, out, MCP_COMPANION_SDK);
+  return { connect: () => companion.pc.connect(), close: () => companion.close() };
+};
+
+/** How an agent is held, beyond its door and its home. */
+export interface Holding {
+  beside?: MakesBeside;
+  settlesMs?: number;
+}
+
 /** One agent held: who serves its calls, which version, and why the newest one did not load if it did not. */
 export class Held {
   readonly logs = new Logs();
@@ -32,13 +51,20 @@ export class Held {
   private thread: Thread | undefined;
   private attached: string | undefined;
   private watcher: FSWatcher | undefined;
-  private companion: Companion | undefined;
+  private companion: Beside | undefined;
+  private timer: NodeJS.Timeout | undefined;
   private reloading: Promise<void> = Promise.resolve();
+  private readonly beside: MakesBeside;
+  private readonly settlesMs: number;
 
   constructor(
     readonly door: Open,
     readonly home: Home,
-  ) {}
+    how: Holding = {},
+  ) {
+    this.beside = how.beside ?? aCompanionBeside;
+    this.settlesMs = how.settlesMs ?? SETTLES_MS;
+  }
 
   /** The app id the agent's calls reach, held here or found. */
   app(): string | undefined {
@@ -64,8 +90,8 @@ export class Held {
     this.version = 1;
     // The console's screens (Chat, Tests, Simulations, Docs, Memory) reach the agent this server holds,
     // through whichever thread answers now: a reload changes the app, not the companion.
-    this.companion = companionFor(this.door, [this.home], this.serving(), this.logs.stream(), `pinecall-mcp/${version()}`);
-    await this.companion.pc.connect();
+    this.companion = this.beside(this.door, this.home, this.serving(), this.logs.stream());
+    await this.companion.connect();
     this.watcher = watch(this.home.root, { recursive: true }, (_event, file) => {
       if (file !== null && !String(file).split(sep).some((part) => NEVER_WATCHED.has(part)) && basename(String(file)) !== ".env") this.saved();
     });
@@ -80,10 +106,13 @@ export class Held {
     return app;
   }
 
-  /** Drain the thread and stop watching; an attached process is left as it was. */
+  /** Drain the thread and stop watching — a save still settling is dropped, a reload in flight finished first; an attached process is left as it was. */
   async stop(): Promise<void> {
     this.watcher?.close();
     this.watcher = undefined;
+    clearTimeout(this.timer);
+    this.timer = undefined;
+    await this.reloading;
     await this.companion?.close();
     this.companion = undefined;
     this.attached = undefined;
@@ -91,8 +120,6 @@ export class Held {
     this.thread = undefined;
     if (thread !== undefined) await thread.stop();
   }
-
-  private timer: NodeJS.Timeout | undefined;
 
   // The companion reads the app on every dial: the thread answering now, never the one it started with.
   private serving(): Serving {
@@ -105,11 +132,13 @@ export class Held {
 
   private saved(): void {
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => (this.reloading = this.reloading.then(() => this.reload())), SETTLES_MS);
+    this.timer = setTimeout(() => (this.reloading = this.reloading.then(() => this.reload())), this.settlesMs);
   }
 
   // A release in miniature: the new thread registers, then the one before drains; one that does not load never replaces it.
   private async reload(): Promise<void> {
+    // Stopped while the save settled: nothing to replace.
+    if (this.thread === undefined) return;
     let next: Thread | undefined;
     try {
       next = await this.started();
@@ -137,8 +166,11 @@ export class Held {
   }
 }
 
-/** The app of this machine already holding the slug, so two windows never fight for the line. */
+/**
+ * The app of this machine already holding the slug, so two windows never fight for the line: the
+ * agent's own process, never the companion a `pinecall start` or another server keeps beside it.
+ */
 export async function theAppHere(door: Open, slug: string): Promise<string | undefined> {
   const { apps } = await asked<AppList>(door, "/v1/apps");
-  return apps.find((one) => one.agents.includes(slug) && one.host === hostname() && one.holder !== null)?.app;
+  return apps.find((one) => one.agents.includes(slug) && one.host === hostname() && one.holder !== null && !aCompanion(one.sdk))?.app;
 }

@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { catalogue, defaultVoice, sampled, voicesOf } from "../../voice-sample.js";
 import { tool } from "../tool.js";
+import { PROD } from "./fields.js";
 
 export const voices = tool({
   name: "voices",
@@ -15,9 +16,10 @@ export const voices = tool({
     tts: z.string().optional().describe("the vendor; the gateway's own voice vendor when left out"),
     language: z.string().optional().describe("a language tag: en, es, pt-BR…"),
     country: z.string().optional().describe("only voices from this country: ES, MX, US…"),
+    prod: PROD,
   },
   manual: "`voices` lists the voices to choose from, the id first; set one with `agent` (`settings.voice`, and `settings.tts` for its vendor). `voice_sample` lets the person hear one first.",
-  handler: async (args, session) => ({ voices: await voicesOf(await session.door(), args) }),
+  handler: async ({ prod, ...args }, session) => ({ voices: await voicesOf(await session.door(prod), args) }),
 });
 
 export const voiceSample = tool({
@@ -29,10 +31,11 @@ export const voiceSample = tool({
     tts: z.string().optional().describe("the vendor; the gateway's own voice vendor when left out"),
     model: z.string().optional().describe("the vendor's model"),
     language: z.string().optional().describe("a language tag"),
+    prod: PROD,
   },
   manual: "`voice_sample` says a line through the vendor's own plugin and saves the WAV under the project's `.pinecall/voices/`: this server plays nothing, so the answer is the file's path, for the person to open, with the first-audio and whole-sentence times.",
   handler: async (args, session) => {
-    const door = await session.door();
+    const door = await session.door(args.prod);
     const tts = args.tts ?? defaultVoice(await catalogue(door));
     const said = await sampled(door, { tts, voice: args.voice, model: args.model ?? null, language: args.language ?? null, text: args.text ?? null });
     const folder = join(await session.project(), ".pinecall", "voices");

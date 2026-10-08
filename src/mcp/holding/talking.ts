@@ -37,7 +37,7 @@ export class Talk {
   private waiting: (() => void) | undefined;
 
   private constructor(private readonly socket: WebSocket) {
-    socket.on("message", (frame: Buffer) => this.took(JSON.parse(frame.toString()) as Entry));
+    socket.on("message", (frame: Buffer) => this.took(entryOf(frame)));
     socket.on("close", (_code, reason: Buffer) => {
       this.ended = true;
       const why = reason.toString();
@@ -109,6 +109,15 @@ interface Entry {
   type?: string;
   call?: string | null;
   data?: Record<string, unknown>;
+}
+
+// A frame that is no entry is heard as an error, never thrown: a throw in a socket's handler would end the server.
+function entryOf(frame: Buffer): Entry {
+  try {
+    return JSON.parse(frame.toString()) as Entry;
+  } catch {
+    return { type: "error", data: { message: `the gateway sent a frame that is no entry: ${frame.toString().slice(0, 80)}` } };
+  }
 }
 
 function heardOf(entry: Entry): Heard | undefined {

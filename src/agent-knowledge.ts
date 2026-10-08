@@ -1,6 +1,6 @@
 /** `pinecall agent knowledge [edit]`: what the agent knows by heart, printed, or edited and kept as the next version. */
 
-import type { TuningBody, TuningRow } from "@pinecall/agents/wire";
+import type { TuningBody } from "@pinecall/agents/wire";
 
 import { readSettings, theCornerCalled, theCornerToWrite, theCornerWritten, theRowToStartFrom } from "./agent-lines.js";
 import type { Editor } from "./editor.js";
@@ -64,9 +64,4 @@ export async function knowledgeWritten(door: Door, agent: string, text: string, 
 function kept(config: TuningBody, written: string): TuningBody {
   const { knowledge: _was, ...rest } = config;
   return written.trim() === "" ? rest : { ...rest, knowledge: written };
-}
-
-/** Whether a corner's row sets `knowledge`. */
-export function knows(row: TuningRow | null): boolean {
-  return row !== null && typeof row.config.knowledge === "string";
 }

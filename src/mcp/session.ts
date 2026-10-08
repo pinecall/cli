@@ -5,11 +5,11 @@ import { join, resolve } from "node:path";
 
 import type { World } from "@pinecall/agents/client";
 
-import { doorIn, keyFrom, type Open } from "../env.js";
+import { doorIn, KEY_VARIABLE, keyFrom, type Open } from "../env.js";
 import { agentFilesOfTheProject, homeOf, type Home } from "../home.js";
 import { pinecallHome, signedIn } from "../signed-in.js";
 import { PRODUCTION, SANDBOX } from "../world.js";
-import { Held } from "./holding/held.js";
+import { Held, type MakesBeside } from "./holding/held.js";
 import type { Talk } from "./holding/talking.js";
 import type { SitePage } from "./site.js";
 import { Refused } from "./tool.js";
@@ -20,6 +20,7 @@ export const NO_KEY_HERE = (root: string): string =>
   `no PINECALL_KEY for ${root}: call \`link\` to write one into its .env (it asks you to \`login\` first when this machine is not signed in)`;
 export const NO_PRODUCTION =
   "this server acts in the sandbox only: production needs `pinecall mcp install --prod`, typed by a person in a terminal";
+export const STOP_FIRST = (held: string[]): string => `stop the agents held first (${held.join(", ")}): a project is opened with nothing running`;
 
 /** A sign-in in flight: the link a person opens, and how it ended once it did. */
 export interface Signing {
@@ -41,6 +42,8 @@ export class Session {
   site: Promise<SitePage[]> | undefined;
   /** A golden run in flight, by agent: it outlives one tool call. */
   readonly runs = new Map<string, Promise<unknown>>();
+  /** A simulated call in flight, by agent: its answer when done, its transcript so far meanwhile. */
+  readonly simulations = new Map<string, { pending: Promise<unknown>; lines(): string[] }>();
 
   constructor(
     readonly env: NodeJS.ProcessEnv,
@@ -48,6 +51,8 @@ export class Session {
     readonly production: boolean,
     /** The roots the host declared, asked once and only when the host supports them. */
     private readonly declared: () => Promise<string[]>,
+    /** What answers the console beside an agent held in a thread; the server's companion unless a test says otherwise. */
+    readonly beside?: MakesBeside,
   ) {}
 
   /** The project's folder: one a tool opened, else the first the host declared, else the cwd when it holds agents/. */
@@ -67,6 +72,8 @@ export class Session {
   open(path: string): string {
     const root = resolve(path);
     if (!existsSync(root) || !statSync(root).isDirectory()) throw new Refused(`${root} is not a folder`);
+    // The cwd is the held thread's too: it moves with nothing running.
+    if (this.held.size > 0) throw new Refused(STOP_FIRST([...this.held.keys()]));
     this.root = root;
     process.chdir(root);
     return root;
@@ -117,11 +124,12 @@ export class Session {
     }
   }
 
-  /** Every secret this session could print: the project's key and the machine's sign-in, to be scrubbed from any answer. */
+  /** Every secret this session could print: the environment's key, the project's, and the machine's sign-in, to be scrubbed from any answer. */
   secrets(): string[] {
+    const exported = this.env[KEY_VARIABLE];
     const project = this.root === undefined ? undefined : keyFrom(this.env, this.root).apiKey;
     const machine = signedIn(undefined, pinecallHome(this.env))?.key;
-    return [project, machine].filter((one): one is string => one !== undefined);
+    return [exported, project, machine].filter((one): one is string => one !== undefined && one !== "");
   }
 }
 

@@ -56,9 +56,10 @@ export function simulatingFrom(
     async start(asked: unknown): Promise<{ call: string }> {
       const wanted = parsed(asked);
       if (wanted.agent !== agent) throw new Refusal(409, NOT_THIS_DIRECTORY(wanted.agent, agent));
+      // The screen's field is a percent; the core takes the share the wire carries.
       const degraded = degradedBy(
         wanted.background_noise === undefined ? undefined : String(wanted.background_noise),
-        wanted.packet_loss === undefined ? undefined : String(wanted.packet_loss),
+        wanted.packet_loss === undefined ? undefined : String(wanted.packet_loss / 100),
       );
       if (!wanted.voice && degraded !== undefined) throw new Refusal(422, ONLY_ON_A_LINE);
       const persona = await personaNamed(door, wanted.agent, wanted.persona);

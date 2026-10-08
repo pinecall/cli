@@ -25,7 +25,12 @@ export const chat = tool({
       return await talk.end();
     }
     const text = needed(args.text, "text");
-    if (args.call !== undefined) return await theTalk(session.talks, args.call).say(text);
+    if (args.call !== undefined) {
+      const talk = theTalk(session.talks, args.call);
+      // Ended by the agent or the gateway since the last line: let it go, and say so.
+      if (talk.ended) session.talks.delete(args.call);
+      return await talk.say(text);
+    }
     const held = session.holding(args.agent);
     const app = await held.ready();
     const talk = await Talk.opened(held.door, held.home.name, app, args.contact, args.state);

@@ -16,12 +16,13 @@ describe("the degraded line", () => {
     expect(degradedBy("22", undefined)).toEqual({ interferer_db: 22, packet_loss: 0 });
   });
 
-  it("reads packet loss as the percent a person types and sends the share the wire takes", () => {
-    expect(degradedBy(undefined, "5")).toEqual({ interferer_db: DEGRADED.interferer_db, packet_loss: 0.05 });
+  it("reads packet loss as the share `test` takes, and refuses a percent, which the wire would read as every packet lost", () => {
+    expect(degradedBy(undefined, "0.05")).toEqual({ interferer_db: DEGRADED.interferer_db, packet_loss: 0.05 });
+    expect(() => degradedBy(undefined, "5")).toThrow("a number from 0 to 1");
   });
 
   it("puts the television at its measured level when --background-noise was given no number", () => {
-    expect(degradedBy("", "2")?.interferer_db).toBe(DEGRADED.interferer_db);
+    expect(degradedBy("", "0.02")?.interferer_db).toBe(DEGRADED.interferer_db);
   });
 });
 

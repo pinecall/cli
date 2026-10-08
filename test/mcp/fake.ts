@@ -9,7 +9,9 @@ import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 
-import { serverOf } from "../../src/mcp/server.js";
+import type { MakesBeside } from "../../src/mcp/holding/held.js";
+import { serverOf, type Trace } from "../../src/mcp/server.js";
+import { Session } from "../../src/mcp/session.js";
 
 export const A_WORD = "cli_a_word_that_dies_in_ten_minutes";
 export const THE_MACHINES_KEY = "pc_live_the_machines_own_key_0001";
@@ -61,18 +63,48 @@ export class FakeGateway {
 }
 
 /** A folder that is a project: `agents/<name>/agent.tsx`, and a .env with the key when one is given. */
-export function aProject(key?: string, url?: string, file = "agent.tsx"): string {
+export function aProject(key?: string, url?: string, file = "agent.tsx", agents = ["front-desk"]): string {
   const root = mkdtempSync(join(tmpdir(), "pinecall-mcp-"));
-  mkdirSync(join(root, "agents", "front-desk"), { recursive: true });
-  writeFileSync(join(root, "agents", "front-desk", file), "// the class\n");
+  for (const name of agents) {
+    mkdirSync(join(root, "agents", name), { recursive: true });
+    writeFileSync(join(root, "agents", name, file), "// the class\n");
+  }
   if (key !== undefined) writeFileSync(join(root, ".env"), `PINECALL_KEY=${key}\n${url === undefined ? "" : `PINECALL_URL=${url}\n`}`);
   return root;
 }
 
+// What the fake framework's serve entry does: register the agent, unless its class says it is broken; leave on stdin's end.
+const A_SERVE_ENTRY = `import { readFileSync } from "node:fs";
+export async function main(argv, io) {
+  const file = argv[argv.indexOf("--file") + 1];
+  const slug = argv[argv.indexOf("--slug") + 1];
+  if (readFileSync(file, "utf8").includes("BROKEN")) { io.err.write("Transform failed: Expected ;\\n"); return 1; }
+  io.out.write(JSON.stringify({ type: "agent.registered", agent: slug, call: null, data: { app: "app_" + process.pid + "_" + Date.now() } }) + "\\n");
+  await new Promise((left) => { io.input.on("end", left); io.input.resume(); });
+  io.err.write("draining · no live calls\\n");
+  return 0;
+}
+`;
+
+/** A project that installs a framework whose serve entry registers the agent, so a thread can hold it with no gateway socket. */
+export function aServedProject(key: string, url: string): string {
+  const root = aProject(key, url);
+  const framework = join(root, "node_modules", "@pinecall", "agents");
+  mkdirSync(join(framework, "serve"), { recursive: true });
+  writeFileSync(join(framework, "package.json"), JSON.stringify({ name: "@pinecall/agents", version: "0.0.0", type: "module", exports: { "./serve": "./serve/index.js" } }));
+  writeFileSync(join(framework, "serve", "index.js"), A_SERVE_ENTRY);
+  return root;
+}
+
+/** A companion that connects to nothing: the tests hold the agent with no gateway socket. */
+export const NOTHING_BESIDE: MakesBeside = () => ({ connect: async () => undefined, close: async () => undefined });
+
 /** A client talking to a fresh server in memory, its home a temp folder so no real sign-in is read. */
-export async function aClient(production = false): Promise<{ client: Client; home: string }> {
+export async function aClient(production = false, trace?: Trace): Promise<{ client: Client; home: string }> {
   const home = mkdtempSync(join(tmpdir(), "pinecall-home-"));
-  const server = serverOf("0.0.0-test", { PINECALL_HOME: home }, production);
+  const env = { PINECALL_HOME: home };
+  const session = new Session(env, production, async () => [], NOTHING_BESIDE);
+  const server = serverOf("0.0.0-test", env, production, { session, ...(trace === undefined ? {} : { trace }) });
   const [ours, theirs] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "a-test", version: "0" });
   await Promise.all([server.connect(theirs), client.connect(ours)]);

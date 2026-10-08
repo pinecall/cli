@@ -1,8 +1,8 @@
 /** `pinecall agent history | diff | rollback`: a corner's settings versions. */
 
-import { type TuningAnswer, type TuningBody, type TuningDiff, type TuningHistory, type TuningRow } from "@pinecall/agents/wire";
+import { type TuningAnswer, type TuningBody, type TuningDiff, type TuningHistory } from "@pinecall/agents/wire";
 
-import { FIELDS, linesOf, settingsPath, shown, versionLine, type Field } from "./agent-lines.js";
+import { FIELDS, linesOf, settingsPath, shown, versionLine } from "./agent-lines.js";
 import type { Typed } from "./agent-setting.js";
 import { asked, type Door } from "./testing/gateway.js";
 
@@ -75,9 +75,4 @@ export function changes(before: TuningBody, after: TuningBody, lead: string, joi
     said.push(`${field.replace("-", " ")} ${was ?? "—"} → ${is ?? "—"}`);
   }
   return said.length === 0 ? "" : `${lead}${said.join(joined === "\n" ? `\n${lead}` : joined)}`;
-}
-
-/** Whether a row sets this field. */
-export function sets(row: TuningRow, field: Field): boolean {
-  return shown(row.config, field) !== undefined;
 }

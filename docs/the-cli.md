@@ -536,7 +536,7 @@ from 0 to 1 here (`0.05` is one in twenty), where `simulate` takes a percent.
 
 ```
 pinecall simulate --persona <name> [--judge] [--turns n (15)] [--voice] [--listen]
-                  [--background-noise dB] [--packet-loss percent] [--agent <name>] [--file agent.tsx]
+                  [--background-noise dB] [--packet-loss 0.05] [--agent <name>] [--file agent.tsx]
                   [--inspect[=host:port] | --inspect-brk]
 ```
 
@@ -568,7 +568,7 @@ persona's own `tts` and `voice` when it set them — else the platform's default
 voice from the operator's list for the agent's language that the agent does not have** (English's
 when that language has none), so the two sides are told apart by ear. The caller waits for the opening to be said before its first line, as a person does.
 `--background-noise` and `--packet-loss` spoil that line on purpose and are refused without it;
-`--packet-loss` here is a percent (`5`), where `test` takes a fraction from 0 to 1.
+`--packet-loss` is the share of the caller's packets that never arrive, from 0 to 1, as `test` takes it.
 
 `--listen` puts the call on **this machine's speakers** while it happens: the same hidden `observe`
 seat the console's listen button takes, joined from Node, both tracks mixed onto whichever of

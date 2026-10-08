@@ -2,15 +2,16 @@
 
 import { whoIs } from "../../whoami.js";
 import { tool } from "../tool.js";
+import { PROD } from "./fields.js";
 
 export const whoami = tool({
   name: "whoami",
   description: "Which org, gateway and environment the open project's key acts in, and whether production is allowed.",
-  schema: {},
+  schema: { prod: PROD },
   manual:
-    "`whoami` first, in any session: it proves the project's key and names the org. Refused with a sentence naming `link` when the project has no key yet.",
-  handler: async (_args, session) => {
-    const door = await session.door();
+    "`whoami` first, in any session: it proves the project's key and names the org. Refused with a sentence naming `link` when the project has no key yet; with `prod`, it says whether the key may act in production.",
+  handler: async (args, session) => {
+    const door = await session.door(args.prod);
     const who = await whoIs(door);
     return {
       org: who.slug ?? who.org,

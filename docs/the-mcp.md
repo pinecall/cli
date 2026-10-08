@@ -5,9 +5,11 @@ Claude Code, Claude Desktop, Codex, Cursor, Windsurf, Antigravity, Gemini CLI �
 tools take a person from an empty folder to an agent on Pinecall without a terminal.
 
 The server starts no process of its own: what needs a browser, an editor or a speaker hands the
-link, the text or the file back instead. Every tool acts in the **sandbox**. No tool takes a vendor
-key, a carrier secret or an app's secret, and no answer carries a Pinecall key: every answer and
-every refusal is scrubbed before it reaches the model.
+link, the text or the file back instead. Every tool acts in the **sandbox** unless it says `prod`
+(below). No tool takes a vendor key, a carrier secret or an app's secret, and no answer carries a
+Pinecall key: every answer and every refusal is scrubbed before it reaches the model. The server
+writes one line per call to its stderr — the tool, how long it took, whether it answered or
+refused, never what it was asked or what it answered — which the assistant keeps in its own log.
 
 ## Install
 
@@ -26,7 +28,7 @@ its config when it started. No key is written anywhere: the server reads the ope
 |---|---|
 | `--list` | every assistant, whether it is installed, and whether Pinecall is in it; changes nothing |
 | `--remove` | takes Pinecall out of every assistant |
-| `--prod` | writes `--prod` into each entry, so a tool may act in production; your org's switch still decides |
+| `--prod` | writes `--prod` into each entry, so a tool asked with `prod: true` acts in production; your org's switch still decides |
 
 | assistant | file |
 |---|---|
@@ -49,8 +51,15 @@ the one `pinecall` itself reads: `PINECALL_KEY` from the environment, else from 
 
 ## The tools
 
-Every tool acts in the sandbox. A long one (`test`, `deploy`, `login`) answers within `wait_s`
-seconds (25 unless asked, at most 50) and says how to keep waiting, so no host gives up on it.
+Every tool acts in the sandbox. The tools that open the project's door take `prod: true` to act
+in production instead: a server installed with `--prod` does, and any other refuses it in one
+sentence that names the flag. The tools that act on the agent held (`chat`, `test`, `simulate`,
+`remember`) follow the world it was started in. A long one (`login`, `test`, `simulate`,
+`deploy`) answers within `wait_s` seconds (25 unless asked, at most 50) with what it has and says
+how to keep waiting, so no host gives up on it.
+
+The assistant reads each tool's sentence and its manual in the tool list; the server's instructions
+carry the journey and the tools by stage, so nothing is said twice.
 
 ### Getting started
 
@@ -59,13 +68,13 @@ seconds (25 unless asked, at most 50) and says how to keep waiting, so no host g
 | `whoami` | — | which org, gateway and environment the project's key acts in, and whether production is allowed for the key and for this server |
 | `login` | `start` · `status` | signs this machine in: `start` answers a link the person opens in a browser; `status` waits until they approved it. The key is kept in `~/.pinecall/session.json` and never answered |
 | `link` | `orgs` · `write` | the person's orgs, and the key of one written into the project's `.env` (`PINECALL_KEY`, and `PINECALL_URL` when the gateway is not Pinecall Cloud); it warns when `.gitignore` does not name `.env` |
-| `project` | `show` · `open` · `new` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened; a new project of one agent written from `pinecall new`'s templates, in TypeScript or Ruby, and opened |
+| `project` | `show` · `open` · `new` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened (with nothing held: `stop` first); a new project of one agent written from `pinecall new`'s templates, in TypeScript or Ruby, and opened |
 
 ### Holding the agent, and talking to it
 
 | tool | actions | what it does |
 |---|---|---|
-| `start` | — | holds the agent as `pinecall start` does. A TypeScript agent runs in a worker thread of this server — no process — and reloads on every save: the new version registers before the old one drains, a save that does not load keeps the version before answering. A Ruby agent, or one a terminal already holds, is attached to instead. Beside the thread a companion answers the console, so its Chat, Tests, Simulations, Docs and Memory screens reach the agent the assistant holds; `pinecall agent list` shows it as `pinecall-mcp/<version>` |
+| `start` | — | holds the agent as `pinecall start` does, in the sandbox or, with `prod`, in production. A TypeScript agent runs in a worker thread of this server — no process — and reloads on every save: the new version registers before the old one drains, a save that does not load keeps the version before answering. A Ruby agent, or one a terminal already holds, is attached to — the agent's own process, never the companion beside it. Beside the thread a companion answers the console, so its Chat, Tests, Simulations, Docs and Memory screens reach the agent the assistant holds; `pinecall agent list` shows it as `pinecall-mcp/<version>` |
 | `stop` | — | drains the thread and lets the agent go; an attached process is left running |
 | `status` | — | each agent held, how (`thread` or `attached`), its app, the version answering, and the sentence a broken save was refused with |
 | `logs` | — | the last lines the agent printed: its own output, a load error, the versions as they replace each other |
@@ -94,21 +103,21 @@ seconds (25 unless asked, at most 50) and says how to keep waiting, so no host g
 
 | tool | actions | what it does |
 |---|---|---|
-| `test` | `run` · `wait` | the goldens through the agent held, a column per model in `models`, written or spoken (`voice`, `background_noise`, `packet_loss` 0..1): the matrix, each call's latency, a reproduction for each golden that broke |
+| `test` | `run` · `wait` | the goldens through the agent held, a column per model in `models`, written or spoken (`voice`, `background_noise`, `packet_loss` 0..1): the matrix, each call's latency, a reproduction for each golden that broke. One run per agent at a time |
 | `runs` | `list` · `show` · `diff` · `promote` · `drift` | the suites kept, what moved between two, a real call written as a golden candidate under `test/candidates/`, each judge's drift |
-| `simulate` | — | a persona's call against the agent held, the conversation and every judge's verdict |
+| `simulate` | `run` · `wait` | a persona's call against the agent held, the conversation and every judge's verdict; past `wait_s`, the transcript so far, and `wait` picks the rest up. One per agent at a time |
 | `personas` | `list` · `show` · `add` · `edit` · `rm` | the callers a model plays: a goal, a manner, facts, a rule for hanging up satisfied |
 | `judges` | `list` · `add` · `rm` | your own questions asked of the agent's calls, or every agent's with `org` |
 | `eval` | — | one finished call checked again by code, with `banned` words and a latency `budget` |
-| `docs` | `push` · `list` · `eval` · `attach` · `detach` · `attached` | a folder pushed as a base, attached to the agent, held to `goldens/docs.json` |
-| `memory` | `show` · `policy` · `eval` | what the agent kept about a caller, what it keeps and never keeps, and `goldens/memory.json` |
+| `docs` | `push` · `list` · `eval` · `attach` · `detach` · `attached` | a folder pushed as a base, attached to the agent, held to `goldens/docs.json`; `list` and `attached` are the org's and name no agent |
+| `memory` | `show` · `policy` · `eval` | what the agent kept about a caller (naming no agent), what it keeps and never keeps (`policy` with neither list reads them), and `goldens/memory.json` |
 | `remember` | — | the extraction cases under `test/<agent>/memory/`, run through the agent held |
 
 ### Going live, and the docs
 
 | tool | actions | what it does |
 |---|---|---|
-| `deploy` | `deploy` · `wait` · `list` · `releases` · `logs` · `rollback` · `stop` · `start` | the project run on Pinecall in the sandbox: a release uploaded (what its `.gitignore` files leave in) and followed until live; TypeScript projects only |
+| `deploy` | `deploy` · `wait` · `list` · `releases` · `logs` · `rollback` · `stop` · `start` | the project run on Pinecall: a release uploaded (what its `.gitignore` files leave in) and followed until live; TypeScript projects only |
 | `docs_search` | — | the sections of docs.pinecall.io that answer a question, each with its address |
 | `get_doc` | — | one page of the docs whole, by its address or its path |
 

@@ -3,7 +3,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { NO_KEY } from "../src/env.js";
-import { linesOf, replayUrl, run, type Answer } from "../src/eval.js";
+import { linesOf, replayPath, run, type Answer } from "../src/eval.js";
 import { onStderr } from "./said.js";
 
 const ANSWERED: Answer = {
@@ -17,12 +17,9 @@ const ANSWERED: Answer = {
 };
 
 describe("the door the verb knocks at", () => {
-  it("is the replay door of the gateway this terminal points at", () => {
-    expect(replayUrl("http://localhost:8080", "CA_8f4a2c")).toBe("http://localhost:8080/v1/evals/replay/CA_8f4a2c");
-  });
-
-  it("keeps one slash whatever the URL ended with, and escapes the id it was handed", () => {
-    expect(replayUrl("http://box:8080/", "CA/8f")).toBe("http://box:8080/v1/evals/replay/CA%2F8f");
+  it("is the replay door, the id escaped as it was handed", () => {
+    expect(replayPath("CA_8f4a2c")).toBe("/v1/evals/replay/CA_8f4a2c");
+    expect(replayPath("CA/8f")).toBe("/v1/evals/replay/CA%2F8f");
   });
 });
 
