@@ -21,7 +21,7 @@ const A_CASE: ExtractionGolden = {
 
 const RAN: ExtractionRun = {
   agent: "clinica-norte",
-  model: "claude-haiku-4-5",
+  model: "claude-haiku-5-5",
   cases: 1,
   held: 1,
   took_ms: 812,

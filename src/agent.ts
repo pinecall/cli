@@ -44,8 +44,8 @@ export const group: Group = {
   does not hear it. --team writes the org's own corner instead, which every corner falls back to.
   --prod writes production's, if your org lets you act there. The whole set travels with the version it was read at, so two people
   saving at once never write over each other: the second is told where the corner is now. A model
-  knob reads four ways — \`--llm anthropic/claude-haiku-4-5\`, \`--llm cartesia\` (a vendor, its own
-  model), \`--llm claude-haiku-4-5\` (a model, the vendor in use), and \`--llm haiku\` (a tier, which
+  knob reads four ways — \`--llm anthropic/claude-haiku-5-5\`, \`--llm cartesia\` (a vendor, its own
+  model), \`--llm claude-haiku-5-5\` (a model, the vendor in use), and \`--llm haiku\` (a tier, which
   is expanded here to the id its provider answers to, as \`pinecall test --model\` expands it). A
   name that means no model at all is refused rather than written. --language is the tag the voice
   and the ears are set to — \`en\`, \`es\`, \`pt-BR\` — and a blank one is refused; the prompt's

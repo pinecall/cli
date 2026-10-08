@@ -241,7 +241,7 @@ describe("the policy is one field of a corner", () => {
   const THE_TEAMS = {
     world: "sandbox",
     yours: null,
-    team: { version: 7, config: { voice: "carolina", llm: "anthropic/claude-haiku-4-5", bases: [{ base: "clinica-norte", k: 4 }] } },
+    team: { version: 7, config: { voice: "carolina", llm: "anthropic/claude-haiku-5-5", bases: [{ base: "clinica-norte", k: 4 }] } },
     production: null,
   };
 
@@ -253,7 +253,7 @@ describe("the policy is one field of a corner", () => {
     const wrote = gateway.heard.find((heard) => heard.method === "PUT");
     const config = (wrote?.body as { config: Record<string, unknown> }).config;
     expect(config["voice"]).toBe("carolina");
-    expect(config["llm"]).toBe("anthropic/claude-haiku-4-5");
+    expect(config["llm"]).toBe("anthropic/claude-haiku-5-5");
     expect(config["bases"]).toEqual([{ base: "clinica-norte", k: 4 }]);
     expect(config["memory"]).toEqual({ remember: ["what they want cleaned"], forget: [] });
     expect((wrote?.body as { if_version: number }).if_version).toBe(7);

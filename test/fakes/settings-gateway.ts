@@ -10,7 +10,7 @@ export const TEAM = {
   author: "m_bruno",
   note: "cleaner on the phone",
   set_at: 1758300000,
-  config: { voice: "carolina", llm: "anthropic/claude-haiku-4-5", language: "es", greeting: { say: "Clínica Norte, buenas." }, memory: { remember: ["allergies"], forget: [] } },
+  config: { voice: "carolina", llm: "anthropic/claude-haiku-5-5", language: "es", greeting: { say: "Clínica Norte, buenas." }, memory: { remember: ["allergies"], forget: [] } },
 };
 export const YOURS = { holder: "m_ana", version: 3, author: "m_ana", note: null, set_at: 1758310000, config: { voice: "amelia" } };
 

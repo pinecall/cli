@@ -222,7 +222,7 @@ A model plays one of the agent's personas against the agent this server holds, w
     ],
     "passed": true,
     "judged_by": {
-      "model": "claude-haiku-4-5-20251001",
+      "model": "claude-haiku-5-5",
       "criteria": "66463628bea76abb92f34d77ae8407629ead0371d9a6c501627d69cf4be762df",
       "provider": "anthropic"
     },

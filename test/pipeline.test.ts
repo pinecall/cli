@@ -16,7 +16,7 @@ const AGENT = "clinica-norte";
 const REPORT = {
   agent: AGENT,
   hears: { vendor: "deepgram", model: "nova-3", voice_id: null, language: "es" },
-  decides: { vendor: "anthropic", model: "claude-haiku-4-5", voice_id: null, language: null },
+  decides: { vendor: "anthropic", model: "claude-haiku-5-5", voice_id: null, language: null },
   speaks: { vendor: "elevenlabs", model: "eleven_flash_v2_5", voice_id: "Lucia", language: "es" },
   greeting: { say: "Clínica Norte, ¿en qué puedo ayudarle?", reply: null, allow_interruptions: null },
   voices: ["Lucia", "Mateo"],
@@ -94,7 +94,7 @@ describe("what the agent runs on", () => {
 
     expect(code).toBe(0);
     expect(out.text()).toContain("deepgram · nova-3 · es");
-    expect(out.text()).toContain("anthropic · claude-haiku-4-5");
+    expect(out.text()).toContain("anthropic · claude-haiku-5-5");
     expect(out.text()).toContain("elevenlabs · eleven_flash_v2_5 · Lucia · es");
     expect(out.text()).toContain("Clínica Norte");
     expect(out.text()).toContain("eou_delay 0.31s");
@@ -115,7 +115,7 @@ describe("the knobs, moved", () => {
   it("says where set went, and knocks at no door", async () => {
     const err = written();
 
-    const code = await run(["set", "--agent", AGENT, "--llm", "anthropic/claude-haiku-4-5"], {
+    const code = await run(["set", "--agent", AGENT, "--llm", "anthropic/claude-haiku-5-5"], {
       out: written().stream,
       err: err.stream,
       env: environment(),

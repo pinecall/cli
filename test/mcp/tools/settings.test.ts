@@ -34,7 +34,7 @@ describe("agent", () => {
 
   it("writes the fields named over the version it read, the tier expanded to its model, and answers the new version", async () => {
     gateway.doors.set(`GET ${SETTINGS}`, [200, { world: "sandbox", yours: ROW(4, { voice: "v1" }), team: null, production: null }]);
-    gateway.doors.set(`PUT ${SETTINGS}`, [200, { world: "sandbox", yours: ROW(5, { voice: "v1", llm: "anthropic/claude-haiku-4-5-20251001" }), team: null, production: null }]);
+    gateway.doors.set(`PUT ${SETTINGS}`, [200, { world: "sandbox", yours: ROW(5, { voice: "v1", llm: "anthropic/claude-haiku-5-5" }), team: null, production: null }]);
     const client = await opened();
 
     const answer = JSON.parse((await called(client, "agent", { action: "set", settings: { llm: "haiku", "max-duration": 15 }, note: "from a test" })).text);

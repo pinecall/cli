@@ -549,7 +549,7 @@ written whole to `.pinecall/evals/<run>/<golden>.json` — the golden as written
 ```console
 $ pinecall test --grep reserva
 clinica-norte · 2 goldens · haiku · run_7ed3ace9352d
-clinica-norte · 2 goldens · anthropic/claude-haiku-4-5-20251001
+clinica-norte · 2 goldens · anthropic/claude-haiku-5-5
   ✓ no-reserva-antes-del-si  e2e_latency 2605ms · llm_node_ttft 763ms
   ✓ reserva-cuando-el-paciente-dice-que-si  e2e_latency 1948ms · llm_node_ttft 911ms
   2/2 · 0 judge calls · $0.0250 · 8s
@@ -796,9 +796,9 @@ call_5b1f0e9d2c7a4e8f9a1b3c5d7e9f1a2b
 
   outcome   Entendido, Ana. Su cita del jueves a las diez con la doctora Vidal sigue en pie por ahora.
   ended     caller_hung_up · 1m 24s · 4 turns
-  cost      $0.0676
-            api.anthropic.com claude-haiku-4-5-20251001  17,621 input_tokens       $0.0176
-            api.anthropic.com claude-haiku-4-5-20251001  312 output_tokens         $0.0016
+  cost      $0.0505
+            api.anthropic.com claude-haiku-5-5           17,621 input_tokens       $0.0018
+            api.anthropic.com claude-haiku-5-5           312 output_tokens         $0.0002
             Cartesia sonic-3                             623 characters            $0.0312
             Deepgram flux-general-multi                  80.6 audio_seconds        $0.0105
             twilio twilio-inbound/+1                     2 minutes                 $0.0068
@@ -830,7 +830,7 @@ clinica-norte · sandbox
   tts           —               —                           —
   tts model     —               —                           —
   stt           —               deepgram                    deepgram
-  llm           —               anthropic/claude-haiku-4-5  anthropic/claude-haiku-4-5
+  llm           —               anthropic/claude-haiku-5-5  anthropic/claude-haiku-5-5
   language      —               es                          es
   greeting      —               "Thanks for calling Clíni…  "Thanks for calling Clíni…
   hangup        —               when the person has what…   when the person has what…
@@ -997,7 +997,7 @@ $ pinecall pipeline
 clinica-norte · 9 calls
 
   hears     soniox · es
-  decides   anthropic · claude-haiku-4-5-20251001
+  decides   anthropic · claude-haiku-5-5
   speaks    elevenlabs · EXAVITQu4vr4xnSDxMaL · es
 
   greeting  "Clínica Norte, buenos días. ¿En qué puedo ayudarle?"
@@ -1007,8 +1007,8 @@ clinica-norte · 9 calls
 
 The three legs as the **next** call would be built. It reads and nothing else: the six knobs are fields of the settings now, and
 `pinecall agent set` sets them with the rest — a model knob reads four ways there,
-`--llm anthropic/claude-haiku-4-5`, `--llm cartesia` (a vendor, its own model), `--llm
-claude-haiku-4-5` (a model, the vendor in use), and `--llm haiku` (a tier, expanded to the id its
+`--llm anthropic/claude-haiku-5-5`, `--llm cartesia` (a vendor, its own model), `--llm
+claude-haiku-5-5` (a model, the vendor in use), and `--llm haiku` (a tier, expanded to the id its
 provider answers to, exactly as `pinecall test --model haiku` expands it). `pinecall pipeline set`
 and `clear` say so and exit 2. `pinecall providers` lists every vendor a stage may be moved onto.
 

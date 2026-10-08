@@ -91,7 +91,7 @@ describe("setting", () => {
       ["anthropic/opus", "anthropic/claude-opus-5"],
       ["openai/gpt-5", "openai/gpt-5"],
       ["cartesia", "cartesia"],
-      ["claude-haiku-4-5", "claude-haiku-4-5"],
+      ["claude-haiku-5-5", "claude-haiku-5-5"],
     ]) {
       await run(["set", "--agent", AGENT, "--llm", typed!], { out: written().stream, env: environment() });
 
@@ -119,7 +119,7 @@ describe("setting", () => {
     expect(body.team).toBe(true);
     expect(body.if_version).toBe(11);
     expect(body.config["greeting"]).toEqual({ say: "Buenas." });
-    expect(body.config["llm"]).toBe("anthropic/claude-haiku-4-5");
+    expect(body.config["llm"]).toBe("anthropic/claude-haiku-5-5");
   });
 
   it("starts a corner from nothing when no corner has anything, guarded at version 0", async () => {
@@ -140,7 +140,7 @@ describe("setting", () => {
 
     const body = gateway.written as { config: Record<string, unknown>; if_version: number | null; team: boolean };
     expect(body.config["voice"]).toBe("mateo");
-    expect(body.config["llm"]).toBe("anthropic/claude-haiku-4-5");
+    expect(body.config["llm"]).toBe("anthropic/claude-haiku-5-5");
     expect(body.config["memory"]).toEqual({ remember: ["allergies"], forget: [] });
     expect(body.if_version).toBe(11);
     expect(body.team).toBe(false);
@@ -154,7 +154,7 @@ describe("setting", () => {
 
     const body = gateway.written as { config: Record<string, unknown>; if_version: number | null; team: boolean };
     expect(body.config["language"]).toBe("en");
-    expect(body.config["llm"]).toBe("anthropic/claude-haiku-4-5");
+    expect(body.config["llm"]).toBe("anthropic/claude-haiku-5-5");
     expect(body.if_version).toBe(0);
     expect(body.team).toBe(false);
   });
@@ -167,7 +167,7 @@ describe("setting", () => {
 
   it("clears named fields and keeps the rest; with none, everything", async () => {
     await run(["clear", "voice", "language", "--agent", AGENT, "--team"], { out: written().stream, env: environment() });
-    expect((gateway.written as { config: Record<string, unknown> }).config).toEqual({ llm: "anthropic/claude-haiku-4-5", greeting: { say: "Clínica Norte, buenas." }, memory: { remember: ["allergies"], forget: [] } });
+    expect((gateway.written as { config: Record<string, unknown> }).config).toEqual({ llm: "anthropic/claude-haiku-5-5", greeting: { say: "Clínica Norte, buenas." }, memory: { remember: ["allergies"], forget: [] } });
 
     await run(["clear", "--agent", AGENT], { out: written().stream, env: environment() });
     expect(gateway.written).toMatchObject({ config: {}, if_version: 3 });
@@ -202,7 +202,7 @@ describe("the versions", () => {
 
     expect(out.text()).toContain("the org's own corner");
     expect(out.text()).toContain("v11 · m_bruno");
-    expect(out.text()).toContain("llm — → anthropic/claude-haiku-4-5");
+    expect(out.text()).toContain("llm — → anthropic/claude-haiku-5-5");
     expect(out.text()).toContain("v10 · m_bruno");
   });
 

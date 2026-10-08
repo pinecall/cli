@@ -105,10 +105,10 @@ describe("a column per model", () => {
     await door.start({
       agent: "clinica-norte",
       goldens: ["reserva"],
-      models: ["anthropic/claude-haiku-4-5", "openai/gpt-4.1-mini"],
+      models: ["anthropic/claude-haiku-5-5", "openai/gpt-4.1-mini"],
     });
 
-    expect(opening.under[0]).toEqual(["anthropic/claude-haiku-4-5", "openai/gpt-4.1-mini"]);
+    expect(opening.under[0]).toEqual(["anthropic/claude-haiku-5-5", "openai/gpt-4.1-mini"]);
   });
 
   // Models parse like `--model`: full `vendor/model` or the short name.

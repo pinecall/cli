@@ -108,7 +108,7 @@ Hold memory's writing to its cases: each written call in test/<agent>/memory/ ru
 ```json title="answered"
 {
   "agent": "front-desk",
-  "model": "anthropic/claude-haiku-4-5-20251001",
+  "model": "anthropic/claude-haiku-5-5",
   "cases": 1,
   "held": 1,
   "took_ms": 1027.29,

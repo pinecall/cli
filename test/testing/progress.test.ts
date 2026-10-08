@@ -170,10 +170,10 @@ describe("what the terminal shows while the run is going", () => {
   });
 
   it("counts one golden without the plural, and names every model asked for", () => {
-    const compared = { ...WATCHED, goldens: 1, models: ["anthropic/claude-haiku-4-5", "openai/gpt-5-mini"] };
+    const compared = { ...WATCHED, goldens: 1, models: ["anthropic/claude-haiku-5-5", "openai/gpt-5-mini"] };
 
     expect(header(compared, "run_1")).toBe(
-      "clinica-norte · 1 golden · anthropic/claude-haiku-4-5 · openai/gpt-5-mini · run_1",
+      "clinica-norte · 1 golden · anthropic/claude-haiku-5-5 · openai/gpt-5-mini · run_1",
     );
   });
 });

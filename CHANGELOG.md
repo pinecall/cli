@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.35] — no Claude Haiku 4.5 left
+
+### Changed
+
+- `pinecall agent --help`, the CLI's pages and the MCP's examples name `claude-haiku-5-5` where they named `claude-haiku-4-5`; the sample call in `sessions` is priced at Claude Haiku 5.5's rates.
+
 ## [0.9.34] — every MCP tool documented: its parameters and a real call
 
 ### Added

@@ -22,7 +22,7 @@ const A_KEY = "pc_test_the_orgs_own_key";
 
 const ANSWERED: ExtractionRun = {
   agent: "clinica-norte",
-  model: "anthropic/claude-haiku-4-5",
+  model: "anthropic/claude-haiku-5-5",
   cases: 2,
   held: 1,
   took_ms: 4210.4,
@@ -103,7 +103,7 @@ describe("what a person reads", () => {
   // memory would have kept, and what admission refused.
   it("is one line per case, and the evidence under the ones that broke", () => {
     expect(linesOf(ANSWERED)).toEqual([
-      "clinica-norte · anthropic/claude-haiku-4-5 · 2 cases · 1 held · 4210 ms",
+      "clinica-norte · anthropic/claude-haiku-5-5 · 2 cases · 1 held · 4210 ms",
       "  ✓ anota la alergia",
       "  ✗ la mañana sustituye a la tarde",
       "      invalidates  'Prefiere la tarde' still holds beside what the call said",
