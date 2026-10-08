@@ -5,19 +5,10 @@ import { parseArgs } from "node:util";
 import { openInABrowser } from "./browser.js";
 import { CLOUD_URL } from "./env.js";
 import type { Group } from "./groups.js";
-import { pinecallHome, signIn } from "./signed-in.js";
-import { asked, type Door } from "./testing/gateway.js";
-import { thisMachine } from "./this-machine.js";
-import { refusal, whoIs, type Who } from "./whoami.js";
-import { PRODUCTION } from "./world.js";
+import { keptAs, paired } from "./pairing.js";
+import { refusal } from "./whoami.js";
 
 const USAGE = "usage: pinecall login [gateway-url]";
-
-// The pairing code expires after ten minutes; stop polling shortly after.
-const EVERY_MS = 2_000;
-const GIVE_UP_MS = 11 * 60 * 1_000;
-
-const TOOK_TOO_LONG = "nobody approved this terminal: `pinecall login` again when you are ready";
 
 export const group: Group = {
   purpose: "sign this machine in through a browser; `link` asks for it when it is needed",
@@ -69,78 +60,16 @@ export async function signedInThrough(
   out: NodeJS.WritableStream,
   err: NodeJS.WritableStream,
 ): Promise<string | null> {
-  const key = await throughABrowser(url, how, out, err);
-  if (key === null) return null;
-  // Verify before storing, so a broken key is never saved.
-  let who: Who;
   try {
-    who = await whoIs({ url, apiKey: key, world: PRODUCTION });
+    const pairing = await paired(url);
+    out.write(`\nopen this to sign in:\n${pairing.link}\n\nwaiting…\n`);
+    (how.open ?? openInABrowser)(pairing.link);
+    const key = await pairing.collected({ every: how.every, until: how.until });
+    const who = await keptAs(url, key, how.env ?? process.env);
+    out.write(`signed in to ${url} as ${who.name ?? who.label ?? "this key's person"}\n`);
+    return key;
   } catch (refused) {
     err.write(`${refusal(refused)}\n`);
     return null;
   }
-  signIn(url, key, pinecallHome(how.env ?? process.env));
-  out.write(`signed in to ${url} as ${who.name ?? who.label ?? "this key's person"}\n`);
-  return key;
-}
-
-/**
- * Device pairing: request a code, open the sign-in link, poll for the key. The URL carries only
- * a one-time code that expires in ten minutes. Null after printing an error.
- */
-async function throughABrowser(
-  url: string,
-  how: Signing,
-  out: NodeJS.WritableStream,
-  err: NodeJS.WritableStream,
-): Promise<string | null> {
-  // Accounts exist only in production; the sandbox has none.
-  const door: Door = { url, apiKey: "", world: PRODUCTION };
-  let opened: { code: string };
-  try {
-    opened = await asked<{ code: string }>(door, "/v1/login/pairings", {
-      method: "POST",
-      body: { device: thisMachine() },
-    });
-  } catch (refused) {
-    err.write(`${refusal(refused)}\n`);
-    return null;
-  }
-  const link = signingIn(url, opened.code);
-  out.write(`\nopen this to sign in:\n${link}\n\nwaiting…\n`);
-  (how.open ?? openInABrowser)(link);
-  return await collected(door, opened.code, how, err);
-}
-
-/** The gateway's sign-in page URL for a pairing code. */
-export function signingIn(gateway: string, code: string): string {
-  return `${gateway.replace(/\/$/, "")}/cli?c=${encodeURIComponent(code)}`;
-}
-
-/** Poll for the key until approved, the code is gone, or the timeout passes. */
-async function collected(
-  door: Door,
-  code: string,
-  how: Signing,
-  err: NodeJS.WritableStream,
-): Promise<string | null> {
-  const every = how.every ?? EVERY_MS;
-  const until = Date.now() + (how.until ?? GIVE_UP_MS);
-  while (Date.now() < until) {
-    try {
-      // 202 with no key means not approved yet; an error means the code was collected or expired.
-      const answered = await asked<{ key?: string }>(door, `/v1/login/pairings/${code}/key`);
-      if (answered?.key !== undefined) return answered.key;
-    } catch (refused) {
-      err.write(`${refusal(refused)}\n`);
-      return null;
-    }
-    await after(every);
-  }
-  err.write(`${TOOK_TOO_LONG}\n`);
-  return null;
-}
-
-function after(ms: number): Promise<void> {
-  return new Promise((rung) => setTimeout(rung, ms));
 }

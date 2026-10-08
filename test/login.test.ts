@@ -8,7 +8,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { login, signingIn } from "../src/login.js";
+import { login } from "../src/login.js";
+import { signingIn } from "../src/pairing.js";
 import { readSession, signedIn } from "../src/signed-in.js";
 import { describing, refusal, run as whoami } from "../src/whoami.js";
 import { written } from "./said.js";
