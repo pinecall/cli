@@ -16,10 +16,11 @@ export const prompt = tool({
     channel: z.enum(["phone", "web", "whatsapp"]).optional().describe("the channel the prompt is written for"),
   },
   manual:
-    "`prompt` prints what the model reads — the class's docstring, the rules, the tools, the view — exactly as a call would send it, offline. `state` sets fields first, so you can read the prompt at any stage. A Ruby agent's prompt is `pinecall prompt` in a terminal.",
+    "`prompt` prints what the model reads — the class's docstring, the rules, the tools, the view — exactly as a call would send it, offline. `state` sets fields first, so you can read the prompt at any stage. A Ruby or a Python agent's prompt is `pinecall prompt` in a terminal.",
   handler: async (args, session) => {
     const home = await session.home(args.agent);
-    if (languageOf(home.file) !== "typescript") throw new Refused("a Ruby agent's prompt is printed by Ruby: `pinecall prompt` in a terminal");
+    const language = languageOf(home.file);
+    if (language !== "typescript") throw new Refused(`a ${language === "ruby" ? "Ruby" : "Python"} agent's prompt is printed by its own language: \`pinecall prompt\` in a terminal`);
     const states = Object.entries(args.state ?? {}).flatMap(([field, value]) => ["--state", `${field}=${JSON.stringify(value)}`]);
     const flags = ["--file", home.file, "--slug", home.name, ...states, ...(args.channel === undefined ? [] : ["--channel", args.channel])];
     const lent = lentTo(home.root);

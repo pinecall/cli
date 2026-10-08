@@ -1,0 +1,16 @@
+[project]
+name = "{{slug}}"
+version = "0.1.0"
+description = "{{Title}}: a Pinecall agent in Python."
+requires-python = ">=3.11"
+dependencies = ["pinecall>=0.2,<1"]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+# An application, not a package: nothing here is built or published.
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["test"]

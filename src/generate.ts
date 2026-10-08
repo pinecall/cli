@@ -8,10 +8,10 @@ import { cannotRun } from "./cannot-run.js";
 import type { Group } from "./groups.js";
 import { agentFilesOfTheProject, homeOf, PROJECT_AGENTS, type Home } from "./home.js";
 import { languageOf } from "./language.js";
-import { anAgentWritten, SLUG, type Template } from "./new.js";
+import { anAgentWritten, LANGUAGE_FLAGS, SLUG, templateOf, type Template } from "./new.js";
 import type { Golden } from "./testing/goldens.js";
 
-const USAGE = `usage: pinecall generate agent <name> [--ruby | --typescript]
+const USAGE = `usage: pinecall generate agent <name> [--typescript | --ruby | --python]
        pinecall generate golden <name> --input '…' [--input '…']… [--tool <name>]… [--agent <name>]
        (g for short: pinecall g agent sales)`;
 
@@ -24,8 +24,8 @@ export const group: Group = {
   key, no gateway, and never over a file that is there.
 
   agent <name>    a second agent beside the first, from the templates \`pinecall new\` writes:
-                  agents/<name>/ (the class), test/<name>/agent.test.ts and one golden. In the
-                  project's language, which --ruby or --typescript overrides; at the root,
+                  agents/<name>/ (the class), its ring-0 test and one golden. In the project's
+                  language, which --typescript, --ruby or --python overrides; at the root,
                   \`pinecall start\` then holds every agent, and a verb about one takes --agent.
   golden <name>   test/<agent>/goldens/<name>.json: the caller's lines (--input, in order) and
                   the tools that must be called (--tool). Every golden is judged by consent and
@@ -41,8 +41,7 @@ export async function run(argv: string[], out: NodeJS.WritableStream = process.s
     args: argv,
     allowPositionals: true,
     options: {
-      ruby: { type: "boolean" },
-      typescript: { type: "boolean" },
+      ...LANGUAGE_FLAGS,
       input: { type: "string", multiple: true },
       tool: { type: "string", multiple: true },
       agent: { type: "string" },
@@ -50,10 +49,9 @@ export async function run(argv: string[], out: NodeJS.WritableStream = process.s
   });
   const [kind, name, ...extra] = positionals;
   if (name === undefined || extra.length > 0 || (kind !== "agent" && kind !== "golden")) throw cannotRun(USAGE);
-  if (values.ruby === true && values.typescript === true) throw cannotRun("--ruby or --typescript, not both");
   const written =
     kind === "agent"
-      ? anAgentGenerated(cwd, name, values.ruby === true ? "ruby" : values.typescript === true ? "typescript" : undefined)
+      ? anAgentGenerated(cwd, name, templateOf(values))
       : [aGoldenGenerated(theHome(cwd, values.agent), name, values.input ?? [], values.tool ?? [])].map((file) => relative(cwd, file));
   out.write(`${written.map((file) => `  wrote ${file}`).join("\n")}\n`);
   return 0;
@@ -84,9 +82,8 @@ export function aGoldenGenerated(home: Home, name: string, input: readonly strin
 // The project's agents are in one language as a rule (one `pinecall start` serves one); a project of none is TypeScript's.
 function theProjectsLanguage(root: string): Template {
   const languages = new Set(agentFilesOfTheProject(root).map(languageOf));
-  if (languages.has("python")) throw cannotRun("a Python agent is not served by this CLI yet, so it has no template: say --ruby or --typescript");
-  if (languages.size > 1) throw cannotRun(`this project's agents are in ${[...languages].join(" and ")}: say which with --ruby or --typescript`);
-  return languages.has("ruby") ? "ruby" : "typescript";
+  if (languages.size > 1) throw cannotRun(`this project's agents are in ${[...languages].join(" and ")}: say which with --typescript, --ruby or --python`);
+  return [...languages][0] ?? "typescript";
 }
 
 // The agent named, or the project's only one.

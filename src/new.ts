@@ -1,4 +1,4 @@
-/** `pinecall new <name> [--ruby]`: a project of one agent, ready for `link`, `chat`, `test` and `start`. */
+/** `pinecall new <name> [--ruby | --python]`: a project of one agent, ready for `link`, `chat`, `test` and `start`. */
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
@@ -8,24 +8,35 @@ import { parseArgs } from "node:util";
 import { cannotRun } from "./cannot-run.js";
 import type { Group } from "./groups.js";
 
-const USAGE = "usage: pinecall new <name> [--ruby | --typescript]";
+const USAGE = "usage: pinecall new <name> [--typescript | --ruby | --python]";
 
 export const group: Group = {
-  purpose: "a new project of one agent, in TypeScript or Ruby",
+  purpose: "a new project of one agent, in TypeScript, Ruby or Python",
   offline: true,
   usage: `${USAGE}
 
   Writes ./<name>/: the agent under agents/<name>/ — a class that takes a message, its prompt, one
-  tool — its ring-0 test, one golden, and the toolchain (package.json or Gemfile). The name is the
-  agent's slug on the gateway: lowercase letters, digits and dashes, starting with a letter.
+  tool — its ring-0 test, one golden, and the toolchain (package.json, Gemfile or pyproject.toml). The
+  name is the agent's slug on the gateway: lowercase letters, digits and dashes, starting with a letter.
 
+  --typescript  the class in TypeScript (agent.tsx, vitest); the default
   --ruby        the class in Ruby (agent.rb, a view in ERB, minitest)
-  --typescript  the class in TypeScript (agent.tsx, vitest); the default`,
+  --python      the class in Python (agent.py, a view in Jinja, pytest, uv)`,
   run,
 };
 
 /** The languages `new` writes a project in, each a folder under templates/. */
-export type Template = "typescript" | "ruby";
+export type Template = "typescript" | "ruby" | "python";
+
+/** The flags that name a language, as `new` and `generate` take them. */
+export const LANGUAGE_FLAGS = { typescript: { type: "boolean" }, ruby: { type: "boolean" }, python: { type: "boolean" } } as const;
+
+/** The language the flags name, or undefined when they name none; refused when they name more than one. */
+export function templateOf(values: Partial<Record<Template, boolean | undefined>>): Template | undefined {
+  const named = (["typescript", "ruby", "python"] as const).filter((one) => values[one] === true);
+  if (named.length > 1) throw cannotRun(`${named.map((one) => `--${one}`).join(" or ")}, not both: one language`);
+  return named[0];
+}
 
 /** A slug the gateway accepts: what the folder, the agent's name and its URL path all are. */
 export const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
@@ -39,18 +50,18 @@ const RENAMED: Record<string, string> = { _gitignore: ".gitignore" };
 const NEXT: Record<Template, { install: string; ring0: string; language: string }> = {
   typescript: { install: "npm install", ring0: "npm test", language: "TypeScript" },
   ruby: { install: "bundle install", ring0: "bundle exec rake", language: "Ruby" },
+  python: { install: "uv sync", ring0: "uv run pytest", language: "Python" },
 };
 
 export async function run(argv: string[], out: NodeJS.WritableStream = process.stdout, cwd = process.cwd()): Promise<number> {
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: { ruby: { type: "boolean" }, typescript: { type: "boolean" } },
+    options: LANGUAGE_FLAGS,
   });
   const [name, ...extra] = positionals;
   if (name === undefined || extra.length > 0) throw cannotRun(USAGE);
-  if (values.ruby === true && values.typescript === true) throw cannotRun("--ruby or --typescript, not both");
-  const template: Template = values.ruby === true ? "ruby" : "typescript";
+  const template: Template = templateOf(values) ?? "typescript";
   const root = scaffold(resolve(cwd, name), name, template);
   out.write(nextSteps(relative(cwd, root) || ".", template));
   return 0;

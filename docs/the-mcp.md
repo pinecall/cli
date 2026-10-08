@@ -70,7 +70,7 @@ Every parameter, and a real call of each: [Getting started](mcp/getting-started.
 | `whoami` | — | which org, gateway and environment the project's key acts in, and whether production is allowed for the key and for this server |
 | `login` | `start` · `status` | signs this machine in: `start` answers a link the person opens in a browser; `status` waits until they approved it. The key is kept in `~/.pinecall/session.json` and never answered |
 | `link` | `orgs` · `write` | the person's orgs, and the key of one written into the project's `.env` (`PINECALL_KEY`, and `PINECALL_URL` when the gateway is not Pinecall Cloud); it warns when `.gitignore` does not name `.env` |
-| `project` | `show` · `open` · `new` · `generate` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened (with nothing held: `stop` first); a new project of one agent written from `pinecall new`'s templates, in TypeScript or Ruby, and opened; `generate` adds a second agent (`kind: agent`) or a golden from the caller's lines and the tools that must be called (`kind: golden`), as `pinecall generate` does |
+| `project` | `show` · `open` · `new` · `generate` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened (with nothing held: `stop` first); a new project of one agent written from `pinecall new`'s templates, in TypeScript, Ruby or Python, and opened; `generate` adds a second agent (`kind: agent`) or a golden from the caller's lines and the tools that must be called (`kind: golden`), as `pinecall generate` does |
 
 ### Holding the agent, and talking to it
 
@@ -78,12 +78,12 @@ Every parameter, and a real call of each: [Holding the agent, and talking to it]
 
 | tool | actions | what it does |
 |---|---|---|
-| `start` | — | holds the agent as `pinecall start` does, in the sandbox or, with `prod`, in production. A TypeScript agent runs in a worker thread of this server — no process — and reloads on every save; a project with nothing installed runs on the `@pinecall/agents` this server ships, lent to the agent's thread alone — nothing is written into the project — until `npm install` pins the project's own: the new version registers before the old one drains, a save that does not load keeps the version before answering. A Ruby agent, or one a terminal already holds, is attached to — the agent's own process, never the companion beside it. Beside the thread a companion answers the console, so its Chat, Tests, Simulations, Docs and Memory screens reach the agent the assistant holds; `pinecall agent list` shows it as `pinecall-mcp/<version>` |
+| `start` | — | holds the agent as `pinecall start` does, in the sandbox or, with `prod`, in production. A TypeScript agent runs in a worker thread of this server — no process — and reloads on every save; a project with nothing installed runs on the `@pinecall/agents` this server ships, lent to the agent's thread alone — nothing is written into the project — until `npm install` pins the project's own: the new version registers before the old one drains, a save that does not load keeps the version before answering. A Ruby or Python agent, or one a terminal already holds, is attached to — the agent's own process, never the companion beside it. Beside the thread a companion answers the console, so its Chat, Tests, Simulations, Docs and Memory screens reach the agent the assistant holds; `pinecall agent list` shows it as `pinecall-mcp/<version>` |
 | `stop` | — | drains the thread and lets the agent go; an attached process is left running |
 | `status` | — | each agent held, how (`thread` or `attached`), its app, the version answering, the sentence a broken save was refused with, and `framework` while the agent runs on the one the server lent the project |
 | `logs` | — | the last lines the agent printed: its own output, a load error, the versions as they replace each other |
 | `chat` | `say` · `end` | a written call with the agent held: each line answered whole — its turns, the tools it called with their arguments and results, the state it changed. `call` continues one, `contact` makes the caller someone, `state` opens it in a state |
-| `prompt` | — | the exact prompt a state produces, offline (TypeScript; Ruby's is `pinecall prompt`) |
+| `prompt` | — | the exact prompt a state produces, offline (TypeScript; Ruby's and Python's is `pinecall prompt`) |
 | `console_url` | — | a link that opens the sandbox's console signed in, once, within five minutes: the one value no answer hides |
 
 ### The agent's settings

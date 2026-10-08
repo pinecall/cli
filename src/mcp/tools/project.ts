@@ -20,14 +20,14 @@ export const project = tool({
     action: z.enum(["show", "open", "new", "generate"]).describe("show the project the tools act on; open another folder; new writes a project of one agent; generate adds an agent or a golden to it"),
     path: z.string().optional().describe("`open`: the project's folder; `new`: the folder to write it in, beside the open project when left out"),
     name: z.string().optional().describe("`new` and `generate`: the agent's or the golden's name: lowercase letters, digits and dashes"),
-    language: z.enum(["typescript", "ruby"]).optional().describe("`new` and `generate agent`: the agent's language; TypeScript for `new`, the project's for `generate`"),
+    language: z.enum(["typescript", "ruby", "python"]).optional().describe("`new` and `generate agent`: the agent's language; TypeScript for `new`, the project's for `generate`"),
     kind: z.enum(["agent", "golden"]).optional().describe("`generate`: one more agent, or one more golden of an agent"),
     input: z.array(z.string()).optional().describe("`generate golden`: what the caller says, one line each, in order"),
     tools: z.array(z.string()).optional().describe("`generate golden`: the tools that must be called"),
     agent: z.string().optional().describe("`generate golden`: whose golden; the project's only agent when left out"),
   },
   manual:
-    "`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; a TypeScript one runs at once on the framework this server lends it until `npm install` pins its own, a Ruby one after `bundle install`. `generate` adds to the open project, never over a file: `agent` a second agent from the same templates (its class, its test, one golden), `golden` a conversation in `test/<agent>/goldens/` from the caller's lines and the tools that must be called — then `test run` holds the agent to it.",
+    "`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; a TypeScript one runs at once on the framework this server lends it until `npm install` pins its own, a Ruby one after `bundle install`, a Python one after `uv sync`. `generate` adds to the open project, never over a file: `agent` a second agent from the same templates (its class, its test, one golden), `golden` a conversation in `test/<agent>/goldens/` from the caller's lines and the tools that must be called — then `test run` holds the agent to it.",
   handler: async (args, session) => {
     if (args.action === "open") return shown(session, session.open(needed(args.path, "path")));
     if (args.action === "new") return written(session, needed(args.name, "name"), args.path, args.language ?? "typescript");
@@ -52,9 +52,9 @@ function written(session: Session, name: string, path: string | undefined, langu
   const root = scaffold(join(parent, name), name, language);
   session.open(root);
   const next =
-    language === "ruby"
-      ? `bundle install in ${root}, then \`link\` writes its key`
-      : `\`link\` writes its key, and \`start\` runs it on the framework this server lends it; npm install in ${root} pins the project's own`;
+    language === "typescript"
+      ? `\`link\` writes its key, and \`start\` runs it on the framework this server lends it; npm install in ${root} pins the project's own`
+      : `${language === "ruby" ? "bundle install" : "uv sync"} in ${root}, then \`link\` writes its key`;
   return { ...shown(session, root), next };
 }
 

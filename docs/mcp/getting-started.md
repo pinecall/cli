@@ -95,14 +95,14 @@ List the person's orgs (`orgs`), or write the key of one of them into the open p
 
 The project the tools act on (`show`), another folder opened (`open`), a new project of one agent written (`new`), or one more agent or golden in it (`generate`).
 
-`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; a TypeScript one runs at once on the framework this server lends it until `npm install` pins its own, a Ruby one after `bundle install`. `generate` adds to the open project, never over a file: `agent` a second agent from the same templates (its class, its test, one golden), `golden` a conversation in `test/<agent>/goldens/` from the caller's lines and the tools that must be called — then `test run` holds the agent to it.
+`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; a TypeScript one runs at once on the framework this server lends it until `npm install` pins its own, a Ruby one after `bundle install`, a Python one after `uv sync`. `generate` adds to the open project, never over a file: `agent` a second agent from the same templates (its class, its test, one golden), `golden` a conversation in `test/<agent>/goldens/` from the caller's lines and the tools that must be called — then `test run` holds the agent to it.
 
 | parameter | takes | | what it is |
 |---|---|---|---|
 | `action` | `show` · `open` · `new` · `generate` | required | show the project the tools act on; open another folder; new writes a project of one agent; generate adds an agent or a golden to it |
 | `path` | text |  | `open`: the project's folder; `new`: the folder to write it in, beside the open project when left out |
 | `name` | text |  | `new` and `generate`: the agent's or the golden's name: lowercase letters, digits and dashes |
-| `language` | `typescript` · `ruby` |  | `new` and `generate agent`: the agent's language; TypeScript for `new`, the project's for `generate` |
+| `language` | `typescript` · `ruby` · `python` |  | `new` and `generate agent`: the agent's language; TypeScript for `new`, the project's for `generate` |
 | `kind` | `agent` · `golden` |  | `generate`: one more agent, or one more golden of an agent |
 | `input` | a list of texts |  | `generate golden`: what the caller says, one line each, in order |
 | `tools` | a list of texts |  | `generate golden`: the tools that must be called |

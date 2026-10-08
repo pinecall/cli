@@ -18,9 +18,7 @@ export type Verb = "start" | "prompt";
 
 const NO_FRAMEWORK = "this project does not install @pinecall/agents, which serves a TypeScript agent: npm i @pinecall/agents";
 
-const NO_PYTHON = "a Python agent is not served by this CLI yet";
-
-const RUBY_INSPECTS_NOTHING = "--inspect attaches a Node debugger, and a Ruby agent runs no Node";
+const INSPECTS_NOTHING = (language: string): string => `--inspect attaches a Node debugger, and a ${language} agent runs no Node`;
 
 /** What one serve entry is started with: the command, and the environment it reads its door from. */
 export interface Started {
@@ -74,9 +72,12 @@ export function servingOne(door: Door, agent: AgentOfTheProject, how: { console:
 /** The command that runs a verb of a language's serve entry. */
 export function commandFor(language: Language, verb: Verb, args: string[], how: Starting): string[] {
   const inspect = how.inspect ?? [];
-  if (language === "python") throw cannotRun(NO_PYTHON);
+  if (language === "python") {
+    if (inspect.length > 0) throw cannotRun(INSPECTS_NOTHING("Python"));
+    return [pythonOf(how.root), "-m", "pinecall.serve", verb, ...args];
+  }
   if (language === "ruby") {
-    if (inspect.length > 0) throw cannotRun(RUBY_INSPECTS_NOTHING);
+    if (inspect.length > 0) throw cannotRun(INSPECTS_NOTHING("Ruby"));
     const ruby = ["ruby", "-r", "pinecall", "-e", "exit Pinecall::Serve.main(ARGV)", "--", verb, ...args];
     return existsSync(join(how.root, "Gemfile")) ? ["bundle", "exec", ...ruby] : ruby;
   }
@@ -96,6 +97,15 @@ export function serveEntryOf(root: string): string {
     if (existsSync(installed)) return createRequire(installed).resolve("@pinecall/agents/serve");
     if (dirname(folder) === folder) throw cannotRun(NO_FRAMEWORK);
   }
+}
+
+/**
+ * The project's own interpreter: the `.venv` that `uv sync` and `python -m venv` both make, so the
+ * `pinecall` serving its agents is the one it pinned; `python3` on the PATH when it has none.
+ */
+export function pythonOf(root: string): string {
+  const venv = join(root, ".venv", process.platform === "win32" ? "Scripts" : "bin", process.platform === "win32" ? "python.exe" : "python");
+  return existsSync(venv) ? venv : "python3";
 }
 
 /** Node flags to run a TypeScript entry from a checkout: this CLI's tsx; none for a built one. */

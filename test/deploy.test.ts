@@ -205,6 +205,19 @@ describe("pinecall deploy", () => {
   });
 });
 
+describe("a Python project", () => {
+  it("is refused as a Ruby one is, and told where it runs instead", async () => {
+    mkdirSync(join(cwd, "agents/desk"), { recursive: true });
+    writeFileSync(join(cwd, "agents/desk/agent.py"), "class Desk(Agent): ...");
+    const err = written();
+
+    expect(await deploying([], written(), err)).toBe(2);
+
+    expect(err.text()).toContain("Pinecall hosts TypeScript projects, and agents/desk/agent.py is not one");
+    expect(gateway.heard).toEqual([]);
+  });
+});
+
 describe("the other verbs", () => {
   it("rolls back on the box's own door, and follows the release it made live", async () => {
     await deploying([]);

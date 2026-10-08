@@ -12,7 +12,7 @@ import { scaffold } from "../src/new.js";
 import { goldensIn } from "../src/testing/goldens.js";
 import { written } from "./said.js";
 
-function aProject(language: "typescript" | "ruby" = "typescript"): string {
+function aProject(language: "typescript" | "ruby" | "python" = "typescript"): string {
   return scaffold(join(mkdtempSync(join(tmpdir(), "pinecall-generate-")), "front-desk"), "front-desk", language);
 }
 
@@ -32,6 +32,9 @@ describe("a second agent", () => {
 
     expect(anAgentGenerated(root, "sales")).toContain("agents/sales/agent.rb");
     expect(anAgentGenerated(root, "billing", "typescript")).toContain("agents/billing/agent.tsx");
+    expect(anAgentGenerated(aProject("python"), "sales")).toEqual(
+      expect.arrayContaining(["agents/sales/agent.py", "agents/sales/views/sales.jinja", "test/sales/test_agent.py"]),
+    );
   });
 
   it("is refused over an agent that is there, a name the gateway would not take, or outside a project", () => {

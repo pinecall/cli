@@ -1,6 +1,6 @@
 // The language of an agent file, and the command its serve entry is started with.
 
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -53,9 +53,21 @@ describe("the serve entry's command", () => {
     ]);
   });
 
-  it("refuses a Node debugger for Ruby, and Python altogether, in a sentence", () => {
+  it("is the project's own Python on the package's entry when it has a .venv, and python3 when it has none", () => {
+    const synced = mkdtempSync(join(tmpdir(), "python-"));
+    mkdirSync(join(synced, ".venv", "bin"), { recursive: true });
+    writeFileSync(join(synced, ".venv", "bin", "python"), "");
+    const plain = mkdtempSync(join(tmpdir(), "python-"));
+
+    expect(commandFor("python", "prompt", ["--file", "agent.py"], { root: synced })).toEqual([
+      join(synced, ".venv", "bin", "python"), "-m", "pinecall.serve", "prompt", "--file", "agent.py",
+    ]);
+    expect(commandFor("python", "start", [], { root: plain })[0]).toBe("python3");
+  });
+
+  it("refuses a Node debugger for Ruby and for Python, in a sentence", () => {
     expect(() => commandFor("ruby", "start", [], { root: "/p", inspect: ["--inspect"] })).toThrow("a Ruby agent runs no Node");
-    expect(() => commandFor("python", "start", [], { root: "/p" })).toThrow("not served by this CLI yet");
+    expect(() => commandFor("python", "start", [], { root: "/p", inspect: ["--inspect"] })).toThrow("a Python agent runs no Node");
   });
 
   it("carries the door in its environment and never in its argv", () => {

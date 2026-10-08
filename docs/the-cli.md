@@ -14,12 +14,13 @@ and planned ones alike, `pinecall <group> --help` prints that group's flags, and
 ```bash
 npm i @pinecall/agents pinecall   # a TypeScript project: the framework, and this CLI
 npx pinecall start                # in the project's directory: the process you deploy
-npm i -g pinecall                 # a Ruby project's CLI, or one for every project
+npm i -g pinecall                 # a Ruby or Python project's CLI, or one for every project
 ```
 
 The CLI never loads the framework. A TypeScript agent is served by the project's own
 `@pinecall/agents` — the version it pinned, found from the project's root — and a project without
-it is refused by name; a Ruby agent by the `pinecall` gem.
+it is refused by name; a Ruby agent by the `pinecall` gem, a Python agent by the `pinecall` package
+in the project's own `.venv`.
 
 In a checkout the CLI runs from source through tsx (`bin/pinecall.js`); what npm installs is the
 compiled `dist/index.js` and needs no loader.
@@ -31,7 +32,7 @@ path end to end, with every output under it.
 
 | verb | what it is | needs the gateway |
 |---|---|---|
-| [`new`](#new) | a new project of one agent, in TypeScript or Ruby | **no** |
+| [`new`](#new) | a new project of one agent, in TypeScript, Ruby or Python | **no** |
 | [`link`](#link) | this project's folder to one of your orgs: your key, written to its `.env` | yes |
 | [`start`](#start) | the app registered and answering — **the process you deploy** | yes |
 | [`console`](#console) | the platform's console in a browser, signed in: the sandbox's at `<url>/sandbox/`, `--prod` for production's at `<url>/` | yes |
@@ -205,7 +206,7 @@ class to find. `--file` is always a file.
 ## `new`
 
 ```
-pinecall new <name> [--ruby | --typescript]
+pinecall new <name> [--typescript | --ruby | --python]
 ```
 
 A project of one agent in `./<name>/`, in the layout every verb reads: the class under
@@ -213,7 +214,8 @@ A project of one agent in `./<name>/`, in the layout every verb reads: the class
 message with one tool — its ring-0 test, one golden under `test/<name>/goldens/`, a `.gitignore`
 that keeps `.env` and `.pinecall/` out, and the toolchain: `package.json`, `tsconfig.json` and
 `vitest.config.ts` for TypeScript (the default), a `Gemfile` and a `Rakefile` for `--ruby`, with
-the view in `agents/<name>/views/<name>.erb`. A TypeScript project depends on this CLI and on the
+the view in `agents/<name>/views/<name>.erb`, a `pyproject.toml` for `--python` (uv, pytest), with
+the view in `agents/<name>/views/<name>.jinja`. A TypeScript project depends on this CLI and on the
 `@pinecall/agents` it is released with, since the platform starts a deployed project with its own
 `pinecall start`.
 
@@ -236,7 +238,7 @@ $ pinecall new front-desk --ruby
 ## `generate`
 
 ```
-pinecall generate agent <name> [--ruby | --typescript]
+pinecall generate agent <name> [--typescript | --ruby | --python]
 pinecall generate golden <name> --input '…' [--input '…']… [--tool <name>]… [--agent <name>]
 ```
 
@@ -244,8 +246,8 @@ pinecall generate golden <name> --input '…' [--input '…']… [--tool <name>]
 that is there.
 
 `agent` adds a second agent beside the first, from the templates `new` writes: its class under
-`agents/<name>/`, `test/<name>/agent.test.ts` and one golden. It is written in the project's
-language unless `--ruby` or `--typescript` says otherwise. At the root, `pinecall start` then
+`agents/<name>/`, its ring-0 test under `test/<name>/` and one golden. It is written in the project's
+language unless `--typescript`, `--ruby` or `--python` says otherwise. At the root, `pinecall start` then
 holds every agent, and a verb about one takes `--agent`.
 
 `golden` writes `test/<agent>/goldens/<name>.json`: the caller's lines, one `--input` each in
@@ -276,7 +278,8 @@ them; a project with a Ruby agent and a TypeScript one is told to name one with 
 
 **Two processes, two sockets.** `start` never loads your class. It starts the agent's language's
 serve entry — the project's `@pinecall/agents/serve` for TypeScript, `Pinecall::Serve` for Ruby, through bundler when
-the project has a `Gemfile` — which holds the agents and serves their calls, and it watches that
+the project has a `Gemfile`, `python -m pinecall.serve` for Python, with the project's `.venv/bin/python` when it
+has one and `python3` when not — which holds the agents and serves their calls, and it watches that
 process: its lines are what `start` prints. Beside it, `start` holds a socket of its own that
 takes no call and answers the console's screens (`answers_dev`); the panel beside a conversation is
 drawn by the class's process. `pinecall agent list` shows both, the second named
@@ -342,7 +345,7 @@ line     rings in this terminal · also running: carla@clinica.test
 | `--ui` | the full-screen terminal view. `p` pause · `c` clear · `e` events · `q` quit. The prompt a call is in is not on screen: the gateway keeps a hash of each block, not its text — `pinecall prompt` prints the page a state produces |
 | `--events` | the agent's process's own lines: one JSON object per wire entry, `{"type","agent","call","data"}` with `data` as the gateway wrote it (snake_case), `agent.registered` first, for a pipe |
 | `--show-prompt` | the prompt a fresh instance would produce, through the agent's serve entry, then exit. No key, no gateway |
-| `--inspect` · `--inspect-brk` | Node's own flag, given to the agent's process; a Ruby agent runs no Node and is refused it |
+| `--inspect` · `--inspect-brk` | Node's own flag, given to the agent's process; a Ruby or Python agent runs no Node and is refused it |
 
 **It answers the console for this directory.** What a screen needs of the agent's directory — a
 written call to the agent here, a simulation, the goldens and a suite, the
@@ -459,7 +462,7 @@ With nothing after it: the agent of this directory, served by a process this ter
 the agent's own language's serve entry, which takes no call it did not open — and a written
 caller against it in the same terminal. This is `rails console`: the tools run on this machine,
 and `--inspect` or `--inspect-brk` opens that process to a debugger, so a breakpoint in a `@tool`
-is reachable (a TypeScript agent's; a Ruby agent runs no Node, and the flag is refused). It works
+is reachable (a TypeScript agent's; a Ruby or Python agent runs no Node, and the flag is refused). It works
 with no `pinecall start` up and with three of them, because the caller socket names that process.
 Leaving the chat stops it.
 

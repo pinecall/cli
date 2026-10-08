@@ -76,6 +76,28 @@ describe("a Ruby project", () => {
   });
 });
 
+describe("a Python project", () => {
+  it("is the same layout, with the view beside the class, a pyproject.toml, and pytest", () => {
+    const root = scaffold(join(aFolder(), "front-desk"), "front-desk", "python");
+
+    expect(filesUnder(root)).toEqual([
+      ".env.example",
+      ".gitignore",
+      "README.md",
+      "agents/front-desk/agent.py",
+      "agents/front-desk/views/front-desk.jinja",
+      "pyproject.toml",
+      "test/front-desk/goldens/takes-the-message.json",
+      "test/front-desk/test_agent.py",
+    ]);
+    expect(readFileSync(join(root, "agents/front-desk/agent.py"), "utf8")).toContain("class FrontDesk(Agent):");
+    expect(readFileSync(join(root, "agents/front-desk/views/front-desk.jinja"), "utf8")).toContain("{{ message.name }}");
+    expect(readFileSync(join(root, "pyproject.toml"), "utf8")).toContain('dependencies = ["pinecall>=0.2,<1"]');
+    expect(readFileSync(join(root, ".gitignore"), "utf8")).toMatch(/^\.venv\/$/m);
+    expect(agentFilesOfTheProject(root)).toEqual([join(root, "agents/front-desk/agent.py")]);
+  });
+});
+
 describe("what new refuses", () => {
   it("a name the gateway would not take as a slug", () => {
     for (const name of ["Front", "front_desk", "1desk", "desk-"]) {
@@ -92,6 +114,7 @@ describe("what new refuses", () => {
 
   it("both languages at once", async () => {
     await expect(run(["desk", "--ruby", "--typescript"], written().stream, aFolder())).rejects.toThrow(/not both/);
+    await expect(run(["desk", "--python", "--ruby"], written().stream, aFolder())).rejects.toThrow("--ruby or --python, not both");
   });
 });
 
@@ -100,4 +123,7 @@ it("says the next commands, from the folder it ran in", async () => {
 
   expect(await run(["front-desk", "--ruby"], out.stream, aFolder())).toBe(0);
   expect(out.text()).toContain("cd front-desk\n  bundle install\n  pinecall link");
+  const python = written();
+  expect(await run(["front-desk", "--python"], python.stream, aFolder())).toBe(0);
+  expect(python.text()).toContain("a Python agent\n\n  cd front-desk\n  uv sync\n  pinecall link");
 });
