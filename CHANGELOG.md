@@ -6,10 +6,13 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.22] — `pinecall new`, and every verb walked on what it makes
+
 ### Added
 
 - **`pinecall new <name> [--ruby]`**: a project of one agent, in TypeScript or Ruby, ready for
   `link`, `prompt`, `chat`, `test`, `start` and `deploy`.
+- **The quickstart** (`docs/quickstart.md`): nothing to an agent that answers, in ten minutes.
 
 ### Changed
 
