@@ -37,7 +37,7 @@ Every verb acts in the sandbox unless `--prod` is given. The CLI reads `PINECALL
 |---|---|
 | [docs/quickstart.md](docs/quickstart.md) | nothing to an agent that answers, in ten minutes |
 | [docs/the-cli.md](docs/the-cli.md) | every verb |
-| [docs/deploying.md](docs/deploying.md) | `pinecall deploy`: the box installs and runs your project |
+| [Deploy to Pinecall](https://docs.pinecall.io/guides/deploy/) | `pinecall deploy`: Pinecall installs and runs your project |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | the CLI file by file |
 
 ## Development

@@ -29,7 +29,7 @@ checkout beside this one when its version satisfies that range, so nothing is bu
   its process), `companion.ts` + `ui/` (what answers a console), `testing/`, `runs/`
 - `test/` mirrors `src/`; `the-tree` and `the-imports` are the tree's rules; `clinic/` and
   `bidfire/` are projects the verbs run against
-- `docs/` `quickstart.md`, `the-cli.md` and `deploying.md` — published on docs.pinecall.io
+- `docs/` `quickstart.md` and `the-cli.md` — published on docs.pinecall.io; `deploying.md` points at the site's page
 
 ## Docs are part of the change
 
@@ -38,7 +38,7 @@ checkout beside this one when its version satisfies that range, so nothing is bu
 | you changed | edit |
 |---|---|
 | a module, the import table, what the child is started with | `ARCHITECTURE.md` |
-| a verb, a flag, an exit code, a refusal | `docs/the-cli.md` — and `docs/deploying.md` for `deploy` and `secrets` |
+| a verb, a flag, an exit code, a refusal | `docs/the-cli.md` — and `../docs/pages/guides/deploy-to-pinecall.md` for `deploy` and `secrets` |
 | an install step | `README.md` |
 | a procedure with a trap in it | the skill under `.claude/skills/` |
 | anything a tenant would notice | `CHANGELOG.md`, one line under `Unreleased` |
