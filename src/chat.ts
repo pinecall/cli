@@ -7,6 +7,7 @@ import type { CamelEvent } from "@pinecall/agents/client";
 import { signed } from "@pinecall/agents/client";
 import WebSocket from "ws";
 
+import { answered, NOTHING_OWED, owing, sent, type Owed } from "./answered.js";
 import { spawnServing, whileServing, type Spawns } from "./child.js";
 import { theDoor, type Open } from "./env.js";
 import type { Group } from "./groups.js";
@@ -170,7 +171,7 @@ export function talk(
         if (typeof entry.call === "string") call = entry.call;
         if (entry.type === "call.score") over = true;
         owed = owing(owed, entry);
-        if (closed && settled(owed)) leave();
+        if (closed && answered(owed)) leave();
         // --events prints raw JSON entries, as `run --events` does.
         const line = events ? frame.toString() : lineOf(frame.toString());
         if (line === null) return;
@@ -205,13 +206,13 @@ export function talk(
     lines.on("line", (line) => {
       if (line.trim() !== "" && socket?.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({ text: line.trim() }));
-        owed = { ...owed, lines: owed.lines + 1 };
+        owed = sent(owed);
       }
       prompt();
     });
     lines.on("close", () => {
       closed = true;
-      if (settled(owed)) return leave();
+      if (answered(owed)) return leave();
       setTimeout(leave, LONGEST_ANSWER_MS).unref();
     });
     dial();
@@ -223,29 +224,6 @@ export const LONGEST_ANSWER_MS = 60_000;
 
 // How long a hang-up waits for the gateway to end the call and close the socket.
 const HANG_UP_WITHIN_MS = 5_000;
-
-/** Lines sent the gateway has not yet taken as a turn, and whether the agent is still answering one. */
-export interface Owed {
-  lines: number;
-  answering: boolean;
-}
-
-const NOTHING_OWED: Owed = { lines: 0, answering: false };
-
-/** Every line sent was heard and answered. */
-export function settled(owed: Owed): boolean {
-  return owed.lines === 0 && !owed.answering;
-}
-
-/**
- * What is still owed after one more entry of the call. Lines sent together are taken one turn at a
- * time: each `turn.user` is one of them heard, and the agent listening again is that one answered.
- */
-export function owing(owed: Owed, entry: { type?: string; data?: unknown }): Owed {
-  if (entry.type === "turn.user") return { lines: Math.max(owed.lines - 1, 0), answering: true };
-  const state = entry.type === "agent.state" ? (entry.data as { state?: string } | undefined)?.state : undefined;
-  return state === "listening" && owed.answering ? { ...owed, answering: false } : owed;
-}
 
 // Reconnect budget: about a minute in total, enough for a gateway restart.
 export const BACK_TRIES = 15;

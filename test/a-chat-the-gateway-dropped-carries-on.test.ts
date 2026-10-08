@@ -5,7 +5,7 @@ import { PassThrough } from "node:stream";
 import { afterEach, expect, it, vi } from "vitest";
 import { WebSocketServer, type WebSocket } from "ws";
 
-import { owing, settled, talk } from "../src/chat.js";
+import { talk } from "../src/chat.js";
 
 let server: WebSocketServer | null = null;
 
@@ -95,17 +95,4 @@ it("waits, when the input ends, for the answer to every line it sent, then hangs
   expect(ended).toBe(0);
   expect(heard).toEqual([JSON.stringify({ text: "hola" }), JSON.stringify({ text: "cuánto cuesta" }), JSON.stringify({ hangup: true })]);
   await vi.waitFor(() => expect(closedAt).toBe(3));
-});
-
-it("owes a line until it is heard as a turn and the agent listens again", () => {
-  const sent = { lines: 2, answering: false };
-  const heard = owing(sent, { type: "turn.user", data: {} });
-  const answered = owing(heard, { type: "agent.state", data: { state: "listening" } });
-
-  expect(owing(sent, { type: "agent.state", data: { state: "listening" } })).toEqual(sent);
-  expect(heard).toEqual({ lines: 1, answering: true });
-  expect(owing(heard, { type: "turn.agent", data: {} })).toEqual(heard);
-  expect(answered).toEqual({ lines: 1, answering: false });
-  expect(settled(answered)).toBe(false);
-  expect(settled(owing(owing(answered, { type: "turn.user" }), { type: "agent.state", data: { state: "listening" } }))).toBe(true);
 });
