@@ -68,7 +68,7 @@ path end to end, with every output under it.
 production ([below](#where-the-gateway-and-the-key-come-from)) — and a verb that asks no gateway
 anything, `prompt`, refuses it instead of accepting an environment it never visits.
 
-Declared and not written: `g`, `observe`, `costs`, `call`, `tokens`. Typing one prints `<verb> is not built yet: <what it is for>` and exits 0 — a person who types a verb deserves
+Declared and not written: `observe`, `costs`, `call`, `tokens`. Typing one prints `<verb> is not built yet: <what it is for>` and exits 0 — a person who types a verb deserves
 better than "unknown command". `src/groups.ts` is the one place that says which half of the
 CLI is still a design, and a verb leaves that table in the commit that writes it.
 
@@ -231,6 +231,34 @@ $ pinecall new front-desk --ruby
   pinecall test        its goldens, against a real model
   pinecall start       answer calls
 ```
+
+## `generate`
+
+```
+pinecall generate agent <name> [--ruby | --typescript]
+pinecall generate golden <name> --input '…' [--input '…']… [--tool <name>]… [--agent <name>]
+```
+
+`g` for short. Run at the project's root; it writes files and nothing else, and never over a file
+that is there.
+
+`agent` adds a second agent beside the first, from the templates `new` writes: its class under
+`agents/<name>/`, `test/<name>/agent.test.ts` and one golden. It is written in the project's
+language unless `--ruby` or `--typescript` says otherwise. At the root, `pinecall start` then
+holds every agent, and a verb about one takes `--agent`.
+
+`golden` writes `test/<agent>/goldens/<name>.json`: the caller's lines, one `--input` each in
+order, and the tools that must be called (`--tool`). Every golden is judged by `consent` and
+`heard`; the other expectations — `says`, `not`, `grounded`, `register` — are added to its
+`expect` by hand. `--agent` names the agent when the project has several.
+
+```console
+$ pinecall g golden asks-for-a-refund --input "Hi, I want a refund." --input "It's Ana Ruiz." --tool takeMessage
+  wrote test/front-desk/goldens/asks-for-a-refund.json
+```
+
+A golden from a call that already happened is `pinecall runs promote <call>`; a simulated caller is
+`pinecall personas add`, kept by the gateway, not a file.
 
 ---
 

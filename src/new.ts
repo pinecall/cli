@@ -28,7 +28,7 @@ export const group: Group = {
 export type Template = "typescript" | "ruby";
 
 /** A slug the gateway accepts: what the folder, the agent's name and its URL path all are. */
-const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+export const SLUG = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 
 const TEMPLATES = fileURLToPath(new URL("../templates/", import.meta.url));
 
@@ -58,13 +58,31 @@ export async function run(argv: string[], out: NodeJS.WritableStream = process.s
 
 /** Write the project at `root` and answer it. Refuses a slug the gateway would not take, or a folder already in use. */
 export function scaffold(root: string, slug: string, template: Template): string {
-  if (!SLUG.test(slug)) {
-    throw cannotRun(`${slug} cannot be an agent's name: lowercase letters, digits and dashes, starting with a letter`);
-  }
+  aSlug(slug);
   if (existsSync(root) && readdirSync(root).length > 0) throw cannotRun(`${root} already holds files: new writes into an empty folder`);
   const words = wordsFor(slug, template);
   for (const tree of ["common", template]) copied(join(TEMPLATES, tree), root, words);
   return root;
+}
+
+/**
+ * One more agent in a project, from the same templates as the first: its class under `agents/<slug>/`,
+ * its ring-0 test and one golden under `test/<slug>/`. Returns the files written, relative to the root.
+ */
+export function anAgentWritten(root: string, slug: string, template: Template): string[] {
+  aSlug(slug);
+  for (const tree of ["agents", "test"]) {
+    const there = join(root, tree, slug);
+    if (existsSync(there) && readdirSync(there).length > 0) throw cannotRun(`${relative(root, there)} already holds files: ${slug} is an agent of this project already`);
+  }
+  const words = wordsFor(slug, template);
+  return ["agents", "test"].flatMap((tree) => copied(join(TEMPLATES, template, tree), join(root, tree), words)).map((file) => relative(root, file));
+}
+
+function aSlug(slug: string): void {
+  if (!SLUG.test(slug)) {
+    throw cannotRun(`${slug} cannot be an agent's name: lowercase letters, digits and dashes, starting with a letter`);
+  }
 }
 
 /** The words a template's `{{…}}` and `__slug__` stand for. */
@@ -90,14 +108,20 @@ const OURS = JSON.parse(readFileSync(new URL("../package.json", import.meta.url)
   dependencies: Record<string, string>;
 };
 
-function copied(from: string, to: string, words: Record<string, string>): void {
+// Every file written, so a caller can say what it wrote.
+function copied(from: string, to: string, words: Record<string, string>): string[] {
   mkdirSync(to, { recursive: true });
+  const written: string[] = [];
   for (const entry of readdirSync(from)) {
     const source = join(from, entry);
     const target = join(to, RENAMED[entry] ?? entry.replaceAll("__slug__", words.slug!));
-    if (statSync(source).isDirectory()) copied(source, target, words);
-    else writeFileSync(target, filled(readFileSync(source, "utf8"), words));
+    if (statSync(source).isDirectory()) written.push(...copied(source, target, words));
+    else {
+      writeFileSync(target, filled(readFileSync(source, "utf8"), words));
+      written.push(target);
+    }
   }
+  return written;
 }
 
 function filled(text: string, words: Record<string, string>): string {

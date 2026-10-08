@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import { PLANNED, notBuiltYet, plannedGroup } from "../src/groups.js";
-import { builtNames, groupNames, main, usage } from "../src/index.js";
+import { builtNames, groupFor, groupNames, main, usage } from "../src/index.js";
 import { written } from "./said.js";
 
 // A stream that keeps what was written, so a test can read output as a string.
@@ -22,9 +22,13 @@ describe("the groups the CLI answers to", () => {
 
     expect(declared).not.toContain("phones");
 
-    for (const group of ["new", "g", "link", "start", "chat", "prompt", "test", "simulate", "runs", "personas", "eval", "sessions", "docs", "memory", "login", "whoami", "tokens", "numbers", "agent", "lexicon", "supervise", "observe", "call", "costs", "deploy"]) {
+    for (const group of ["new", "generate", "link", "start", "chat", "prompt", "test", "simulate", "runs", "personas", "eval", "sessions", "docs", "memory", "login", "whoami", "tokens", "numbers", "agent", "lexicon", "supervise", "observe", "call", "costs", "deploy"]) {
       expect(declared).toContain(group);
     }
+  });
+
+  it("answers `g` as `generate`, as a person who knows `rails g` types it", async () => {
+    expect(await groupFor("g")).toBe(await groupFor("generate"));
   });
 
   it("tells a person what a group that does not exist yet will be, and leaves with a zero", async () => {

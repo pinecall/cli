@@ -6,6 +6,7 @@ import { dirname, join, resolve } from "node:path";
 import { z } from "zod";
 
 import { keyFrom } from "../../env.js";
+import { aGoldenGenerated, anAgentGenerated } from "../../generate.js";
 import { agentFilesOfTheProject, homeOf } from "../../home.js";
 import { languageOf } from "../../language.js";
 import { scaffold, type Template } from "../../new.js";
@@ -14,18 +15,29 @@ import { Refused, tool } from "../tool.js";
 
 export const project = tool({
   name: "project",
-  description: "The project the tools act on (`show`), another folder opened (`open`), or a new project of one agent written (`new`).",
+  description: "The project the tools act on (`show`), another folder opened (`open`), a new project of one agent written (`new`), or one more agent or golden in it (`generate`).",
   schema: {
-    action: z.enum(["show", "open", "new"]),
+    action: z.enum(["show", "open", "new", "generate"]),
     path: z.string().optional().describe("`open`: the project's folder; `new`: the folder to write it in, beside the open project when left out"),
-    name: z.string().optional().describe("`new`: the agent's name, its slug on Pinecall: lowercase letters, digits and dashes"),
-    language: z.enum(["typescript", "ruby"]).optional().describe("`new`: the agent's language; TypeScript when left out"),
+    name: z.string().optional().describe("`new` and `generate`: the agent's or the golden's name: lowercase letters, digits and dashes"),
+    language: z.enum(["typescript", "ruby"]).optional().describe("`new` and `generate agent`: the agent's language; TypeScript for `new`, the project's for `generate`"),
+    kind: z.enum(["agent", "golden"]).optional().describe("`generate`: one more agent, or one more golden of an agent"),
+    input: z.array(z.string()).optional().describe("`generate golden`: what the caller says, one line each, in order"),
+    tools: z.array(z.string()).optional().describe("`generate golden`: the tools that must be called"),
+    agent: z.string().optional().describe("`generate golden`: whose golden; the project's only agent when left out"),
   },
   manual:
-    "`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; the person then installs its dependencies (`npm install`, or `bundle install` for Ruby) before the agent can run.",
+    "`project show` says which folder every tool acts on: its agents, their language, and whether it has a key. The host's declared root, or the server's folder, is used when it holds `agents/`; `open` points at another, with nothing held. `new` writes a project of one agent (a receptionist that takes a message, its test and one golden) and opens it; the person then installs its dependencies (`npm install`, or `bundle install` for Ruby) before the agent can run. `generate` adds to the open project, never over a file: `agent` a second agent from the same templates (its class, its test, one golden), `golden` a conversation in `test/<agent>/goldens/` from the caller's lines and the tools that must be called — then `test run` holds the agent to it.",
   handler: async (args, session) => {
     if (args.action === "open") return shown(session, session.open(needed(args.path, "path")));
     if (args.action === "new") return written(session, needed(args.name, "name"), args.path, args.language ?? "typescript");
+    if (args.action === "generate") {
+      const root = await session.project();
+      const name = needed(args.name, "name");
+      if (args.kind === "agent") return { written: anAgentGenerated(root, name, args.language), ...shown(session, root) };
+      if (args.kind !== "golden") throw new Refused("generate takes a kind: agent or golden");
+      return { written: [aGoldenGenerated(await session.home(args.agent), name, args.input ?? [], args.tools ?? [])] };
+    }
     return shown(session, await session.project());
   },
 });

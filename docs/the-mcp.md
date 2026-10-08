@@ -68,7 +68,7 @@ carry the journey and the tools by stage, so nothing is said twice.
 | `whoami` | — | which org, gateway and environment the project's key acts in, and whether production is allowed for the key and for this server |
 | `login` | `start` · `status` | signs this machine in: `start` answers a link the person opens in a browser; `status` waits until they approved it. The key is kept in `~/.pinecall/session.json` and never answered |
 | `link` | `orgs` · `write` | the person's orgs, and the key of one written into the project's `.env` (`PINECALL_KEY`, and `PINECALL_URL` when the gateway is not Pinecall Cloud); it warns when `.gitignore` does not name `.env` |
-| `project` | `show` · `open` · `new` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened (with nothing held: `stop` first); a new project of one agent written from `pinecall new`'s templates, in TypeScript or Ruby, and opened |
+| `project` | `show` · `open` · `new` · `generate` | the folder the tools act on, its agents and their language, whether it has a key; another folder opened (with nothing held: `stop` first); a new project of one agent written from `pinecall new`'s templates, in TypeScript or Ruby, and opened; `generate` adds a second agent (`kind: agent`) or a golden from the caller's lines and the tools that must be called (`kind: golden`), as `pinecall generate` does |
 
 ### Holding the agent, and talking to it
 

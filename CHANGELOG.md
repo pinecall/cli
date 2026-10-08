@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.32] — `pinecall generate`
+
+### Added
+
+- `pinecall generate` (`g` for short): `agent <name>` writes a second agent into the project from the templates `new` writes, in the project's language; `golden <name> --input '…' --tool …` writes a golden from the caller's lines and the tools that must be called. Never over a file. The MCP's `project` tool does the same with `generate`.
+
 ## [0.9.31] — `memory forget` asks for `--yes` where nobody can be asked
 
 ### Changed

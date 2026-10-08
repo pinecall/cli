@@ -22,7 +22,6 @@ export function helpFor(name: string, group: Group): string {
  * "unknown command". Remove an entry when the verb is implemented.
  */
 export const PLANNED: Record<string, string> = {
-  g: "generate a tool, a component, a golden, a persona, a channel",
   observe: "the agent log as it happens, with a persistent cursor",
   costs: "what the calls cost, by agent, model or channel",
   call: "the agent dials a number, for real",
