@@ -29,6 +29,15 @@ test/front-desk/goldens/          goldens: a conversation the model must hold (p
 The agent answers from the documents it is given and, for anything else, takes a message: the
 caller's name and what the call is about, written down by its `takeMessage` tool.
 
+In Ruby or Python, only this step changes; every verb below is the same:
+
+```bash
+pinecall new front-desk --ruby      # agents/front-desk/agent.rb, then: bundle install
+pinecall new front-desk --python    # agents/front-desk/agent.py, then: uv sync
+```
+
+The tool is `take_message` there, and the unit tests run with `bundle exec rake` or `uv run pytest`.
+
 ## 3. Your org
 
 ```bash
