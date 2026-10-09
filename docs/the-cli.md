@@ -1849,6 +1849,31 @@ the value that crossed. `--above` fires over the line, `--below` under it.
 
 `rm <id>` forgets one. The list is the world's: `--prod` for production's monitors.
 
+## `webhook`
+
+```console
+$ printf %s "$WEBHOOK_SECRET" | pinecall webhook set https://hooks.example.com/pinecall --secret
+alerts go to https://hooks.example.com/pinecall · signed
+$ pinecall webhook test
+the URL took it: a signed webhook.test post answered 2xx
+$ pinecall webhook
+alerts go to https://hooks.example.com/pinecall · signed
+```
+
+Where this org's alerts are posted beyond the agent's log: a URL of your own — Slack, PagerDuty,
+your backend. Every alert — a monitor that fired (`monitor.fired`), today's spend three times
+the usual (`spend.unusual`), a quota that ran out (`credits.exhausted`) — is posted as it is
+written, as JSON `{type, org, env, agent, at, data}` with `x-pinecall-event` naming the type,
+tried twice within five seconds; a URL that fails is logged and the log keeps the alert. `set`
+takes the URL on the command line and, with `--secret`, the secret from stdin — typed without echo
+on a terminal, or piped — never from a flag; with a secret every post carries
+`x-pinecall-signature: sha256=<HMAC-SHA256 of the body>`. The gateway keeps the secret sealed and
+never reads it back: the bare verb prints the URL and whether posts are signed. `test` posts one
+`webhook.test` event, signed the same way, and exits 1 if the URL did not answer 2xx. `clear`
+stops the posting. What the console's bell tells each person is their own choice, under
+Notifications; the webhook is the org's. [Alerts](../../docs/pages/guides/alerts.md) has a
+verification snippet per language.
+
 ## Exit codes
 
 | | |
@@ -1902,6 +1927,7 @@ code can call — over HTTP, in any language, with the same key.
 | `secrets` | `GET /v1/secrets` · `PUT`·`DELETE /v1/secrets/{name}` |
 | `telemetry` | `GET`·`PUT`·`DELETE /v1/telemetry` |
 | `monitors` | `GET`·`POST /v1/monitors` · `DELETE /v1/monitors/{id}` |
+| `webhook` | `GET`·`PUT`·`DELETE /v1/webhook` · `POST /v1/webhook/test` |
 | every verb, without `--prod` | its own endpoints at `PINECALL_URL`, with the project's key and `pinecall-env: sandbox` on each request and socket; nothing is asked first |
 | every verb, with `--prod` | the same endpoints at `PINECALL_URL`, with the same key and `pinecall-env: production` on each request and socket |
 | `prompt` | none. It is the one verb that needs no gateway and no key |

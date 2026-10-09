@@ -415,3 +415,41 @@ The numbers the org watches over a window — latency, the judges' held rate, es
   ]
 }
 ```
+
+## `webhook`
+
+Where the org posts its alerts — a monitor fired, the spend unusual, a quota out — shown, proven with a signed test post, or cleared. Setting one is the person's, in a terminal: the secret is a credential.
+
+`webhook` reads where this org's alerts are posted beyond the agent's log ({type, org, env, agent, at, data}, with x-pinecall-event and, when a secret is set, x-pinecall-signature as sha256=<HMAC-SHA256 of the body>), proves the URL with a test post, and can stop it. Pointing it somewhere is never a tool, since the secret is a credential: the person types `pinecall webhook set <url> --secret` in a terminal, where the secret is read off stdin. The bell in the console is each person's own choice, under Notifications.
+
+| parameter | takes | | what it is |
+|---|---|---|---|
+| `action` | `show` · `test` · `clear` | required | show says the URL and whether posts are signed; test posts one webhook.test event and says whether the URL answered 2xx; clear stops the posting |
+
+```json title="called with"
+{
+  "action": "show"
+}
+```
+
+```json title="answered"
+{
+  "webhook": {
+    "url": "https://hooks.example.com/pinecall",
+    "signed": true
+  }
+}
+```
+
+```json title="called with"
+{
+  "action": "test"
+}
+```
+
+```json title="answered"
+{
+  "sent": true,
+  "error": null
+}
+```

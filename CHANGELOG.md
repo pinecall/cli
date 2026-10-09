@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.47] — 2026-10-09
+
+### Added
+
+- `pinecall webhook`: where the org's alerts are posted — `set <url> [--secret]` with the secret off stdin, `test` for one signed post, `clear`, and the bare verb. The MCP tool `webhook` shows, tests and clears. Needs runtime 0.1.25.
+
 ## [0.9.46] — 2026-10-09
 
 ### Added

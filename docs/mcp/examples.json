@@ -1182,5 +1182,27 @@
         ]
       }
     }
+  ],
+  "webhook": [
+    {
+      "args": {
+        "action": "show"
+      },
+      "answer": {
+        "webhook": {
+          "url": "https://hooks.example.com/pinecall",
+          "signed": true
+        }
+      }
+    },
+    {
+      "args": {
+        "action": "test"
+      },
+      "answer": {
+        "sent": true,
+        "error": null
+      }
+    }
   ]
 }
