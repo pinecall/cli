@@ -1090,6 +1090,10 @@ production, while their switch is on; the agent's Settings ▸ Lexicon tab in th
 same edit.
 `history` and a word put back are the undo.
 
+A word the voice is told to say another way is still the word written everywhere else: the
+transcript, the console and the judges read `Pinecall`, never "pain-col".
+
+
 `pinecall memory policy [--agent <slug>] [--remember '…' …] [--forget '…' …] [--team] [--note '…']` is the memory field of the
 same settings, on its own for the person whose job it is: what the agent keeps about a caller and
 what it never does.
