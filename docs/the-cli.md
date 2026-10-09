@@ -332,10 +332,10 @@ clinica-norte · clinica · sandbox · connected to https://cloud.pinecall.io ·
 console  https://cloud.pinecall.io/sandbox/a/clinica-norte?login=lc_9f2   (opens within five minutes, once)
 doors    web · phone +34910000000
 line     rings in this terminal · also running: carla@clinica.test
-› Clínica Norte, buenos días. ¿En qué puedo ayudarle?
-‹ Quería cambiar una cita
+› Clínica Norte, good morning. How can I help you?
+‹ I'd like to change an appointment
 → findPatient({"name":"Ana García","phone":"600000001"})
-← findPatient {"id":"p-1041","cita":"jueves a las diez"}
+← findPatient {"id":"p-1041","appointment":"Thursday at ten"}
 ```
 
 | flag | |
@@ -471,13 +471,13 @@ the call, and the conversation goes on, history and state whole. It gives up aft
 
 When the input ends — Ctrl-D, or the end of a pipe — `chat` hangs up once the agent has answered
 every line it was sent, one turn at a time (a minute at most). It hangs up through the gateway,
-which ends the call before it closes the socket, so the agent's process stops with nothing live: `printf 'hola\n' | pinecall chat` prints the answer and leaves a
+which ends the call before it closes the socket, so the agent's process stops with nothing live: `printf 'hello\n' | pinecall chat` prints the answer and leaves a
 call that ended `caller_hung_up`, never one left open.
 
 ```console
 $ pinecall chat --as +34600000001
-‹ hola, quería cambiar mi cita del jueves
-› Claro. ¿Me da su nombre completo y su teléfono?
+‹ hi, I'd like to change my Thursday appointment
+› Of course. Could I have your full name and phone number?
 
 $ pinecall chat clinica-norte
 ```
@@ -519,13 +519,13 @@ on the widget gets.
 ```console
 $ pinecall prompt --state test/clinica-norte/goldens/identifica-al-paciente.json
 ── identity (static) ──
-Eres la recepción de Clínica Norte. Hablas de usted, con frases cortas. …
+You are the front desk of Clínica Norte. Formal, short sentences. …
 
 ── knowledge (static) ──
 
 ── tools (static) ──
 <tools>
-- findPatient: Busca la ficha del paciente … 
+- findPatient: Finds the patient's file … 
 ```
 
 ---
@@ -598,15 +598,15 @@ call names it; a spoken one arrives from a worker naming nobody, so for `--voice
 takes unclaimed calls), this terminal prints the conversation, the gateway holds the provider keys.
 
 ```console
-$ pinecall simulate --persona apurado --listen --turns 2
+$ pinecall simulate --persona hurried --listen --turns 2
 --listen is a call with audio in it: --voice is on
-apurado · cambiar la cita al martes por la tarde sin dar más datos de los justos
+hurried · move the appointment to Tuesday afternoon, giving no more than needed
   listening as sup_edb03d90e627 · ffplay
-› Clínica Norte, buenos días.  ¿En qué puedo ayudarle?   tts_node_ttfb 127ms
-‹ Hola, necesito cambiar mi cita del jueves con la doctora Vidal al martes por la tarde.
-→ freeSlots({"day":"martes"})
-← freeSlots [{"when":"martes a las diez","doctor":"la doctora Vidal"},{…
-› Le muestro las horas libres del martes. …   llm_node_ttft 1681ms  tts_node_ttfb 127ms
+› Clínica Norte, good morning.  How can I help you?   tts_node_ttfb 127ms
+‹ Hi, I need to move my Thursday appointment with Dr. Vidal to Tuesday afternoon.
+→ freeSlots({"day":"Tuesday"})
+← freeSlots [{"when":"Tuesday at ten","doctor":"Dr. Vidal"},{…
+› Here are Tuesday's free slots. …   llm_node_ttft 1681ms  tts_node_ttfb 127ms
   call_6123e7d7deb875e2e9be7686 · 2 caller turn(s) · 3 agent turn(s) · a clean line
 ```
 
@@ -646,8 +646,8 @@ needs no deploy, and a project holds none of them in its repository.
 
 ```console
 $ pinecall personas
-apurado       frases cortas, interrumpe, da el dato justo y pide la hora ya  cambiar la cita al martes
-desconfiado   educado y receloso, responde con otra pregunta                 enterarse del precio de una corona
+hurried       short sentences, interrupts, gives just what is asked     move the appointment to Tuesday
+suspicious    polite and wary, answers with another question             find out the price of a crown
 
 $ pinecall personas add price-shopper --goal "get a price for a deep clean" \
     --style "blunt, impatient" --fact "their name=Tom Baker"
@@ -815,24 +815,24 @@ nightly or dismisses it:
 ```console
 $ pinecall cases
 1 waiting of at most 50
-pending    promises-me-llaman-manana-por-29d7c7  promises  production  3h
-approved   jueves-tarde                          —         sandbox     2d
+pending    promises-youll-call-me-tomorrow-29d7c7  promises  production  3h
+approved   thursday-afternoon                      —         sandbox     2d
 
-$ pinecall cases show promises-me-llaman-manana-por-29d7c7
-promises-me-llaman-manana-por-29d7c7 · pending · clinica-norte
+$ pinecall cases show promises-youll-call-me-tomorrow-29d7c7
+promises-youll-call-me-tomorrow-29d7c7 · pending · clinica-norte
   from call_29d7c7b6cdd643de9c659984a0125c8c (production, settings v4) · kept by the hang-up panel · 2026-10-08 11:02
 
   broke
     promises  it promised a call back nobody will make
   the caller
-    "Me llaman mañana por lo del jueves"
+    "You'll call me tomorrow about Thursday, then"
   state   {"stage":"book"}
   today   2026-10-08
   expect  {"judges":["promises"]}
 
-  pinecall test --case promises-me-llaman-manana-por-29d7c7     play it again through the agent this terminal serves
-  pinecall cases approve promises-me-llaman-manana-por-29d7c7   the nightly plays it from now on
-  pinecall cases dismiss promises-me-llaman-manana-por-29d7c7   nothing to fix; --judge-was-wrong <judge> when the judge was
+  pinecall test --case promises-youll-call-me-tomorrow-29d7c7     play it again through the agent this terminal serves
+  pinecall cases approve promises-youll-call-me-tomorrow-29d7c7   the nightly plays it from now on
+  pinecall cases dismiss promises-youll-call-me-tomorrow-29d7c7   nothing to fix; --judge-was-wrong <judge> when the judge was
 ```
 
 The inbox lists the agent's cases, the pending first, newest first: status, name, the judges that
@@ -872,8 +872,8 @@ $ pinecall sessions --limit 3
 clinica-norte · 3 calls
 
 ● call_314b0306e2a64daba6b6dbab129540c0  web inbound     16m 27s  live                    —
-  call_df5aaa81ac7142f5a2c6f9b77033d23e  web inbound         31s  caller_hung_up    $0.0000  Clínica Norte, buenos días…
-  call_29d7c7b6cdd643de9c659984a0125c8c  web inbound          3s  caller_hung_up    $0.0205  Perfecto. El jueves tenemos…
+  call_df5aaa81ac7142f5a2c6f9b77033d23e  web inbound         31s  caller_hung_up    $0.0000  Clínica Norte, good morning…
+  call_29d7c7b6cdd643de9c659984a0125c8c  web inbound          3s  caller_hung_up    $0.0205  Perfect. On Thursday we have…
 ```
 
 With a call id (`sessions <call>`, or `sessions show <call>` — `list` and `show` are both optional
@@ -888,7 +888,7 @@ has no log for is refused by name: it does not print a summary of nothing.
 $ pinecall sessions call_5b1f0e9d2c7a4e8f9a1b3c5d7e9f1a2b
 call_5b1f0e9d2c7a4e8f9a1b3c5d7e9f1a2b
 
-  outcome   Entendido, Ana. Su cita del jueves a las diez con la doctora Vidal sigue en pie por ahora.
+  outcome   Understood, Ana. Your Thursday appointment at ten with Dr. Vidal stands for now.
   ended     caller_hung_up · 1m 24s · 4 turns
   cost      $0.0505
             api.anthropic.com claude-haiku-5-5           17,621 input_tokens       $0.0018
@@ -1094,7 +1094,7 @@ clinica-norte · 9 calls
   decides   anthropic · claude-haiku-5-5
   speaks    elevenlabs · EXAVITQu4vr4xnSDxMaL · es
 
-  greeting  "Clínica Norte, buenos días. ¿En qué puedo ayudarle?"
+  greeting  "Clínica Norte, good morning. How can I help you?"
 
   transcription_delay 0.39s · end_of_turn_delay 0.41s · llm_node_ttft 0.86s · e2e_latency 2.36s
 ```
@@ -1133,7 +1133,7 @@ log for, are refused before the prompt — what a finished call was is `pinecall
 An assistant has the same desk as the MCP's `supervise` tool ([Supervising a live call](mcp/supervising.md)).
 
 It takes its moves from a **pipe** too, one per line, which is how a script moves a call:
-`printf 't\ns Le paso con recepción.\nq\n' | pinecall supervise <call>`. Through a pipe there is
+`printf 't\ns Putting you through to the front desk.\nq\n' | pinecall supervise <call>`. Through a pipe there is
 no prompt drawn, and the desk leaves when the lines run out.
 
 ## `numbers`
@@ -1293,7 +1293,7 @@ de38f545-c574-44e8-9b54-a7d6fec1c6b1  Marta - Friendly Guide          feminine  
 35b2cfc1-e6fb-4d69-a598-c1780612be4a  Darío - Steady Operator         masculine  ES castilian
 $ pinecall voices --tts rime
 rime lists no voices: its voice is the vendor's own id, set as it is — these list theirs: cartesia, elevenlabs, inworld, nvidia, speechify (--tts <vendor>)
-$ pinecall voices play de38f545-c574-44e8-9b54-a7d6fec1c6b1 "Hola, soy la asistente de Clínica Norte." --language es
+$ pinecall voices play de38f545-c574-44e8-9b54-a7d6fec1c6b1 "Hi, this is Clínica Norte's assistant." --language en
 de38f545-c574-44e8-9b54-a7d6fec1c6b1 · first audio 578 ms · whole sentence 915 ms · afplay
 ```
 
