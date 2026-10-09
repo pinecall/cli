@@ -1804,9 +1804,10 @@ $ pinecall telemetry
 traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key · words stripped
 ```
 
-Where this org sends its calls' traces: an OpenTelemetry collector of its own — Datadog, Grafana,
-Langfuse, Honeycomb, Cekura, or an OpenTelemetry Collector you run — beside Pinecall's. Every
-call's spans go there over OTLP: the model's requests (`gen_ai.*`: provider, model, tokens, time
+Where this org sends a copy of its calls' traces: an OpenTelemetry collector of its own —
+Langfuse, Datadog, Grafana, or one you run. Off until set; the console's call page, Observability,
+judges and monitors read the call's log, never this. Every spoken call's spans go there over OTLP
+(a chat has no worker and so no spans): the model's requests (`gen_ai.*`: provider, model, tokens, time
 to first token), speech in and out, every tool the agent ran, each span carrying `pinecall.org`,
 `pinecall.env`, `pinecall.agent` and `pinecall.call`, so one call is one trace in your tool.
 `set` takes the URL on the command line and each header's **value** from stdin, one per
@@ -1814,7 +1815,8 @@ to first token), speech in and out, every tool the agent ran, each span carrying
 never from a flag. `--pii` lets a span carry what was said and what a tool got; without it the
 words are stripped before export and the timings, tokens and names stay. The gateway keeps the
 headers sealed and never reads them back: the bare verb prints the URL and the headers' names.
-`clear` stops the export; the traces stay on Pinecall either way.
+`clear` stops the export; the calls' logs stay on Pinecall either way. Langfuse takes two headers,
+piped one line each: [Export traces](https://docs.pinecall.io/guides/export-traces/).
 
 ## `monitors`
 

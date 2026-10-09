@@ -9,6 +9,7 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Fixed
 
 - `pinecall telemetry set` with several `--header` reads one piped line per header: the second header's value was read as empty, so Langfuse's two headers could not be piped.
+- `pinecall telemetry --help` and its reference say what the export is: a copy of every spoken call's spans, off until set — a chat has no worker and no spans, and the console reads the call's log, never the export. A Langfuse example. `clear` says the export stopped.
 
 ## [0.9.47] — 2026-10-09
 

@@ -321,7 +321,7 @@ The vendors an agent may run on: what each does, whether it is ready, and whose 
 
 Where the org sends its calls' traces: its own OpenTelemetry collector, shown or cleared. Setting one is the person's, in a terminal: the headers are a credential.
 
-`telemetry` reads where this org exports every call's spans (OTLP: the model's requests, speech in and out, every tool, each span carrying pinecall.org, pinecall.env, pinecall.agent and pinecall.call) and can stop it. Pointing it somewhere is never a tool, since the collector's headers are a credential: the person types `pinecall telemetry set <url> --header <name>` in a terminal, where each value is read off stdin.
+`telemetry` reads where this org exports a copy of every spoken call's spans (OTLP; a chat has none: the model's requests, speech in and out, every tool, each span carrying pinecall.org, pinecall.env, pinecall.agent and pinecall.call) and can stop it. Pointing it somewhere is never a tool, since the collector's headers are a credential: the person types `pinecall telemetry set <url> --header <name>` in a terminal, where each value is read off stdin.
 
 | parameter | takes | | what it is |
 |---|---|---|---|

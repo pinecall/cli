@@ -18,7 +18,7 @@ export const telemetry = tool({
     action: z.enum(["show", "clear"]).describe("show says where traces go and which headers are set, never their values; clear stops the export"),
   },
   manual:
-    "`telemetry` reads where this org exports every call's spans (OTLP: the model's requests, speech in and out, every tool, each span carrying pinecall.org, pinecall.env, pinecall.agent and pinecall.call) and can stop it. Pointing it somewhere is never a tool, since the collector's headers are a credential: the person types `pinecall telemetry set <url> --header <name>` in a terminal, where each value is read off stdin.",
+    "`telemetry` reads where this org exports a copy of every spoken call's spans (OTLP; a chat has none: the model's requests, speech in and out, every tool, each span carrying pinecall.org, pinecall.env, pinecall.agent and pinecall.call) and can stop it. Pointing it somewhere is never a tool, since the collector's headers are a credential: the person types `pinecall telemetry set <url> --header <name>` in a terminal, where each value is read off stdin.",
   handler: async (args, session) => {
     const door = await session.door();
     if (args.action === "clear") {

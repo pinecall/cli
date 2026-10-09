@@ -19,10 +19,10 @@ export const group: Group = {
   purpose: "where this org's calls' traces go: its own OpenTelemetry collector, set, read and taken back",
   usage: `${USAGE}
 
-  Every call's spans — the model's requests, speech in and out, every tool the agent ran — are
-  exported over OTLP to the collector named here, beside Pinecall's own: Datadog, Grafana,
-  Langfuse, Honeycomb, Cekura, or an OpenTelemetry Collector of yours. Every span carries
-  pinecall.org, pinecall.env, pinecall.agent and pinecall.call, so one call is one trace there.
+  A copy of every spoken call's spans — the model's requests, speech in and out, every tool the
+  agent ran — goes over OTLP to the collector named here: Langfuse, Datadog, Grafana, or one of
+  yours. Off until set; a chat has no worker and so no spans. The console reads the call's log,
+  never this. One call is one trace there, its session the call, its environment the world.
 
   set takes the collector's URL on the command line and each header's VALUE from stdin, one per
   --header, in the order named — typed with nothing echoed on a terminal, or piped one line per
@@ -35,7 +35,10 @@ export const group: Group = {
     $ printf %s "$DD_API_KEY" | pinecall telemetry set https://otlp.datadoghq.eu/v1/traces --header dd-api-key
     traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key
     $ pinecall telemetry
-    traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key · words stripped`,
+    traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key · words stripped
+    $ printf 'Basic %s\\n4\\n' "$(printf %s "$PK:$SK" | base64)" | pinecall telemetry set \\
+        https://cloud.langfuse.com/api/public/otel/v1/traces --header Authorization --header x-langfuse-ingestion-version
+    traces go to https://cloud.langfuse.com/api/public/otel/v1/traces · headers Authorization, x-langfuse-ingestion-version`,
   run,
 };
 
@@ -114,7 +117,7 @@ async function set(
 
 async function clear(door: Door, out: NodeJS.WritableStream): Promise<number> {
   await asked(door, PATH, { method: "DELETE" });
-  out.write("traces stay on Pinecall · the collector forgotten\n");
+  out.write("the export stopped · the collector forgotten\n");
   return 0;
 }
 
