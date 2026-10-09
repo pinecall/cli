@@ -19,11 +19,11 @@ where nothing reaches a real caller.
 
 ```bash
 npm i -g pinecall
+pinecall --version
 ```
 
 :::result
 ```console
-$ pinecall --version
 0.9.41
 ```
 One command, installed once per machine. It serves an agent in any of the three languages.
@@ -57,7 +57,6 @@ bundle install
 
 :::result
 ```console
-$ pinecall new front-desk
 ▸ front-desk · a TypeScript agent
 
   cd front-desk
@@ -114,7 +113,6 @@ pinecall link
 
 :::result
 ```console
-$ pinecall link
 ▸ front-desk · PINECALL_KEY written to .env
 ```
 It opens the browser so you can sign in, asks which of your orgs this project belongs to, and
@@ -130,7 +128,6 @@ pinecall whoami
 
 :::result
 ```console
-$ pinecall whoami
 gateway https://cloud.pinecall.io · key from .env · sandbox
   org front-desk · key k_4f2a1d9c66b30e17 · sandbox · ana-macbook · production: yes
 ```
@@ -146,7 +143,6 @@ pinecall prompt
 
 :::result
 ```console
-$ pinecall prompt
 ── identity (static) ──
 You answer the phone for the business. Short sentences: everything you say is read aloud. …
 
@@ -188,7 +184,6 @@ pinecall chat
 
 :::result
 ```console
-$ pinecall chat
 ‹ Hi, I'm Ana Lopez. Please tell the manager my last order arrived broken.
 → takeMessage({"name":"***","about":"last order arrived broken"})
 › Got it, Ana. Your message has reached the team. Goodbye!
@@ -207,7 +202,6 @@ pinecall test
 
 :::result
 ```console
-$ pinecall test
 front-desk · 1 golden · the app's own model
   ✓ takes-the-message  llm_node_ttft 380ms
   1/1 · 0 judge calls · $0.0027 · 2s
@@ -232,9 +226,7 @@ pinecall docs attach front-desk
 
 :::result
 ```console
-$ pinecall docs push
 front-desk · 1 file · 1 chunk · 212 ms
-$ pinecall docs attach front-desk
 front-desk · front-desk attached · your corner v2
 ```
 `docs push` uploads the folder as a knowledge base named after the agent; `docs attach` tells the
@@ -262,7 +254,6 @@ pinecall start
 
 :::result
 ```console
-$ pinecall start
 front-desk · front-desk · sandbox · connected to https://cloud.pinecall.io · key from .env · tools 1
 console  https://cloud.pinecall.io/sandbox/a/front-desk
 doors    web
