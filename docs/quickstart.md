@@ -1,103 +1,246 @@
 # Quickstart
 
-From nothing to an agent that answers, in ten minutes.
+From nothing to an agent that answers, in ten minutes. You install one command, create a project
+in the language you like, read what the model will see, talk to the agent, and run its first test.
+Everything runs in your org's **sandbox** on Pinecall Cloud: a space of your own to try things,
+where nothing reaches a real caller.
 
-You need Node 24 and a Pinecall account.
+## Before you start
 
-## 1. The CLI
+- **Node 24 or later.** The `pinecall` command is a Node program, whatever language your agent is
+  written in. `node --version` tells you which you have.
+- **A Pinecall account.** Sign up at [cloud.pinecall.io](https://cloud.pinecall.io/sandbox/) if you
+  do not have one; the quickstart signs you in from the terminal.
+- **For a Python agent**, Python 3.11 or later and [uv](https://docs.astral.sh/uv/). **For a Ruby
+  agent**, Ruby 3.2 or later and Bundler. A TypeScript agent needs nothing more than Node.
+
+:::steps
+### Install the CLI
 
 ```bash
 npm i -g pinecall
 ```
 
-## 2. A project
+:::result
+```console
+$ pinecall --version
+0.9.40
+```
+One command, installed once per machine. It serves an agent in any of the three languages.
+:::
 
+### Create a project
+
+Pick a language. The project is the same shape in all three: the agent's class in one folder, its
+tests in another.
+
+:::tabs
+### TypeScript
 ```bash
 pinecall new front-desk
 cd front-desk
 npm install
 ```
-
-`front-desk` is the agent's name on Pinecall, and the folder's. Inside:
-
-```
-agents/front-desk/agent.tsx       the class: its state, its one tool, its prompt
-test/front-desk/                  unit tests: the class as software, no network (npm test)
-test/front-desk/goldens/          goldens: a conversation the model must hold (pinecall test)
-```
-
-The agent answers from the documents it is given and, for anything else, takes a message: the
-caller's name and what the call is about, written down by its `takeMessage` tool.
-
-In Ruby or Python, only this step changes; every verb below is the same:
-
+### Python
 ```bash
-pinecall new front-desk --ruby      # agents/front-desk/agent.rb, then: bundle install
-pinecall new front-desk --python    # agents/front-desk/agent.py, then: uv sync
+pinecall new front-desk --python
+cd front-desk
+uv sync
 ```
+### Ruby
+```bash
+pinecall new front-desk --ruby
+cd front-desk
+bundle install
+```
+:::
 
-The tool is `take_message` there, and the unit tests run with `bundle exec rake` or `uv run pytest`.
+:::result
+```console
+$ pinecall new front-desk
+▸ front-desk · a TypeScript agent
 
-## 3. Your org
+  cd front-desk
+  npm install
+  pinecall link        sign in, pick the org: its key goes to .env
+  pinecall chat        talk to it here
+  pinecall test        its goldens, against a real model
+  pinecall start       answer calls
+```
+`front-desk` is the agent's name on Pinecall and the folder's name. The lines under it are the
+steps that follow. `npm install` (or `uv sync`, `bundle install`) installs the SDK the agent is
+written with; the project depends on nothing else.
+:::
+
+Inside the folder:
+
+:::tabs
+### TypeScript
+```text
+agents/front-desk/agent.tsx       the class: its state, its one tool, its prompt
+test/front-desk/agent.test.ts     a unit test: the class as software, no network
+test/front-desk/goldens/          a golden: a conversation the model must hold
+package.json · tsconfig.json      the toolchain, with @pinecall/agents as the one dependency
+```
+### Python
+```text
+agents/front-desk/agent.py                the class: its state, its one tool
+agents/front-desk/views/front-desk.jinja  its prompt's view, a template beside the class
+test/front-desk/test_agent.py             a unit test: the class as software, no network
+test/front-desk/goldens/                  a golden: a conversation the model must hold
+pyproject.toml                            the toolchain, with pinecall as the one dependency
+```
+### Ruby
+```text
+agents/front-desk/agent.rb                the class: its state, its one tool
+agents/front-desk/views/front-desk.erb    its prompt's view, a template beside the class
+test/front-desk/agent_test.rb             a unit test: the class as software, no network
+test/front-desk/goldens/                  a golden: a conversation the model must hold
+Gemfile · Rakefile                        the toolchain, with the pinecall gem as the one dependency
+```
+:::
+
+The agent `pinecall new` writes is a front desk: it answers from the documents it is given and,
+for anything else, takes a message — the caller's name and what the call is about — with its one
+tool, `takeMessage` (`take_message` in Python and Ruby).
+
+### Sign in
 
 ```bash
 pinecall link
 ```
 
-It signs this machine in through the browser, asks which of your orgs the project is, and writes
-your key to `./.env`, which the project's `.gitignore` already keeps out. Every verb reads it
-from there. `pinecall whoami` says which org and gateway a verb would use.
+:::result
+```console
+$ pinecall link
+▸ front-desk · PINECALL_KEY written to .env
+```
+It opens the browser so you can sign in, asks which of your orgs this project belongs to, and
+writes your key to `./.env`. The project's `.gitignore` already keeps `.env` out of git. Every
+`pinecall` command run in this folder reads the key from there.
+:::
 
-## 4. The prompt
+To see which org and gateway the CLI is using at any time:
+
+```bash
+pinecall whoami
+```
+
+:::result
+```console
+$ pinecall whoami
+gateway https://cloud.pinecall.io · key from .env · sandbox
+  org front-desk · key k_4f2a1d9c66b30e17 · sandbox · ana-macbook · production: yes
+```
+The first line is where commands go and which key they use. `sandbox` means nothing you do here
+reaches a real caller; `--prod` on a command acts in production instead.
+:::
+
+### Read what the model reads
 
 ```bash
 pinecall prompt
 ```
 
-The exact prompt the model reads when a call opens, offline: the class's docstring, the rules,
-the tools, and the view. Change the class and run it again.
+:::result
+```console
+$ pinecall prompt
+── identity (static) ──
+You answer the phone for the business. Short sentences: everything you say is read aloud. …
 
-## 5. Talk to it
+<rules>
+- Invent nothing: if it did not come from a tool or from the knowledge, do not say it.
+- One question per turn, and wait for the answer.
+…
+</rules>
+
+── knowledge (static) ──
+
+── tools (static) ──
+<tools>
+- takeMessage: Writes down the caller's message. Call it as soon as the caller has said their name …
+</tools>
+
+── history ──
+
+── view (dynamic) ──
+Greet the caller. A question the documents answer, answer; otherwise ask for their name and what the call is about.
+
+── tools ── stage: ask
+
+  ● takeMessage  ask
+```
+This is the exact text the model reads when a call opens, with no key and no network. It has four
+blocks: **identity** is your class's docstring plus rules Pinecall adds for every agent;
+**knowledge** is what the agent knows by heart (empty until you write it, in step 7); **tools** is
+every tool with its docstring; **view** is what your class says to do in this turn. Under the
+blocks, the stage the agent is in and the tools the model may call now. Change the class and run
+it again.
+:::
+
+### Talk to it
 
 ```bash
 pinecall chat
 ```
 
+:::result
 ```console
+$ pinecall chat
 ‹ Hi, I'm Ana Lopez. Please tell the manager my last order arrived broken.
 → takeMessage({"name":"***","about":"last order arrived broken"})
 › Got it, Ana. Your message has reached the team. Goodbye!
 ```
+`‹` is you, typing. `→` is a tool the model called, with its arguments: the name shows as `***`
+because the class marked it as personal data, which is masked in the log. `›` is the agent's
+answer. The agent runs on your machine, so a breakpoint in `takeMessage` stops there. Ctrl-D hangs
+up.
+:::
 
-`→` is the tool the model called, with what the class declared private masked; `›` is the agent.
-Ctrl-D hangs up.
-
-## 6. Hold it to a golden
+### Run its first test
 
 ```bash
 pinecall test
 ```
 
+:::result
 ```console
+$ pinecall test
 front-desk · 1 golden · the app's own model
   ✓ takes-the-message  llm_node_ttft 380ms
   1/1 · 0 judge calls · $0.0027 · 2s
 ```
+A **golden** is a conversation written down, with what must be true at the end. This one says: a
+caller leaves a message, and the agent must call `takeMessage`. `pinecall test` plays it against a
+real model and checks the result. `✓` is a pass; `llm_node_ttft` is how long the model took to
+start answering; the last line is the score, the model calls it cost, and the time. Add one
+golden per behaviour you care about, in `test/front-desk/goldens/`.
+:::
 
-A golden is a conversation and what must come of it: here, that the message is taken. Add one
-per behaviour you care about in `test/front-desk/goldens/`.
+The unit test runs with no network and no model: `npm test`, `uv run pytest` or `bundle exec rake`.
 
-## 7. Give it documents
+### Give it documents
 
 ```bash
 mkdir -p docs/front-desk
 printf '# Refunds\n\nA refund reaches the card it was paid with within ten working days.\n' > docs/front-desk/refunds.md
-pinecall docs push                 # the folder, as a base named front-desk
-pinecall docs attach front-desk    # the agent searches it on every turn
-pinecall chat                      # ask it how long a refund takes
+pinecall docs push
+pinecall docs attach front-desk
 ```
 
-## 8. Its voice, and the rest of its settings
+:::result
+```console
+$ pinecall docs push
+front-desk · 1 file · 1 chunk · 212 ms
+$ pinecall docs attach front-desk
+front-desk · front-desk attached · your corner v2
+```
+`docs push` uploads the folder as a knowledge base named after the agent; `docs attach` tells the
+agent to search it on every turn. Run `pinecall chat` again and ask how long a refund takes: the
+answer comes from your file, and nothing in your code changed.
+:::
+
+### Its voice, and the rest of its settings
 
 ```bash
 pinecall voices --language en      # the voices, with their ids
@@ -105,21 +248,38 @@ pinecall agent set --voice <id>
 pinecall agent                     # every setting: voice, models, language, greeting…
 ```
 
-The voice, the models, the language and what it knows by heart are settings of the agent, not
+The voice, the models, the language and what it knows by heart are **settings** of the agent, not
 code: changing one needs no deploy. `pinecall console` opens the same settings in the browser,
 with every call the agent has had.
 
-## 9. Answer calls
+### Answer calls
 
 ```bash
 pinecall start
 ```
 
-This is the process that answers: on your laptop now, on your server later. It holds the agent
-until Ctrl-C, prints every call as it happens, and a link to the console.
+:::result
+```console
+$ pinecall start
+front-desk · front-desk · sandbox · connected to https://cloud.pinecall.io · key from .env · tools 1
+console  https://cloud.pinecall.io/sandbox/a/front-desk
+doors    web
+```
+This is the process that answers: on your laptop now, on a server later. It holds the agent until
+Ctrl-C and prints every call as it happens. The `console` line is where to see the agent in the
+browser and talk to it by voice; `doors` is how callers reach it, the web for now, a phone number
+once you point one at it.
+:::
 
-To ship it, `pinecall deploy` uploads the project and Pinecall runs it for you
-([deploying.md](deploying.md)).
+To ship it, `pinecall deploy` uploads a TypeScript project and Pinecall runs it for you; a Python or
+Ruby agent runs on a server of yours with `pinecall start --prod`.
+:::
 
-Everything above ran in your org's **sandbox**. `--prod` on any verb acts in production instead.
-Every verb and flag: [the-cli.md](the-cli.md).
+## Next steps
+
+:::cards
+- [Build your first agent](your-first-agent.md) {rocket-launch} Forty minutes, in your language: knowledge, memory, a test suite, and going live.
+- [Agent overview](agent-overview.md) {code} The class, explained part by part: state, tools, stages, the prompt.
+- [Deploy to Pinecall](deploy-to-pinecall.md) {cloud-arrow-up} Pinecall runs your project for you.
+- [The CLI](the-cli.md) {terminal} Every verb and flag.
+:::
