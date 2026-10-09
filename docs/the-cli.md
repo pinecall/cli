@@ -1816,6 +1816,39 @@ words are stripped before export and the timings, tokens and names stay. The gat
 headers sealed and never reads them back: the bare verb prints the URL and the headers' names.
 `clear` stops the export; the traces stay on Pinecall either way.
 
+## `monitors`
+
+```console
+$ pinecall monitors add "slow answers" --metric e2e_median_s --above 2 --days 7
+mon_3f9a1c2b4d5e · slow answers · e2e_median_s above 2 over 7 days · every agent
+$ pinecall monitors add "judges slipping" --metric held_rate --below 0.9 --agent front-desk
+mon_8b1d2e3f4a5c · judges slipping · held_rate below 0.9 over 7 days · front-desk
+$ pinecall monitors
+mon_3f9a1c2b4d5e  slow answers     e2e_median_s above 2 over 7 days   every agent  fired 2026-10-08 at 2.41
+mon_8b1d2e3f4a5c  judges slipping  held_rate below 0.9 over 7 days    front-desk   never fired
+$ pinecall monitors rm mon_8b1d2e3f4a5c
+mon_8b1d2e3f4a5c forgotten
+```
+
+The numbers this org watches, and the line each must not cross. A monitor reads one number of
+the observability series — the same the console's Observability screen draws — over a window of
+1, 7 or 30 days (`--days`, 7 when left out), for every agent or one (`--agent`), and fires the
+first time a call's seal finds it on the wrong side of the line: once a day, as `monitor.fired`
+on the agent's log, where the console's Monitors screen and `sessions` show it with the day and
+the value that crossed. `--above` fires over the line, `--below` under it.
+
+| metric | what it is |
+|---|---|
+| `e2e_median_s` | the caller's wait from their last word to the agent's first, median, in seconds |
+| `llm_median_s` | the model's time to its first token, median, in seconds |
+| `held_rate` | the share of the judges' verdicts that held, 0 to 1 — a floor, `--below` |
+| `escalated_rate` | the share of calls a person took over, 0 to 1 |
+| `tool_failure_rate` | the share of tool calls that failed, 0 to 1 |
+| `spend_usd` | what the calls cost, in dollars |
+| `calls` | how many calls there were |
+
+`rm <id>` forgets one. The list is the world's: `--prod` for production's monitors.
+
 ## Exit codes
 
 | | |
@@ -1867,6 +1900,8 @@ code can call — over HTTP, in any language, with the same key.
 | `whoami` | `GET /v1/whoami` in the environment asked — the sandbox, or production with `--prod` |
 | `deploy` | `POST /v1/hosted/{name}/releases` (the tarball itself, `application/gzip`), then `GET /v1/hosted` every few seconds while it follows; `list` is `GET /v1/hosted`, `releases` `GET …/{name}/releases`, `rollback <n>` `POST …/{name}/rollback {release}`, `logs` `GET …/{name}/logs` every two seconds, `stop` · `start` `POST …/{name}/stop` · `…/start`, `rm` `DELETE /v1/hosted/{name}` |
 | `secrets` | `GET /v1/secrets` · `PUT`·`DELETE /v1/secrets/{name}` |
+| `telemetry` | `GET`·`PUT`·`DELETE /v1/telemetry` |
+| `monitors` | `GET`·`POST /v1/monitors` · `DELETE /v1/monitors/{id}` |
 | every verb, without `--prod` | its own endpoints at `PINECALL_URL`, with the project's key and `pinecall-env: sandbox` on each request and socket; nothing is asked first |
 | every verb, with `--prod` | the same endpoints at `PINECALL_URL`, with the same key and `pinecall-env: production` on each request and socket |
 | `prompt` | none. It is the one verb that needs no gateway and no key |

@@ -107,6 +107,7 @@ Every parameter, and a real call of each: [Calls, and what they run on](mcp/call
 | `pipeline` | — | the vendors and models the agent hears, decides and speaks with, and their latency |
 | `providers` | — | every vendor the gateway can run and whose key a call would use; never a key |
 | `telemetry` | `show` · `clear` | where the org's calls' traces go, its own OTLP collector, and the headers by name; setting one is the person's terminal |
+| `monitors` | `list` · `add` · `rm` | the numbers the org watches over a window — latency, the judges' held rate, escalations, tool failures, spend, calls — and the line each must not cross; fires once a day as `monitor.fired` |
 
 ### The phone
 

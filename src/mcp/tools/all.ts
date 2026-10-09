@@ -18,6 +18,7 @@ import { prompt } from "./prompt.js";
 import { call, calls, pipeline, providers } from "./reading.js";
 import { docsSearch, getDoc } from "./site.js";
 import { supervise } from "./supervising.js";
+import { monitors } from "./monitors.js";
 import { telemetry } from "./telemetry.js";
 import { evalTool, runs, test } from "./testing.js";
 import { voices, voiceSample } from "./voicing.js";
@@ -35,7 +36,7 @@ export const STAGES: readonly Stage[] = [
   { stage: "Getting started", page: "getting-started", tools: [whoami, login, link, project] },
   { stage: "Holding the agent, and talking to it", page: "holding-and-talking", tools: [start, stop, status, logs, chat, prompt, consoleTool] },
   { stage: "The agent's settings", page: "settings", tools: [agent, lexicon, voices, voiceSample] },
-  { stage: "Calls, and what they run on", page: "calls", tools: [calls, call, pipeline, providers, telemetry] },
+  { stage: "Calls, and what they run on", page: "calls", tools: [calls, call, pipeline, providers, telemetry, monitors] },
   { stage: "The phone", page: "phone", tools: [line, numbers, carriers, callbacks] },
   { stage: "Supervising a live call", page: "supervising", tools: [supervise] },
   { stage: "Testing", page: "testing", tools: [test, runs, cases, simulate, personas, judges, evalTool] },

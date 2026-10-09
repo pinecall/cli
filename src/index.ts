@@ -10,7 +10,7 @@ import { version } from "./version.js";
 import { inTheWorld, withoutTheWorldFlag } from "./world.js";
 
 // Order is the help order: first-day verbs first.
-const BUILT = ["new", "generate", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "cases", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "telemetry", "login", "whoami", "mcp"] as const;
+const BUILT = ["new", "generate", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "cases", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "telemetry", "monitors", "login", "whoami", "mcp"] as const;
 
 /** Every group name, built and planned, in help order. */
 export function groupNames(): string[] {
@@ -105,6 +105,7 @@ export async function groupFor(name: string, out: NodeJS.WritableStream = proces
   if (name === "deploy") return (await import("./deploy.js")).group;
   if (name === "secrets") return (await import("./org-secrets.js")).group;
   if (name === "telemetry") return (await import("./telemetry.js")).group;
+  if (name === "monitors") return (await import("./monitors.js")).group;
   if (name === "login") return (await import("./login.js")).group;
   if (name === "whoami") return (await import("./whoami.js")).group;
   const planned = PLANNED[name];
@@ -148,6 +149,7 @@ export function usage(): string {
     "  deploy    run this project on Pinecall: a release it installs and starts, list | releases | rollback | rm",
     "  secrets   list | set | rm the values the org's hosted apps are started with",
     "  telemetry set | clear where this org's calls' traces go: its own OpenTelemetry collector",
+    "  monitors  add | rm the numbers this org watches — latency, judges, escalations, tools, spend — and the line each must not cross",
     "  login     sign this machine in through a browser; `link` asks for it when it is needed",
     "  whoami    which gateway, which org, whether you act in production, and where the key came from",
     "  mcp       the MCP server an assistant runs this CLI as; `mcp install` adds it to every assistant here",

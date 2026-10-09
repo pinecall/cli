@@ -1135,5 +1135,52 @@
         }
       }
     }
+  ],
+  "monitors": [
+    {
+      "args": {
+        "action": "add",
+        "name": "slow answers",
+        "metric": "e2e_median_s",
+        "above": true,
+        "threshold": 2,
+        "window_days": 7
+      },
+      "answer": {
+        "monitor": {
+          "id": "mon_3f9a1c2b4d5e",
+          "name": "slow answers",
+          "metric": "e2e_median_s",
+          "above": true,
+          "threshold": 2.0,
+          "window_days": 7,
+          "agent": null,
+          "created_by": "m_ana",
+          "fired_on": null,
+          "fired_value": null
+        }
+      }
+    },
+    {
+      "args": {
+        "action": "list"
+      },
+      "answer": {
+        "monitors": [
+          {
+            "id": "mon_3f9a1c2b4d5e",
+            "name": "slow answers",
+            "metric": "e2e_median_s",
+            "above": true,
+            "threshold": 2.0,
+            "window_days": 7,
+            "agent": null,
+            "created_by": "m_ana",
+            "fired_on": "2026-10-08",
+            "fired_value": 2.41
+          }
+        ]
+      }
+    }
   ]
 }

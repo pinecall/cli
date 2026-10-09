@@ -344,3 +344,74 @@ Where the org sends its calls' traces: its own OpenTelemetry collector, shown or
   }
 }
 ```
+
+## `monitors`
+
+The numbers the org watches over a window — latency, the judges' held rate, escalations, tool failures, spend, calls — and the line each must not cross; list them, add one, forget one.
+
+`monitors list` says what the org watches in the world — each monitor's rule, who set it, the last day it fired and the value that crossed. `add` watches one number of the observability series (the same the console's Observability screen draws) over 1, 7 or 30 days, for every agent or one, and fires once a day as `monitor.fired` on the agent's log the first time a call's seal finds it on the wrong side of the line. `rm` forgets one. Use it when the person asks to be told when latency, the judges, escalations, tool failures, spend or volume slip.
+
+| parameter | takes | | what it is |
+|---|---|---|---|
+| `action` | `list` · `add` · `rm` | required | list says every monitor with the last day it fired; add watches a number; rm forgets one by id |
+| `name` | text |  | add: the monitor's name, as the alert will read |
+| `metric` | `e2e_median_s` · `llm_median_s` · `held_rate` · `escalated_rate` · `tool_failure_rate` · `spend_usd` · `calls` |  | add: the number watched; the rates are shares from 0 to 1, the latencies seconds at the median, spend dollars |
+| `above` | true or false |  | add: true fires when the number is over the line, false when it is under (a held_rate floor) |
+| `threshold` | a number |  | add: the line |
+| `window_days` | `1` or `7` or `30` |  | add: the days the number is read over; 7 when left out |
+| `agent` | text |  | add: one agent's calls alone; every agent's when left out |
+| `id` | text |  | rm: the monitor's id, from list |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
+
+```json title="called with"
+{
+  "action": "add",
+  "name": "slow answers",
+  "metric": "e2e_median_s",
+  "above": true,
+  "threshold": 2,
+  "window_days": 7
+}
+```
+
+```json title="answered"
+{
+  "monitor": {
+    "id": "mon_3f9a1c2b4d5e",
+    "name": "slow answers",
+    "metric": "e2e_median_s",
+    "above": true,
+    "threshold": 2,
+    "window_days": 7,
+    "agent": null,
+    "created_by": "m_ana",
+    "fired_on": null,
+    "fired_value": null
+  }
+}
+```
+
+```json title="called with"
+{
+  "action": "list"
+}
+```
+
+```json title="answered"
+{
+  "monitors": [
+    {
+      "id": "mon_3f9a1c2b4d5e",
+      "name": "slow answers",
+      "metric": "e2e_median_s",
+      "above": true,
+      "threshold": 2,
+      "window_days": 7,
+      "agent": null,
+      "created_by": "m_ana",
+      "fired_on": "2026-10-08",
+      "fired_value": 2.41
+    }
+  ]
+}
+```

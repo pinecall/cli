@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.46] — 2026-10-09
+
+### Added
+
+- `pinecall monitors`: the numbers the org watches — latency, the judges' held rate, escalations, tool failures, spend, calls — over 1, 7 or 30 days, the line each must not cross, and when each last fired; `add`, `rm`, and the bare list. The MCP tool `monitors` does the same, in production with `prod`. Needs runtime 0.1.23.
+
 ## [0.9.45] — pinecall start shows each turn's latencies
 
 ### Fixed
