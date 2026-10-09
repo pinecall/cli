@@ -6,6 +6,8 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.48] — 2026-10-09
+
 ### Fixed
 
 - `pinecall telemetry set` with several `--header` reads one piped line per header: the second header's value was read as empty, so Langfuse's two headers could not be piped.
