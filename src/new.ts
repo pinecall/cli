@@ -21,7 +21,18 @@ export const group: Group = {
 
   --typescript  the class in TypeScript (agent.tsx, vitest); the default
   --ruby        the class in Ruby (agent.rb, a view in ERB, minitest)
-  --python      the class in Python (agent.py, a view in Jinja, pytest, uv)`,
+  --python      the class in Python (agent.py, a view in Jinja, pytest, uv)
+
+  Examples
+    $ pinecall new front-desk --ruby
+    ▸ front-desk · a Ruby agent
+
+      cd front-desk
+      bundle install
+      pinecall link        sign in, pick the org: its key goes to .env
+      pinecall chat        talk to it here
+      pinecall test        its goldens, against a real model
+      pinecall start       answer calls`,
   run,
 };
 

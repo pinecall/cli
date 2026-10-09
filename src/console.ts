@@ -21,7 +21,11 @@ export const group: Group = {
 
   With no agent it opens the org's floor; name one and it opens that agent's screens.
 
-  --no-open    print the URL and do not open a browser`,
+  --no-open    print the URL and do not open a browser
+
+  Examples
+    $ pinecall console
+    console  https://cloud.pinecall.io/sandbox/?login=lc_9f2   (opens within five minutes, once)`,
   run,
 };
 

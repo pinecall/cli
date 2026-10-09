@@ -30,7 +30,12 @@ export const group: Group = {
   org lets you act there. A server does not link: a server's token from Tokens, in its secrets.
 
   --org <slug>     which org, when you belong to several and do not want to be asked
-  --gateway <url>  another gateway than the one this machine last signed in to`,
+  --gateway <url>  another gateway than the one this machine last signed in to
+
+  Examples
+    ~/clinica $ pinecall link --org clinica
+    ▸ clinica · PINECALL_KEY written to .env
+    git would commit .env: add it to .gitignore before a commit carries your key`,
   run: link,
 };
 

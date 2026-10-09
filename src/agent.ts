@@ -70,7 +70,31 @@ export const group: Group = {
   list prints every process holding this org's agents in the world asked — one line an app: its id,
   the agents it holds, whose corner, the machine and the address it connected from, the SDK, and
   since when. stop <app> closes that app's socket; a pinecall that hears it exits instead of
-  dialling back, so its agents are free — though a supervisor (systemd, pm2) starts it again.`,
+  dialling back, so its agents are free — though a supervisor (systemd, pm2) starts it again.
+
+  Examples
+    $ pinecall agent
+    clinica-norte · sandbox
+
+                    yours           team                        production
+      voice         amelia          carolina                    carolina
+      tts           —               —                           —
+      tts model     —               —                           —
+      stt           —               deepgram                    deepgram
+      llm           —               anthropic/claude-haiku-5-5  anthropic/claude-haiku-5-5
+      language      —               es                          es
+      greeting      —               "Thanks for calling Clíni…  "Thanks for calling Clíni…
+      hangup        —               when the person has what…   when the person has what…
+      turn          —               —                           —
+      memory        —               remember 4 · forget 1       remember 4 · forget 1
+      record        —               —                           keeps the audio
+      knowledge     —               2,140 chars                 2,140 chars
+      bases         —               clinica-norte (k 4)         clinica-norte (k 4)
+
+      yours: v3 · m_ana · 2026-09-19 14:32 · "flat on the phone" · team: v11 · m_bruno · 2026-09-18 10:04 · production: v11 · m_ana · 2026-09-12 …
+
+    $ pinecall agent list --prod
+    app_7  clinica-norte  the org's · web-1 (34.68.177.78) · pinecall/0.5.1 · since 2026-09-19 14:02`,
   run,
 };
 

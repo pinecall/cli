@@ -34,7 +34,13 @@ export const group: Group = {
   key's id, the world, the label it was issued under, and whether you may act in production.
   Then which worlds the key opens there: a person's key opens the sandbox without --prod and
   production with it, while their production switch is on; a server's token opens the one world
-  its prefix names. The key itself is neither printed nor sent anywhere else.`,
+  its prefix names. The key itself is neither printed nor sent anywhere else.
+
+  Examples
+    $ pinecall whoami
+    gateway https://cloud.pinecall.io · key from .env · sandbox
+      org clinica · key k_4f2a1d9c66b30e17 · sandbox · ana-macbook · production: yes
+      a person's key: the sandbox without --prod, production with it`,
   run,
 };
 

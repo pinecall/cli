@@ -52,7 +52,13 @@ export const group: Group = {
   --name <app>       which app: this folder's name unless given (lower-case words and dashes)
   --note '…'         why, kept with the release
   --no-follow        upload and return, without waiting for it to go live
-  --follow           with logs: keep printing the lines that come, until Ctrl-C`,
+  --follow           with logs: keep printing the lines that come, until Ctrl-C
+
+  Examples
+    ~/acme-support $ pinecall deploy --prod --note "reads the order's eta back"
+    acme-support: release 4 sent · 38 KB · 3b507661b052
+    acme-support: the box installs and starts it; the release before keeps answering meanwhile
+    acme-support: release 4 is live`,
   run,
 };
 

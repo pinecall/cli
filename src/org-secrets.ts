@@ -29,7 +29,13 @@ export const group: Group = {
   list          the secrets' names, who set each and when
   set <NAME>    keep one; the same name again replaces it. Capitals, digits and underscores, never
                 starting with PINECALL_: Pinecall sets those itself
-  rm <NAME>     the secret dropped`,
+  rm <NAME>     the secret dropped
+
+  Examples
+    $ printf %s "$CRM_TOKEN" | pinecall secrets set CRM_TOKEN --prod
+    CRM_TOKEN kept · the org's hosted apps here start again with it
+    $ pinecall secrets --prod
+    CRM_TOKEN   2026-09-30 13:22  m_ana`,
   run,
 };
 

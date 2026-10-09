@@ -29,7 +29,13 @@ export const group: Group = {
   header — never from a flag: a key in argv is a key in \`ps\` and in the shell history. --pii
   lets a span carry what was said and what a tool got; without it the words are stripped before
   export and the timings, tokens and names stay. The gateway keeps the headers sealed and never
-  reads them back: the bare verb prints the URL and the headers' names. clear stops the export.`,
+  reads them back: the bare verb prints the URL and the headers' names. clear stops the export.
+
+  Examples
+    $ printf %s "$DD_API_KEY" | pinecall telemetry set https://otlp.datadoghq.eu/v1/traces --header dd-api-key
+    traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key
+    $ pinecall telemetry
+    traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key · words stripped`,
   run,
 };
 

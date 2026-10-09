@@ -229,6 +229,15 @@ describe("`pinecall --help` names every verb there is, and nothing else", () => 
   });
 });
 
+// A reader learns a verb from what it prints: every help page shows the verb run, with its output.
+describe("every built verb's help shows an example of it run", () => {
+  it.each(builtNames())("%s", async (name) => {
+    const quiet = collected();
+    await main([name, "--help"], quiet.stream, quiet.stream);
+    expect(quiet.text()).toContain("\n  Examples\n    $ pinecall ");
+  });
+});
+
 // The dispatcher prints `usage` under the purpose, so every verb needs one for --help.
 describe("every built verb has a help page", () => {
   it("prints its usage under its purpose, and the usage names the verb", async () => {

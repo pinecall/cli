@@ -30,7 +30,16 @@ export const group: Group = {
   else, not a value, not a prefix, not a fingerprint. The one door that does read a key back is
   the worker's — GET /v1/agents/<slug>/provider-keys, an org's own keys to an org's own process,
   on that org's key — and it is the whole reason the vault exists. A key that was lost is set
-  again.`,
+  again.
+
+  Examples
+    $ pinecall providers --does tts
+    vendor        does         standing   variable              also known as
+    livekit       llm,stt,tts  ready                            inference lk
+    cartesia      stt,tts      no key     CARTESIA_API_KEY
+    elevenlabs    stt,tts      ready      ELEVEN_API_KEY        11labs eleven elevenlab
+    rime          tts          no key     RIME_API_KEY
+    speechmatics  stt,tts      no plugin  SPEECHMATICS_API_KEY`,
   run,
 };
 

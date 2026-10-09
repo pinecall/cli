@@ -53,7 +53,19 @@ export const group: Group = {
 
   policy is what the agent keeps about a caller and what it never does — the org's to say, set in
   the world beside the agent's other settings (\`pinecall agent\`), and a supervisor's or a
-  manager's key opens it. With nothing typed it prints the policy of the three corners.`,
+  manager's key opens it. With nothing typed it prints the policy of the three corners.
+
+  Examples
+    $ pinecall memory policy --team --remember alergias --remember "médico habitual" --forget pagos
+    clinica-norte · sandbox
+      yours       v9 · nothing remembered
+      team        v5
+        remember  alergias
+        remember  médico habitual
+        forget    pagos
+      production  v3 · nothing remembered
+    $ pinecall memory +34600000001
+    nothing remembered about +34600000001`,
   run,
 };
 

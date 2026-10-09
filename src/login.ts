@@ -24,7 +24,17 @@ export const group: Group = {
   The key is the machine's sign-in, kept in ~/.pinecall/session.json (0600; PINECALL_HOME moves
   it), and no verb runs on it: a project runs on the key \`pinecall link\` writes into its own
   .env. \`link\` signs the machine in itself when it is not, so this is rarely typed. A server has
-  no login at all: a server's token from Tokens, in its secrets as PINECALL_KEY.`,
+  no login at all: a server's token from Tokens, in its secrets as PINECALL_KEY.
+
+  Examples
+    $ pinecall login
+    gateway  https://cloud.pinecall.io   (the default — \`pinecall login <url>\` for your own)
+
+    open this to sign in:
+    https://cloud.pinecall.io/cli?c=cli_…
+
+    waiting…
+    signed in to https://cloud.pinecall.io as Ana García`,
   run: login,
 };
 

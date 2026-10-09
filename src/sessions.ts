@@ -38,7 +38,27 @@ export const group: Group = {
   With a call id: that call whole — the same facts, and the SCORE, one line per judge that ran
   over it with the question it answered and its own reasoning when it did not hold.
 
-  The judging is ring 4's, at hang-up, in the gateway. This verb reads it back; it runs nothing.`,
+  The judging is ring 4's, at hang-up, in the gateway. This verb reads it back; it runs nothing.
+
+  Examples
+    $ pinecall sessions --limit 3
+    clinica-norte · 3 calls
+
+    ● call_314b0306e2a64daba6b6dbab129540c0  web inbound     16m 27s  live                    —
+      call_df5aaa81ac7142f5a2c6f9b77033d23e  web inbound         31s  caller_hung_up    $0.0000  Clínica Norte, good morning…
+      call_29d7c7b6cdd643de9c659984a0125c8c  web inbound          3s  caller_hung_up    $0.0205  Perfect. On Thursday we have…
+
+    $ pinecall sessions call_5b1f0e9d2c7a4e8f9a1b3c5d7e9f1a2b
+    call_5b1f0e9d2c7a4e8f9a1b3c5d7e9f1a2b
+
+      outcome   Understood, Ana. Your Thursday appointment at ten with Dr. Vidal stands for now.
+      ended     caller_hung_up · 1m 24s · 4 turns
+      cost      $0.0505
+                api.anthropic.com claude-haiku-5-5           17,621 input_tokens       $0.0018
+                api.anthropic.com claude-haiku-5-5           312 output_tokens         $0.0002
+                Cartesia sonic-3                             623 characters            $0.0312
+                Deepgram flux-general-multi                  80.6 audio_seconds        $0.0105
+                twilio twilio-inbound/+1                     2 minutes                 $0.0068`,
   run,
 };
 

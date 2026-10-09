@@ -53,7 +53,16 @@ export const group: Group = {
   {asks, expects}, where expects is the heading path the answer should carry — and prints
   recall@k and nDCG@10, computed by code with no model in the loop, plus every question it
   missed and what came back instead. A golden is fixed and the index is the variable: never
-  soften a question so a change can pass.`,
+  soften a question so a change can pass.
+
+  Examples
+    $ pinecall docs push
+    clinica-norte · 7 files · 41 chunks · 812 ms      # base · sent · became · took
+
+    $ pinecall docs attach clinica-norte --k 4
+    clinica-norte · clinica-norte attached · your corner v4
+    $ pinecall docs attached
+    clinica-norte · read by clinica-norte`,
   run,
 };
 

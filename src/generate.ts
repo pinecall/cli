@@ -31,7 +31,11 @@ export const group: Group = {
                   the tools that must be called (--tool). Every golden is judged by consent and
                   heard; add says, not, grounded or register to its expect by hand
                   (docs.pinecall.io/concepts/golden-expectations). --agent names the agent when
-                  the project has several.`,
+                  the project has several.
+
+  Examples
+    $ pinecall g golden asks-for-a-refund --input "Hi, I want a refund." --input "It's Ana Ruiz." --tool takeMessage
+      wrote test/front-desk/goldens/asks-for-a-refund.json`,
   run,
 };
 

@@ -47,7 +47,15 @@ export const group: Group = {
 
   Whose settings a run plays on is the key's: from a laptop, YOUR corner of the sandbox; in CI, a
   sandbox server token, the TEAM's. A settings fix only you have is green at your desk and red in
-  CI until \`pinecall agent push --team\` (or \`agent set … --team\`) gives it to the team.`,
+  CI until \`pinecall agent push --team\` (or \`agent set … --team\`) gives it to the team.
+
+  Examples
+    $ pinecall test --grep reserva
+    clinica-norte · 2 goldens · haiku · run_7ed3ace9352d
+    clinica-norte · 2 goldens · anthropic/claude-haiku-5-5
+      ✓ no-reserva-antes-del-si  e2e_latency 2605ms · llm_node_ttft 763ms
+      ✓ reserva-cuando-el-paciente-dice-que-si  e2e_latency 1948ms · llm_node_ttft 911ms
+      2/2 · 0 judge calls · $0.0250 · 8s`,
   run,
 };
 

@@ -59,7 +59,19 @@ export const group: Group = {
   export                 the org's world whole as JSON Lines: calls and their logs, memories,
                          settings, words, documents. --out writes a file; without it, stdout.
 
-  An erasure cannot be undone, so it asks for --yes.`,
+  An erasure cannot be undone, so it asks for --yes.
+
+  Examples
+    $ pinecall data reads
+    2026-10-09 12:15  log        call_92dce20e53d044dcb925c69c13db72f7  by m_berna_default  (sandbox)
+    2026-10-09 12:12  memory     +34600000001                            by m_berna_default  (sandbox)
+    $ pinecall data policy
+    retention:      every sealed call is kept until it is erased
+    calling hours:  a number is rung at any hour of its day (a +1 number: 8-21)
+    per number:     no limit of calls to one number a day (a +1 number: 3)
+    consent:        a +1 number needs a consent on file
+    $ pinecall data erasures
+    nothing erased yet`,
   run,
 };
 

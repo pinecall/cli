@@ -45,7 +45,14 @@ export const group: Group = {
   --outbound-username is given. \`add\` with an account the org already holds replaces its secret.
   A peer's networks wait for Pinecall's operator before 5060 opens to them; \`show\` says where each
   one stands. An account's id is its own: Twilio's account SID, the peer's username, Meta's phone
-  number id. \`drop\` forgets an account and leaves its numbers routed until each is dropped.`,
+  number id. \`drop\` forgets an account and leaves its numbers routed until each is dropped.
+
+  Examples
+    $ pinecall carriers add twilio --account-sid AC0123… --user SK4567… --label Clínica
+    Twilio secret (the API key's, or the auth token):
+    kept: AC0123… · twilio · Clínica
+      route one of its numbers: \`pinecall numbers import <+34…> --agent <slug>\`
+    $ pinecall numbers import +34910000000 --agent clinica-norte`,
   run,
 };
 

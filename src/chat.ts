@@ -38,7 +38,14 @@ export const group: Group = {
   --state file    the state the call opens in — the same goldens file \`pinecall prompt\` reads
   --case n        which case of that file, when it holds several
   --events        one JSON line per log entry instead of the lines, for a pipe
-  --inspect       Node's own flag, given to the agent's process (a TypeScript agent's alone)`,
+  --inspect       Node's own flag, given to the agent's process (a TypeScript agent's alone)
+
+  Examples
+    $ pinecall chat --as +34600000001
+    ‹ hi, I'd like to change my Thursday appointment
+    › Of course. Could I have your full name and phone number?
+
+    $ pinecall chat clinica-norte`,
   run,
 };
 

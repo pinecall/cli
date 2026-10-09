@@ -39,7 +39,21 @@ export const group: Group = {
   --org                the org's judges, asked of every agent's calls
   --agent <name>  which agent's own, when the project holds more than one; the project's one
                        agent when neither is given
-  --json               the list as the gateway answered it`,
+  --json               the list as the gateway answered it
+
+  Examples
+    $ pinecall judges add offers-next-slot --asks "The agent offered the next free slot before the caller asked twice."
+    offers-next-slot written · 1 judge(s)
+
+    $ pinecall judges add names-the-doctor --asks "The agent named the doctor of the appointment." --on simulations
+    names-the-doctor written · 2 judge(s)
+
+    $ pinecall judges
+    names-the-doctor  simulations  The agent named the doctor of the appointment.
+    offers-next-slot  every call   The agent offered the next free slot before the caller asked twice.
+
+    $ pinecall judges add never-medical-advice --org --asks "The agent gave no medical advice: it booked or referred."
+    never-medical-advice written · 1 judge(s)`,
   run,
 };
 

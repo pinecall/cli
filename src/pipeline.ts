@@ -23,7 +23,19 @@ export const group: Group = {
 
   Setting them is \`pinecall agent set\`: the six are fields of the agent's settings now, with the
   opening, the cut of a turn, what is remembered and the bases beside them, per corner and
-  versioned. \`pinecall providers\` lists every vendor a stage may be moved onto.`,
+  versioned. \`pinecall providers\` lists every vendor a stage may be moved onto.
+
+  Examples
+    $ pinecall pipeline
+    clinica-norte · 9 calls
+
+      hears     soniox · es
+      decides   anthropic · claude-haiku-5-5
+      speaks    elevenlabs · EXAVITQu4vr4xnSDxMaL · es
+
+      greeting  "Clínica Norte, good morning. How can I help you?"
+
+      transcription_delay 0.39s · end_of_turn_delay 0.41s · llm_node_ttft 0.86s · e2e_latency 2.36s`,
   run,
 };
 

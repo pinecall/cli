@@ -29,7 +29,14 @@ export const group: Group = {
   Each case costs ONE model call, the very one a hang-up makes, run by the gateway on the org's
   own keys against the agent a process this terminal starts is holding. Every answer is judged by code: a category
   is the class's own word, a value is a literal, a supersession is an id — never one sentence
-  compared to another, because two ways of writing one fact are one fact.`,
+  compared to another, because two ways of writing one fact are one fact.
+
+  Examples
+    $ pinecall remember
+    clinica-norte · anthropic/claude-haiku-5-5 · 3 cases · 3 held · 5445 ms
+      ✓ anota la alergia y nunca la tarjeta
+      ✓ la mañana sustituye a la tarde, no convive con ella
+      ✓ ni guarda un permiso ni borra lo que nadie desmintió`,
   run,
 };
 

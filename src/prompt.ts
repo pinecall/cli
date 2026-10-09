@@ -30,7 +30,18 @@ export const group: Group = {
                   without it, the state the class opens a call in
   --case n        which case of that file, when it holds several (default 0)
   --channel name  the call the prompt is for, which picks its <channel> block (default phone)
-  --medium how    voice or text; without it, the one the channel implies (whatsapp is text)`,
+  --medium how    voice or text; without it, the one the channel implies (whatsapp is text)
+
+  Examples
+    $ pinecall prompt --state test/clinica-norte/goldens/identifica-al-paciente.json
+    ── identity (static) ──
+    You are the front desk of Clínica Norte. Formal, short sentences. …
+
+    ── knowledge (static) ──
+
+    ── tools (static) ──
+    <tools>
+    - findPatient: Finds the patient's file … `,
   run,
 };
 

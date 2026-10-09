@@ -1067,6 +1067,20 @@ pinecall lexicon history [--agent <slug>] [--team]
                                         … and any of them with --prod, in production
 ```
 
+```console
+$ pinecall lexicon add DKV --say "de ka uve"
+lexicon · sandbox · your corner
+  said     DKV → "de ka uve"
+  heard    —
+$ pinecall lexicon hear "Vidal Ferrán"
+lexicon · sandbox · your corner
+  said     DKV → "de ka uve"
+  heard    Vidal Ferrán
+$ pinecall lexicon history
+lexicon · sandbox · corner m_berna_default
+  v3 · m_berna_default · 2026-10-09 12:18   said 1 · heard 1
+```
+
 An agent's words: its `says` and `hears`, which the class never sets. The agent is the one of
 this directory, or the one `--agent` names by its slug, as [`agent`](#agent) names it. Whole and
 versioned like the settings, per corner, with the same `--team` and the same refusal when the
@@ -1110,6 +1124,15 @@ and `clear` say so and exit 2. `pinecall providers` lists every vendor a stage m
 
 ```
 pinecall supervise <call>
+```
+
+```console
+$ pinecall supervise call_daab0b5d567c49968adc52e8d44c248c
+call_daab0b5d567c49968adc52e8d44c248c · the audio of a live call is the console, which has a room — `pinecall start` prints its URL; this is the transcript and the desk
+> s Hello from the desk, I am taking over for a moment.
+> w
+not a move. w · s · t · x · e · q
+> q
 ```
 
 The call's transcript as it happens, and one line to move on it:
@@ -1331,6 +1354,12 @@ cartesia --tts-model sonic-3 --voice <id>`: a model tried with `--model` is kept
 pinecall callbacks [--agent <slug>] [--after <cursor>]
 ```
 
+```console
+$ pinecall callbacks
+gateway https://cloud.pinecall.io · key from .env · sandbox
+nobody is waiting for a call back
+```
+
 The numbers people left when every seat of the fleet was taken: a phone caller the overflow agent
 answered, or a web visitor who left a number at the widget after `POST /v1/tokens` answered `503`.
 One line each — when, the agent, the number, the channel, who took it — oldest first, and a
@@ -1357,6 +1386,19 @@ pinecall data policy [--retention-days <n> | --keep-all] [--calling-hours <from>
 pinecall data consent <number> [--give express|written --source '…' [--text '…'] [--evidence '…'] | --opt-out]
 pinecall data dnc [list [--after <cursor>] | add <number>… --source '…' | import <file> --source '…']
 pinecall data export [--out <file.jsonl>]
+```
+
+```console
+$ pinecall data reads
+2026-10-09 12:15  log        call_92dce20e53d044dcb925c69c13db72f7  by m_berna_default  (sandbox)
+2026-10-09 12:12  memory     +34600000001                            by m_berna_default  (sandbox)
+$ pinecall data policy
+retention:      every sealed call is kept until it is erased
+calling hours:  a number is rung at any hour of its day (a +1 number: 8-21)
+per number:     no limit of calls to one number a day (a +1 number: 3)
+consent:        a +1 number needs a consent on file
+$ pinecall data erasures
+nothing erased yet
 ```
 
 What the org keeps in the environment the key acts in (`--prod` for production), and taking it out.
@@ -1523,6 +1565,15 @@ pinecall mcp
 pinecall mcp install [--list | --remove]
 ```
 
+```console
+$ pinecall mcp install --list
+assistants on this machine:
+  Claude Code     registered      /Users/berna/.claude.json
+  Claude Desktop  registered      /Users/berna/Library/Application Support/Claude/claude_desktop_config.json
+  Codex           registered      /Users/berna/.codex/config.toml
+  Cursor          not installed   /Users/berna/.cursor/mcp.json
+```
+
 With nothing after it, the MCP server on stdin and stdout, for an assistant to launch. Its tools
 sign this machine in, link a project and write a new one; they act in the sandbox, and in
 production when a tool is asked with `prod: true` — the org's switch still decides. It starts no
@@ -1617,6 +1668,19 @@ pinecall memory policy [--agent <slug>] [--remember '…' …] [--forget '…' �
 pinecall memory eval [golden.json] [--k <n>] [--agent <name>] [--file agent.tsx]
 ```
 
+```console
+$ pinecall memory policy --team --remember alergias --remember "médico habitual" --forget pagos
+clinica-norte · sandbox
+  yours       v9 · nothing remembered
+  team        v5
+    remember  alergias
+    remember  médico habitual
+    forget    pagos
+  production  v3 · nothing remembered
+$ pinecall memory +34600000001
+nothing remembered about +34600000001
+```
+
 Everything memory kept about one contact — the caller's number, or the id the app named — with the
 current facts first and the ones a later call superseded dimmed, with the date they stopped
 holding. `forget` erases all of it, the right to be forgotten; on a terminal it asks once, and
@@ -1636,6 +1700,14 @@ contact of yours is read or written — they go to a scratch contact and are del
 
 ```
 pinecall remember [paths] [--agent <name>] [--file agent.tsx] [--grep x] [--json]
+```
+
+```console
+$ pinecall remember
+clinica-norte · anthropic/claude-haiku-5-5 · 3 cases · 3 held · 5445 ms
+  ✓ anota la alergia y nunca la tarjeta
+  ✓ la mañana sustituye a la tarde, no convive con ella
+  ✓ ni guarda un permiso ni borra lo que nadie desmintió
 ```
 
 The cases are `test/<name>/memory/`, one file per call written down.

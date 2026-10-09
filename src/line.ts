@@ -32,7 +32,17 @@ export const group: Group = {
   need either word.
 
   The agent is the one in this directory; at the root of a project of several, \`claim\`,
-  \`release\` and the bare \`line\` take --agent <name>. \`from\` and \`forget\` are about your phone.`,
+  \`release\` and the bare \`line\` take --agent <name>. \`from\` and \`forget\` are about your phone.
+
+  Examples
+    $ pinecall line from +59899111111
+    calls from +59899111111 reach this terminal
+
+    $ pinecall line
+    rings in berna@clinica.test · \`pinecall line from <+your-number>\` routes yours, or \`claim\` takes it
+
+    $ pinecall line claim
+    rings in this terminal · also running: berna@clinica.test`,
   run,
 };
 

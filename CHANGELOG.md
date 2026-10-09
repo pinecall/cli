@@ -6,6 +6,13 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.44] — every verb's help shows it run
+
+### Added
+
+- `pinecall <verb> --help` ends with Examples: the verb run, with what it prints, taken from the
+  reference page's own console blocks — `docs`, `memory`, `lexicon` and every other verb.
+
 ## [0.9.43] — traces to your own collector
 
 ### Added

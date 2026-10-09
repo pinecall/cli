@@ -47,7 +47,16 @@ export const group: Group = {
                        The project's one agent when it holds one; push reads that agent's files
   --file agent.tsx     which class, when the directory holds more than one
   --json               what the gateway answered — the caller for show, the roster for the rest.
-                       try prints a call as it happens and refuses the flag`,
+                       try prints a call as it happens and refuses the flag
+
+  Examples
+    $ pinecall personas
+    hurried       short sentences, interrupts, gives just what is asked     move the appointment to Tuesday
+    suspicious    polite and wary, answers with another question             find out the price of a crown
+
+    $ pinecall personas add price-shopper --goal "get a price for a deep clean" \\
+        --style "blunt, impatient" --fact "their name=Tom Baker"
+    price-shopper written · 3 persona(s)`,
   run,
 };
 

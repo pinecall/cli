@@ -41,7 +41,15 @@ export const group: Group = {
 ${MOVES.map(([key, what]) => `    ${key.padEnd(11)} ${what}`).join("\n")}
 
   Every move lands in the caller's own log as its own \`supervisor.*\` entry with a seq, so what a
-  human did to a call is read the same way as what the agent did. ${ON_THE_SPEAKERS}.`,
+  human did to a call is read the same way as what the agent did. ${ON_THE_SPEAKERS}.
+
+  Examples
+    $ pinecall supervise call_daab0b5d567c49968adc52e8d44c248c
+    call_daab0b5d567c49968adc52e8d44c248c · the audio of a live call is the console, which has a room — \`pinecall start\` prints its URL; this is the transcript and the desk
+    > s Hello from the desk, I am taking over for a moment.
+    > w
+    not a move. w · s · t · x · e · q
+    > q`,
   run,
 };
 

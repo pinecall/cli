@@ -32,7 +32,12 @@ export const group: Group = {
 
   Every callback.requested this org's agents wrote — a phone caller the overflow agent answered,
   one the agent's own tool promised a call back, or a web visitor who left a number at the widget — oldest first, with the cursor the next page
-  starts at. The runtime records them; dialing back is your app's.`,
+  starts at. The runtime records them; dialing back is your app's.
+
+  Examples
+    $ pinecall callbacks
+    gateway https://cloud.pinecall.io · key from .env · sandbox
+    nobody is waiting for a call back`,
   run,
 };
 

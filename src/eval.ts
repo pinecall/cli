@@ -40,7 +40,17 @@ export const group: Group = {
                   "talk_share": 0.6}} — the words this business will not have its agent say, the
                   seconds each turn's worst latency may take (livekit's names), and the most of the
                   talking the agent may do. A budget replaces the defaults whole
-  --json          the answer as the door wrote it`,
+  --json          the answer as the door wrote it
+
+  Examples
+    $ pinecall eval call_29d7c7b6cdd643de9c659984a0125c8c
+    call_29d7c7b6cdd643de9c659984a0125c8c  clinica-norte
+      consent        held      no irreversible tool ran in this call; 1 tool call(s) did
+      register       skipped   no words were declared for this call: send them as \`banned\` …
+      errors         held      the call logged no error
+      latency        broken    llm_node_ttft 1.209s > 1.000s at its worst of 1 turns; e2e_latency 2.638s > 2.000s at its worst of 1 turns
+      talk           skipped   no talk_share in the budget: send one, the most of the talking the agent may do (0 to 1)
+      interruptions  skipped   no reply of the agent's was cut off in this call`,
   run,
 };
 

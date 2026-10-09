@@ -44,7 +44,29 @@ export const group: Group = {
   forget <name>    the case dropped; the call it came from stays
 
   --agent <name>   whose cases, when the project holds more than one agent
-  --json           what the gateway answered`,
+  --json           what the gateway answered
+
+  Examples
+    $ pinecall cases
+    1 waiting of at most 50
+    pending    promises-youll-call-me-tomorrow-29d7c7  promises  production  3h
+    approved   thursday-afternoon                      —         sandbox     2d
+
+    $ pinecall cases show promises-youll-call-me-tomorrow-29d7c7
+    promises-youll-call-me-tomorrow-29d7c7 · pending · clinica-norte
+      from call_29d7c7b6cdd643de9c659984a0125c8c (production, settings v4) · kept by the hang-up panel · 2026-10-08 11:02
+
+      broke
+        promises  it promised a call back nobody will make
+      the caller
+        "You'll call me tomorrow about Thursday, then"
+      state   {"stage":"book"}
+      today   2026-10-08
+      expect  {"judges":["promises"]}
+
+      pinecall test --case promises-youll-call-me-tomorrow-29d7c7     play it again through the agent this terminal serves
+      pinecall cases approve promises-youll-call-me-tomorrow-29d7c7   the nightly plays it from now on
+      pinecall cases dismiss promises-youll-call-me-tomorrow-29d7c7   nothing to fix; --judge-was-wrong <judge> when the judge was`,
   run,
 };
 

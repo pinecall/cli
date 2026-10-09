@@ -25,7 +25,15 @@ export const group: Group = {
   is written: the server reads the project's .env.
 
   --list     every assistant, and whether Pinecall is in it; changes nothing
-  --remove   take Pinecall out of every assistant`,
+  --remove   take Pinecall out of every assistant
+
+  Examples
+    $ pinecall mcp install --list
+    assistants on this machine:
+      Claude Code     registered      /Users/berna/.claude.json
+      Claude Desktop  registered      /Users/berna/Library/Application Support/Claude/claude_desktop_config.json
+      Codex           registered      /Users/berna/.codex/config.toml
+      Cursor          not installed   /Users/berna/.cursor/mcp.json`,
   run,
 };
 

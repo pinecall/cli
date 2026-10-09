@@ -27,7 +27,12 @@ export const group: Group = {
           again. A call that held gives an empty expect, and you write what it must keep doing.
           --from-seq cuts the call: the state as it stood there, and every caller turn after it
   drift   each judge's held-rate over two windows of finished calls, and the points between
-          them. Exits 1 when a judge fell further than --threshold allows`,
+          them. Exits 1 when a judge fell further than --threshold allows
+
+  Examples
+    $ pinecall runs list --limit 3
+    run_8a8870b59bc1  2026-09-11 12:47:23  clinica-norte     done     1/1
+    run_5c6b559d6093  2026-09-11 11:56:49  clinica-norte     done     2/2`,
   run,
 };
 

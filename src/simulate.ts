@@ -33,7 +33,19 @@ export const group: Group = {
   --packet-loss       the share of the caller's packets that never arrive, 0 to 1. Spoken runs only
   --agent <name>      which agent of a project of several plays the other half
   --file agent.tsx    which class to serve, when the directory holds more than one
-  --inspect           Node's own flag, given to the agent's process (a TypeScript agent's alone)`,
+  --inspect           Node's own flag, given to the agent's process (a TypeScript agent's alone)
+
+  Examples
+    $ pinecall simulate --persona hurried --listen --turns 2
+    --listen is a call with audio in it: --voice is on
+    hurried · move the appointment to Tuesday afternoon, giving no more than needed
+      listening as sup_edb03d90e627 · ffplay
+    › Clínica Norte, good morning.  How can I help you?   tts_node_ttfb 127ms
+    ‹ Hi, I need to move my Thursday appointment with Dr. Vidal to Tuesday afternoon.
+    → freeSlots({"day":"Tuesday"})
+    ← freeSlots [{"when":"Tuesday at ten","doctor":"Dr. Vidal"},{…
+    › Here are Tuesday's free slots. …   llm_node_ttft 1681ms  tts_node_ttfb 127ms
+      call_6123e7d7deb875e2e9be7686 · 2 caller turn(s) · 3 agent turn(s) · a clean line`,
   run,
 };
 

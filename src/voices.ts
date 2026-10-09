@@ -37,7 +37,17 @@ export const group: Group = {
   add), and on Pinecall's otherwise. --save keeps the WAV where you say.
 
   The voice it plays is chosen with pinecall agent set --tts <vendor> --tts-model <model> --voice
-  <id>: the model you tried with --model is not kept unless --tts-model says it too.`,
+  <id>: the model you tried with --model is not kept unless --tts-model says it too.
+
+  Examples
+    $ pinecall voices --language es --country ES
+    a7beff01-8f8b-4809-bfe6-e2166e57e0c2  Iria - Thoughtful Communicator  feminine   ES castilian
+    de38f545-c574-44e8-9b54-a7d6fec1c6b1  Marta - Friendly Guide          feminine   ES castilian
+    35b2cfc1-e6fb-4d69-a598-c1780612be4a  Darío - Steady Operator         masculine  ES castilian
+    $ pinecall voices --tts rime
+    rime lists no voices: its voice is the vendor's own id, set as it is — these list theirs: cartesia, elevenlabs, inworld, nvidia, speechify (--tts <vendor>)
+    $ pinecall voices play de38f545-c574-44e8-9b54-a7d6fec1c6b1 "Hi, this is Clínica Norte's assistant." --language en
+    de38f545-c574-44e8-9b54-a7d6fec1c6b1 · first audio 578 ms · whole sentence 915 ms · afplay`,
   run,
 };
 

@@ -43,7 +43,18 @@ export const group: Group = {
   --show-prompt  the prompt a fresh instance would produce, then exit. No key, no gateway
   --events       the agent's process's lines as it prints them, one JSON entry each, for a pipe
   --ui           the full-screen terminal view; keys: p pause · c clear · e events · q quit
-  --inspect      Node's own flag, given to the agent's process (a TypeScript agent's alone)`,
+  --inspect      Node's own flag, given to the agent's process (a TypeScript agent's alone)
+
+  Examples
+    $ pinecall start
+    clinica-norte · clinica · sandbox · connected to https://cloud.pinecall.io · key from .env · tools 4
+    console  https://cloud.pinecall.io/sandbox/a/clinica-norte?login=lc_9f2   (opens within five minutes, once)
+    doors    web · phone +34910000000
+    line     rings in this terminal · also running: carla@clinica.test
+    › Clínica Norte, good morning. How can I help you?
+    ‹ I'd like to change an appointment
+    → findPatient({"name":"Ana García","phone":"600000001"})
+    ← findPatient {"id":"p-1041","appointment":"Thursday at ten"}`,
   run,
 };
 

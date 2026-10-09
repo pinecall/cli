@@ -33,7 +33,20 @@ export const group: Group = {
 
   A supervisor's or a manager's key opens this door: the person who hears a word said wrong forty
   times a day fixes it, without a developer and without a deploy — with --prod, in production,
-  when their org lets them act there.`,
+  when their org lets them act there.
+
+  Examples
+    $ pinecall lexicon add DKV --say "de ka uve"
+    lexicon · sandbox · your corner
+      said     DKV → "de ka uve"
+      heard    —
+    $ pinecall lexicon hear "Vidal Ferrán"
+    lexicon · sandbox · your corner
+      said     DKV → "de ka uve"
+      heard    Vidal Ferrán
+    $ pinecall lexicon history
+    lexicon · sandbox · corner m_berna_default
+      v3 · m_berna_default · 2026-10-09 12:18   said 1 · heard 1`,
   run,
 };
 

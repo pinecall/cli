@@ -47,7 +47,15 @@ export const group: Group = {
   \`import\` takes a number the org's carrier account already owns and points it here: the
   carrier's trunk, the SFU's trunk, the route — \`--dry-run\` prints those steps and writes
   nothing. \`drop\` forgets the route and takes the number off the SFU trunk; the carrier account
-  keeps it, so nobody is un-bought by a typo.`,
+  keeps it, so nobody is un-bought by a typo.
+
+  Examples
+    $ pinecall carriers add twilio --account-sid AC0123… --user SK4567…   # once, the secret on stdin
+    $ pinecall numbers import +34910000000 --agent clinica-norte          # the number, to the agent
+
+    $ pinecall numbers available --prod
+    +13158182774 · (315) 818-2774 · AC5f7c… · routed here
+    +16814413619 · (681) 441-3619 · AC5f7c… · not routed here`,
   run,
 };
 
