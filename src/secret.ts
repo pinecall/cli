@@ -31,6 +31,18 @@ export async function aLineOfStdin(): Promise<string> {
   return "";
 }
 
+/**
+ * Piped stdin as one line per call, in order: the pipe is read once, since a second readline over
+ * the same stdin finds what the first one buffered gone. A line past the last is "".
+ */
+export function linesOfStdin(input: NodeJS.ReadableStream = process.stdin): () => Promise<string> {
+  let lines: Promise<string[]> | undefined;
+  return async () => {
+    lines ??= allOfStdin(input).then((all) => (all === "" ? [] : all.split(/\r?\n/)));
+    return (await lines).shift() ?? "";
+  };
+}
+
 /** The whole of piped stdin, its final newline dropped: a value of several lines, a PEM key. */
 export async function allOfStdin(input: NodeJS.ReadableStream = process.stdin): Promise<string> {
   const chunks: Buffer[] = [];

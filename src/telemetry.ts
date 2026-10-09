@@ -4,7 +4,7 @@ import { parseArgs } from "node:util";
 
 import { theDoor } from "./env.js";
 import type { Group } from "./groups.js";
-import { aLineOfStdin, nobodyIsTyping, typedInSilence } from "./secret.js";
+import { linesOfStdin, nobodyIsTyping, typedInSilence } from "./secret.js";
 import { asked, type Door } from "./testing/gateway.js";
 import { refusal } from "./whoami.js";
 
@@ -63,7 +63,7 @@ export async function run(argv: string[], how: Sending = {}): Promise<number> {
   if (door === undefined) return 2;
   try {
     if (verb === undefined) return await show(door, out);
-    if (verb === "set") return await set(door, rest, how.value ?? valueOf, out, err);
+    if (verb === "set") return await set(door, rest, how.value ?? valuesOf(), out, err);
     if (verb === "clear" && rest.length === 0) return await clear(door, out);
   } catch (refused) {
     err.write(`${refusal(refused)}\n`);
@@ -123,6 +123,8 @@ function described(found: Collector): string {
   return `traces go to ${found.endpoint}${headers}${found.pii ? " · with what was said" : " · words stripped"}`;
 }
 
-async function valueOf(name: string): Promise<string> {
-  return nobodyIsTyping() ? await aLineOfStdin() : await typedInSilence(`${name}: `, process.stderr);
+// Piped, each --header takes the next line; on a terminal, each is asked for without echo.
+function valuesOf(): (name: string) => Promise<string> {
+  const piped = linesOfStdin();
+  return async (name) => (nobodyIsTyping() ? await piped() : await typedInSilence(`${name}: `, process.stderr));
 }
