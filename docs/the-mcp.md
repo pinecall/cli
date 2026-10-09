@@ -106,6 +106,7 @@ Every parameter, and a real call of each: [Calls, and what they run on](mcp/call
 | `call` | — | one call's log, entry by entry, paged by `after`, narrowed by `types` |
 | `pipeline` | — | the vendors and models the agent hears, decides and speaks with, and their latency |
 | `providers` | — | every vendor the gateway can run and whose key a call would use; never a key |
+| `telemetry` | `show` · `clear` | where the org's calls' traces go, its own OTLP collector, and the headers by name; setting one is the person's terminal |
 
 ### The phone
 

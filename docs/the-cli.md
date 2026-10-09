@@ -1719,6 +1719,27 @@ shell would keep it. The gateway keeps it sealed and **nothing reads it back**: 
 who set each and when. Setting or dropping one starts every app of the org in that environment again,
 the old process answering until the new one registers. `rm <NAME>` drops one.
 
+## `telemetry`
+
+```console
+$ printf %s "$DD_API_KEY" | pinecall telemetry set https://otlp.datadoghq.eu/v1/traces --header dd-api-key
+traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key
+$ pinecall telemetry
+traces go to https://otlp.datadoghq.eu/v1/traces · headers dd-api-key · words stripped
+```
+
+Where this org sends its calls' traces: an OpenTelemetry collector of its own — Datadog, Grafana,
+Langfuse, Honeycomb, Cekura, or an OpenTelemetry Collector you run — beside Pinecall's. Every
+call's spans go there over OTLP: the model's requests (`gen_ai.*`: provider, model, tokens, time
+to first token), speech in and out, every tool the agent ran, each span carrying `pinecall.org`,
+`pinecall.env`, `pinecall.agent` and `pinecall.call`, so one call is one trace in your tool.
+`set` takes the URL on the command line and each header's **value** from stdin, one per
+`--header`, in the order named — typed without echo on a terminal, or piped one line per header —
+never from a flag. `--pii` lets a span carry what was said and what a tool got; without it the
+words are stripped before export and the timings, tokens and names stay. The gateway keeps the
+headers sealed and never reads them back: the bare verb prints the URL and the headers' names.
+`clear` stops the export; the traces stay on Pinecall either way.
+
 ## Exit codes
 
 | | |

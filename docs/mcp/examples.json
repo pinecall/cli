@@ -8,8 +8,7 @@
         "environment": "sandbox",
         "key_from": ".env",
         "person": "Ana",
-        "production_allowed_for_this_key": true,
-        "production_allowed_for_this_server": false
+        "production_allowed_for_this_key": true
       }
     }
   ],
@@ -1117,6 +1116,22 @@
         "sent": {
           "verb": "whisper",
           "text": "Offer to have the manager call her back today."
+        }
+      }
+    }
+  ],
+  "telemetry": [
+    {
+      "args": {
+        "action": "show"
+      },
+      "answer": {
+        "collector": {
+          "endpoint": "https://otel.example.com/v1/traces",
+          "header_names": [
+            "x-api-key"
+          ],
+          "pii": false
         }
       }
     }

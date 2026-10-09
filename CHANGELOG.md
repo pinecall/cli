@@ -6,6 +6,16 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.43] — traces to your own collector
+
+### Added
+
+- `pinecall telemetry set <url> [--header <name> …] [--pii]`: where this org sends its calls'
+  traces, an OpenTelemetry collector of its own beside Pinecall's; each header's value is read
+  off stdin, never a flag. The bare verb shows it by header name, `clear` stops it. The MCP's
+  `telemetry` tool shows and clears; setting one stays the person's terminal. Needs runtime
+  0.1.12.
+
 ## [0.9.41] — help after a subverb, and remember in a project of several agents
 
 ### Fixed

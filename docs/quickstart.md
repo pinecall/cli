@@ -24,7 +24,7 @@ pinecall --version
 
 :::result
 ```console
-0.9.42
+0.9.43
 ```
 One command, installed once per machine. It serves an agent in any of the three languages.
 :::

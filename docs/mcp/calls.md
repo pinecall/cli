@@ -316,3 +316,31 @@ The vendors an agent may run on: what each does, whether it is ready, and whose 
   }
 }
 ```
+
+## `telemetry`
+
+Where the org sends its calls' traces: its own OpenTelemetry collector, shown or cleared. Setting one is the person's, in a terminal: the headers are a credential.
+
+`telemetry` reads where this org exports every call's spans (OTLP: the model's requests, speech in and out, every tool, each span carrying pinecall.org, pinecall.env, pinecall.agent and pinecall.call) and can stop it. Pointing it somewhere is never a tool, since the collector's headers are a credential: the person types `pinecall telemetry set <url> --header <name>` in a terminal, where each value is read off stdin.
+
+| parameter | takes | | what it is |
+|---|---|---|---|
+| `action` | `show` · `clear` | required | show says where traces go and which headers are set, never their values; clear stops the export |
+
+```json title="called with"
+{
+  "action": "show"
+}
+```
+
+```json title="answered"
+{
+  "collector": {
+    "endpoint": "https://otel.example.com/v1/traces",
+    "header_names": [
+      "x-api-key"
+    ],
+    "pii": false
+  }
+}
+```

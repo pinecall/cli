@@ -24,8 +24,7 @@ Which org, gateway and environment the open project's key acts in, and whether p
   "environment": "sandbox",
   "key_from": ".env",
   "person": "Ana",
-  "production_allowed_for_this_key": true,
-  "production_allowed_for_this_server": false
+  "production_allowed_for_this_key": true
 }
 ```
 
