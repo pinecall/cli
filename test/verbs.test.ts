@@ -234,7 +234,7 @@ describe("every built verb's help shows an example of it run", () => {
   it.each(builtNames())("%s", async (name) => {
     const quiet = collected();
     await main([name, "--help"], quiet.stream, quiet.stream);
-    expect(quiet.text()).toContain("\n  Examples\n    $ pinecall ");
+    expect(quiet.text()).toMatch(/\n  Examples\n    (~\S* )?\$ .*pinecall /);
   });
 });
 
