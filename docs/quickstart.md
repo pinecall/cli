@@ -67,8 +67,10 @@ $ pinecall new front-desk
   pinecall test        its goldens, against a real model
   pinecall start       answer calls
 ```
-`front-desk` is the agent's name on Pinecall and the folder's name. The lines under it are the
-steps that follow. `npm install` (or `uv sync`, `bundle install`) installs the SDK the agent is
+`front-desk` is the agent's name on Pinecall and the folder's name. A name is one org's on a
+gateway: if `pinecall chat` later answers `agent front-desk belongs to another org`, somebody took
+it first — create the project again with a name of your own (`pinecall new ana-front-desk`). The
+lines under it are the steps that follow. `npm install` (or `uv sync`, `bundle install`) installs the SDK the agent is
 written with; the project depends on nothing else.
 :::
 
