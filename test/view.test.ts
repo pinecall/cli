@@ -46,6 +46,11 @@ describe("the metrics line of a turn", () => {
     expect(metricsLine({ e2e_latency: 0.5 })).toBe("e2e_latency 500ms");
     expect(metricsLine({})).toBe("no metrics on this turn");
   });
+
+  it("reads a turn's metrics off the camel-cased event the screen is drawn from", () => {
+    const screen = absorb(screenFor("front-desk", "https://cloud.pinecall.io"), { type: "turn.agent", data: { text: "Hi", metrics: { llmNodeTtft: 0.41, e2eLatency: 1.2 } } } as never);
+    expect(screen.metrics.at(-1)).toBe("e2e_latency 1200ms  llm_node_ttft 410ms");
+  });
 });
 
 describe("the view as a whole", () => {

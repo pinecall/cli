@@ -1,6 +1,7 @@
 /** The live terminal view as pure functions: events in, screen text out. */
 
 import type { CamelEvent } from "@pinecall/agents/client";
+import { toSnake } from "@pinecall/agents/wire";
 
 /** One formatted line and its kind mark. */
 export interface Line {
@@ -50,7 +51,7 @@ export function absorb(screen: Screen, event: CamelEvent): Screen {
       return {
         ...next,
         transcript: keep([...screen.transcript, lineFor(event)!]),
-        metrics: keep([...screen.metrics, metricsLine(event.data.metrics)]),
+        metrics: keep([...screen.metrics, metricsLine(toSnake(event.data.metrics))]),
       };
     case "tool.call":
     case "tool.result":

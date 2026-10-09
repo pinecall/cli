@@ -6,6 +6,14 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.45] — pinecall start shows each turn's latencies
+
+### Fixed
+
+- `pinecall start` printed "no metrics on this turn" under every reply: the screen read the
+  event camel-cased and looked for the wire's names. It now prints `e2e_latency`,
+  `llm_node_ttft` and `tts_node_ttfb` as `pinecall chat` does.
+
 ## [0.9.44] — every verb's help shows it run
 
 ### Added
