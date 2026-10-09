@@ -108,14 +108,12 @@ export function wordsFor(slug: string, template: Template): Record<string, strin
     install: next.install,
     ring0: next.ring0,
     agents: OURS.dependencies["@pinecall/agents"]!,
-    cli: `^${OURS.version}`,
   };
 }
 
-// A new TypeScript project starts on this CLI and the framework it is released with: Pinecall
-// starts a deployed project with the project's own `pinecall start`.
+// A new TypeScript project depends on the framework this CLI is released with, and on nothing of
+// the CLI: the CLI is installed once per machine, and Pinecall starts a deployed project with its own.
 const OURS = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
-  version: string;
   dependencies: Record<string, string>;
 };
 

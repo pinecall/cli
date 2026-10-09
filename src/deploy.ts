@@ -85,11 +85,12 @@ export const NOT_A_NAME = (name: string): string =>
 
 export const NOTHING_TO_SEND = "nothing to send: this folder holds no file a release would carry";
 
-// The box installs the project and runs its own `pinecall start`, which serves through its own framework.
-const SERVED_BY = ["pinecall", "@pinecall/agents"] as const;
+// Pinecall installs the project and starts it with its own `pinecall`, which serves the agent
+// through the framework the project pinned.
+const SERVED_BY = ["@pinecall/agents"] as const;
 
 export const NOT_SERVABLE = (missing: readonly string[]): string =>
-  `Pinecall starts this project with its own \`pinecall start\`, and its package.json does not list ${missing.join(" or ")} in dependencies: npm i ${missing.join(" ")}`;
+  `Pinecall serves this project through its own ${missing.join(" and ")}, and its package.json does not list ${missing.join(" or ")} in dependencies: npm i ${missing.join(" ")}`;
 
 export const NOT_HOSTED = (file: string): string =>
   `Pinecall hosts TypeScript projects, and ${file} is not one: run \`pinecall start\` on a server of your own, with a server's token in PINECALL_KEY`;

@@ -6,6 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.40] — a project depends on its SDK, never on the CLI
+
+### Changed
+
+- A TypeScript project no longer depends on this CLI: `pinecall new` writes `@pinecall/agents` alone under `dependencies`, and `pinecall deploy` asks only for that. The CLI is installed once per machine, `npm i -g pinecall`, and Pinecall starts a deployed project with its own. A project that still lists `pinecall` keeps working.
+
 ## [0.9.39] — a Python agent, served like the other two
 
 ### Added

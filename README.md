@@ -9,19 +9,19 @@ answers its calls — for an agent written in TypeScript
 ## Install
 
 ```bash
-npm i @pinecall/agents pinecall   # a TypeScript project: the framework, and this CLI
-npm i -g pinecall                 # or once for the machine — a Ruby project needs only this
+npm i -g pinecall                 # once per machine, whatever the agent is written in
 ```
 
 The CLI never loads your class. It starts your project's own serve entry — `@pinecall/agents/serve`
-for TypeScript, `Pinecall::Serve` for Ruby — and drives it through the gateway, so the framework
-that runs is the version your project pinned.
+for TypeScript, `Pinecall::Serve` for Ruby, `python -m pinecall.serve` for Python — and drives it
+through the gateway, so the SDK that runs is the version your project pinned. A project depends on
+its SDK, never on this CLI.
 
 ## Quick start
 
 ```bash
-pinecall new front-desk          # or --ruby: a project of one agent, ready for every verb below
-cd front-desk && npm install     # bundle install for Ruby
+pinecall new front-desk          # or --ruby, --python: a project of one agent, ready for every verb below
+cd front-desk && npm install     # bundle install for Ruby, uv sync for Python
 pinecall link        # sign in through the browser; writes your key to ./.env
 pinecall prompt      # the prompt the model reads, offline; --state <golden> for another state
 pinecall chat        # talk to the agent in this terminal

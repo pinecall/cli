@@ -8,8 +8,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@pinecall/agents": "{{agents}}",
-    "pinecall": "{{cli}}"
+    "@pinecall/agents": "{{agents}}"
   },
   "devDependencies": {
     "@types/node": "^26.4.1",

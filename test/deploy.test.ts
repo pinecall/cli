@@ -102,7 +102,7 @@ class FakeGateway {
 function aProject(): string {
   const root = join(mkdtempSync(join(tmpdir(), "pinecall-deploy-")), "support-line");
   mkdirSync(join(root, "agents/support"), { recursive: true });
-  writeFileSync(join(root, "package.json"), '{"dependencies":{"pinecall":"0.9.20","@pinecall/agents":"0.9.20"}}');
+  writeFileSync(join(root, "package.json"), '{"dependencies":{"@pinecall/agents":"0.9.20"}}');
   writeFileSync(join(root, "agents/support/agent.ts"), "export default 1");
   writeFileSync(join(root, ".env"), `PINECALL_KEY=${A_KEY}`);
   return root;
@@ -183,8 +183,8 @@ describe("pinecall deploy", () => {
     expect(gateway.heard).toEqual([]);
   });
 
-  it("refuses a project that does not depend on the CLI and the framework the box starts it with", async () => {
-    writeFileSync(join(cwd, "package.json"), '{"dependencies":{"pinecall":"0.9.20"}}');
+  it("refuses a project that does not depend on the framework Pinecall serves it through", async () => {
+    writeFileSync(join(cwd, "package.json"), '{"dependencies":{"vitest":"5.0.0"}}');
     const err = written();
 
     expect(await deploying([], written(), err)).toBe(2);

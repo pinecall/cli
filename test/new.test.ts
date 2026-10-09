@@ -44,14 +44,14 @@ describe("a TypeScript project", () => {
     expect(agentFilesOfTheProject(root)).toEqual([join(root, "agents/front-desk/agent.tsx")]);
   });
 
-  it("names its class after the slug and depends on this CLI and the framework it is released with", () => {
+  it("names its class after the slug and depends on the framework this CLI is released with, and on nothing else", () => {
     const root = scaffold(join(aFolder(), "front-desk"), "front-desk", "typescript");
     const manifest = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as { name: string; dependencies: Record<string, string> };
-    const ours = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { version: string; dependencies: Record<string, string> };
+    const ours = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as { dependencies: Record<string, string> };
 
     expect(readFileSync(join(root, "agents/front-desk/agent.tsx"), "utf8")).toContain("export default class FrontDesk extends Agent");
     expect(manifest.name).toBe("front-desk");
-    expect(manifest.dependencies).toEqual({ "@pinecall/agents": ours.dependencies["@pinecall/agents"], pinecall: `^${ours.version}` });
+    expect(manifest.dependencies).toEqual({ "@pinecall/agents": ours.dependencies["@pinecall/agents"] });
     expect(filesUnder(root).join("\n")).not.toMatch(/\{\{|__slug__/);
   });
 });

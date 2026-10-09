@@ -12,9 +12,8 @@ and planned ones alike, `pinecall <group> --help` prints that group's flags, and
 (`-v`) prints the version installed.
 
 ```bash
-npm i @pinecall/agents pinecall   # a TypeScript project: the framework, and this CLI
-npx pinecall start                # in the project's directory: the process you deploy
-npm i -g pinecall                 # a Ruby or Python project's CLI, or one for every project
+npm i -g pinecall                 # the CLI, once per machine, for every language
+pinecall start                    # in the project's directory: the process you deploy
 ```
 
 The CLI never loads the framework. A TypeScript agent is served by the project's own
@@ -215,9 +214,9 @@ message with one tool — its ring-0 test, one golden under `test/<name>/goldens
 that keeps `.env` and `.pinecall/` out, and the toolchain: `package.json`, `tsconfig.json` and
 `vitest.config.ts` for TypeScript (the default), a `Gemfile` and a `Rakefile` for `--ruby`, with
 the view in `agents/<name>/views/<name>.erb`, a `pyproject.toml` for `--python` (uv, pytest), with
-the view in `agents/<name>/views/<name>.jinja`. A TypeScript project depends on this CLI and on the
-`@pinecall/agents` it is released with, since the platform starts a deployed project with its own
-`pinecall start`.
+the view in `agents/<name>/views/<name>.jinja`. A project depends on its language's SDK and on
+nothing else: `@pinecall/agents` at the version this CLI is released with, the `pinecall` gem, or
+the `pinecall` package. The CLI is never a dependency of the project.
 
 The name is the agent's slug — lowercase letters, digits and dashes, starting with a letter — and
 the folder must not exist or must be empty. It writes files and nothing else: no key, no install,
@@ -1666,10 +1665,10 @@ is [deploying.md](deploying.md)**; what follows is the verb's reference. What it
   `node_modules`, `.git`, `dist` or any `.env`: the key in `.env` is yours, and the app gets one of
   its own. 10 MB packed at most, 100 MB unpacked, 5 000 files; a link or a path out of the folder is
   refused.
-- **A lockfile, and `pinecall` in the dependencies.** The platform installs from `pnpm-lock.yaml`
-  (`pnpm install --frozen-lockfile --prod`), else `package-lock.json` (`npm ci`), else
-  `package.json`, in five minutes at most; the version of `pinecall` the lockfile pins is the one
-  that runs.
+- **A lockfile, and `@pinecall/agents` in the dependencies.** The platform installs from
+  `pnpm-lock.yaml` (`pnpm install --frozen-lockfile --prod`), else `package-lock.json` (`npm ci`),
+  else `package.json`, in five minutes at most; the version of `@pinecall/agents` the lockfile pins
+  is the one that serves the agent, started by the platform's own `pinecall`.
 - **The app's name**: this folder's name, or `--name`. Lower-case words and dashes. The first
   upload makes the app — counted against the org's `hosted_apps` quota in that environment, and given a
   server's token of its own (`hosted app <name>` in the console's Tokens); every later upload is its
