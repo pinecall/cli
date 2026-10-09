@@ -171,9 +171,9 @@ whose `static slug` says another is refused when it is served, naming both: rena
 
 **The business is not in the repository.** What the agent knows by heart — hours, prices, what
 needs an authorisation — is one field of its settings, per environment and corner, written in the
-console's Settings ▸ Knowledge or with [`pinecall agent knowledge edit`](#agent-knowledge), and
+console's Configure ▸ General (its Knowledge section) or with [`pinecall agent knowledge edit`](#agent-knowledge), and
 read whole into the prompt on every call. Nor are the documents a turn searches: they are a base,
-written in the console's Settings ▸ Docs, and a local `docs/<name>/` is only what `docs push` sends
+written in the console's Knowledge ▸ Docs, and a local `docs/<name>/` is only what `docs push` sends
 when no directory is named. A class
 that still carries a voice, a model, an opening, a memory policy, a knowledge file or a base is
 refused at load, and the refusal names the verb that sets it now
@@ -1608,7 +1608,7 @@ pinecall docs attached
 directory — a local `docs/<name>/` of the agent when none is named, never tracked by the
 repository — and sends the folder **whole** to
 `PUT /v1/knowledge/<base>`: the base is replaced, never merged, so a push after documents were
-added in the console's Settings ▸ Docs takes them out. It starts a base; the console keeps it. At a project's root with nothing
+added in the console's Knowledge ▸ Docs takes them out. It starts a base; the console keeps it. At a project's root with nothing
 typed, `push` and `eval` act on every agent that has documents or a golden, and name the rest. The
 base is the agent's slug unless `--base` says otherwise. What the agent knows *by heart* is not a
 document and is never pushed: it is [`pinecall agent knowledge`](#agent-knowledge).
