@@ -6,8 +6,12 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.41] — help after a subverb, and remember in a project of several agents
+
 ### Fixed
 
+- `--help` after a subverb (`pinecall memory policy --help`) prints the group's help instead of
+  refusing an unknown flag.
 - `pinecall remember` in a project of several agents says to name one with `--agent`, instead of
   claiming the project has no extraction goldens.
 

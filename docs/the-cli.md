@@ -8,8 +8,8 @@ can do too. Which environment a verb acts in, and what is yours against what is 
 
 One module per group, imported only when it is asked for: `pinecall prompt` must not pay for a
 websocket client. `pinecall` with nothing after it prints the whole CLI on one screen, built verbs
-and planned ones alike, `pinecall <group> --help` prints that group's flags, and `pinecall --version`
-(`-v`) prints the version installed.
+and planned ones alike; `pinecall <group> --help` prints that group's flags, after a subverb too
+(`pinecall memory policy --help`); and `pinecall --version` (`-v`) prints the version installed.
 
 ```bash
 npm i -g pinecall                 # the CLI, once per machine, for every language

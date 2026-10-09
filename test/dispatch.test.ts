@@ -85,6 +85,14 @@ describe("the groups the CLI answers to", () => {
     expect(out.text()).not.toContain("--open");
   });
 
+  it("prints the group's help when --help comes after a subverb", async () => {
+    const out = collected();
+
+    expect(await main(["memory", "policy", "--help"], out.stream)).toBe(0);
+
+    expect(out.text()).toContain("pinecall memory policy");
+  });
+
   it("marks every planned group as such in the usage, so no verb reads as built", () => {
     for (const [name, purpose] of Object.entries(PLANNED)) {
       expect(usage()).toContain(`${name.padEnd(10)}${purpose} — not built yet`);

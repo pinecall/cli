@@ -24,7 +24,7 @@ npm i -g pinecall
 :::result
 ```console
 $ pinecall --version
-0.9.40
+0.9.41
 ```
 One command, installed once per machine. It serves an agent in any of the three languages.
 :::

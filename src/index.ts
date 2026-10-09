@@ -49,7 +49,7 @@ export async function main(
     err.write(`pinecall: ${name} reaches no gateway, so --prod names nothing it could ask\n`);
     return 2;
   }
-  if (rest[0] === "--help" || rest[0] === "-h") {
+  if (asksForHelp(rest)) {
     out.write(helpFor(name, group));
     return 0;
   }
@@ -62,6 +62,12 @@ export async function main(
     // 2: usage error, retrying cannot help. 1: a check failed or the gateway refused.
     return failed instanceof CannotRun || isAnUnknownFlag(failed) ? 2 : 1;
   }
+}
+
+/** `--help` after a subverb (`memory policy --help`) asks for the group's help too; after `--` it is an argument. */
+function asksForHelp(rest: string[]): boolean {
+  const flags = rest.includes("--") ? rest.slice(0, rest.indexOf("--")) : rest;
+  return flags.includes("--help") || flags.includes("-h");
 }
 
 // Lazy imports keep light verbs like `prompt` from loading the websocket client.
