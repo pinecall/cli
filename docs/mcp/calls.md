@@ -13,7 +13,7 @@ The agent's newest calls: each one's id, channel, length, how it ended, its cost
 |---|---|---|---|
 | `agent` | text |  | the agent's name; the project's only agent when left out |
 | `limit` | a whole number 1–100 |  | how many, newest first; 20 when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -62,7 +62,7 @@ One call's log, entry by entry — every turn, tool call, result, state change, 
 | `after` | a whole number 0 or more |  | only entries after this seq: the `next` of the page before |
 | `limit` | a whole number 1–500 |  | entries in this page; 200 when left out |
 | `types` | a list of texts |  | only these entry types, such as turn.agent or call.score |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -140,7 +140,7 @@ What the agent hears, decides and speaks with — the vendors and models of each
 | parameter | takes | | what it is |
 |---|---|---|---|
 | `agent` | text |  | the agent's name; the project's only agent when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {}
@@ -244,7 +244,7 @@ The vendors an agent may run on: what each does, whether it is ready, and whose 
 
 | parameter | takes | | what it is |
 |---|---|---|---|
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {}

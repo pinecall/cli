@@ -11,7 +11,7 @@ Which org, gateway and environment the open project's key acts in, and whether p
 
 | parameter | takes | | what it is |
 |---|---|---|---|
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {}

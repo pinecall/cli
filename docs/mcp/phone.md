@@ -14,7 +14,7 @@ Who answers the agent's number right now and who could take it; which phone is t
 | `action` | `show` · `from` · `forget` · `claim` · `release` | required | show whose process a ring lands in; from says which phone is the person's own; forget drops it; claim takes the line for this copy; release gives it back |
 | `agent` | text |  | the agent's name; the project's only agent when left out |
 | `number` | text |  | `from`: the person's own phone, in +E.164 |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -51,7 +51,7 @@ The org's numbers and the agent each reaches; the numbers its carrier account ow
 | `channel` | `phone` · `whatsapp` |  | `import`: phone unless it is a WhatsApp number |
 | `account` | text |  | `available`: one carrier account, when the org has several |
 | `dry_run` | true or false |  | `import`: true (the default) prints the steps and writes nothing; false does them |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -92,7 +92,7 @@ The org's carrier accounts — Twilio, a SIP peer, WhatsApp — and one account'
 |---|---|---|---|
 | `action` | `list` · `show` | required | list the org's carrier accounts, or show one |
 | `account` | text |  | `show`: the account's id |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -123,7 +123,7 @@ The callers waiting to be called back, oldest first: who, on which channel, thro
 |---|---|---|---|
 | `agent` | text |  | only this agent's |
 | `after` | a whole number 0 or more |  | where the page before ended |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {}

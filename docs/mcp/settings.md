@@ -20,7 +20,7 @@ The agent's settings — voice, models, language, greeting, memory policy, knowl
 | `version` | a whole number 1 or more |  | `rollback`: the version to bring back |
 | `text` | text |  | `knowledge`: what the agent knows by heart, written whole; read when left out; empty takes it out |
 | `note` | text |  | a note kept with the version written |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -71,7 +71,7 @@ The agent's words: how its voice says one (`add`), the words its ears must catch
 | `words` | a list of texts |  | `hear` and `rm`: the words |
 | `team` | true or false |  | write the team's lexicon instead of your own |
 | `note` | text |  | a note kept with the version written |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -116,7 +116,7 @@ A voice vendor's voices in a language: the id an agent's voice setting takes, th
 | `tts` | text |  | the vendor; the gateway's own voice vendor when left out |
 | `language` | text |  | a language tag: en, es, pt-BR… |
 | `country` | text |  | only voices from this country: ES, MX, US… |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -173,7 +173,7 @@ Have the gateway say a line in a voice, as a call would, and save it as a WAV th
 | `tts` | text |  | the vendor; the gateway's own voice vendor when left out |
 | `model` | text |  | the vendor's model |
 | `language` | text |  | a language tag |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {

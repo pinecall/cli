@@ -100,11 +100,11 @@ export function aServedProject(key: string, url: string): string {
 export const NOTHING_BESIDE: MakesBeside = () => ({ connect: async () => undefined, close: async () => undefined });
 
 /** A client talking to a fresh server in memory, its home a temp folder so no real sign-in is read. */
-export async function aClient(production = false, trace?: Trace): Promise<{ client: Client; home: string }> {
+export async function aClient(trace?: Trace): Promise<{ client: Client; home: string }> {
   const home = mkdtempSync(join(tmpdir(), "pinecall-home-"));
   const env = { PINECALL_HOME: home };
-  const session = new Session(env, production, async () => [], NOTHING_BESIDE);
-  const server = serverOf("0.0.0-test", env, production, { session, ...(trace === undefined ? {} : { trace }) });
+  const session = new Session(env, async () => [], NOTHING_BESIDE);
+  const server = serverOf("0.0.0-test", env, { session, ...(trace === undefined ? {} : { trace }) });
   const [ours, theirs] = InMemoryTransport.createLinkedPair();
   const client = new Client({ name: "a-test", version: "0" });
   await Promise.all([server.connect(theirs), client.connect(ours)]);

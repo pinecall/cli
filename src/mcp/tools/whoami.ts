@@ -20,7 +20,6 @@ export const whoami = tool({
       key_from: door.source,
       person: who.name ?? who.label ?? null,
       production_allowed_for_this_key: who.production === true,
-      production_allowed_for_this_server: session.production,
     };
   },
 });

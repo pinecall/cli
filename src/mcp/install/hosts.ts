@@ -24,7 +24,7 @@ export interface Host {
   desktop?: true;
 }
 
-/** The command an assistant launches: the published CLI, as the server; with --prod when a person allowed production. */
+/** The command an assistant launches: the published CLI, as the server. */
 export interface Entry {
   command: string;
   args: string[];
@@ -64,8 +64,8 @@ export function installed(host: Host): boolean {
  * that pins an older `pinecall`, npx would run that one, which has no `mcp`, and the assistant
  * would only see the connection close. No key is ever written here: the server reads the project's.
  */
-export function entryFor(host: Host, production: boolean): Entry {
-  const args = ["-y", PACKAGE, "mcp", ...(production ? ["--prod"] : [])];
+export function entryFor(host: Host): Entry {
+  const args = ["-y", PACKAGE, "mcp"];
   const nodes = dirname(process.execPath);
   const beside = join(nodes, process.platform === "win32" ? "npx.cmd" : "npx");
   if (host.desktop !== true || !existsSync(beside)) return { command: "npx", args };

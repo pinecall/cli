@@ -18,7 +18,7 @@ The documents the agent searches: a folder pushed as a base, attached to the age
 | `mode` | `retrieved` · `tool` |  | `attach`: searched before every turn, or a tool the model calls |
 | `min_score` | a number 0–1 |  | `attach`: chunks under this share of the best one are dropped |
 | `team` | true or false |  | `attach` and `detach`: in the team's settings instead of your own |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -49,7 +49,7 @@ What the agent remembers about a caller, what it is told to keep and never keep,
 | `remember` | a list of texts |  | `policy`: what is worth keeping about a caller, in your own words, one phrase each |
 | `forget` | a list of texts |  | `policy`: what is never kept |
 | `k` | a whole number 1–50 |  | `eval`: how many facts a turn recalls |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {

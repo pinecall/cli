@@ -19,7 +19,7 @@ A live call, as a supervisor's desk sees it: its transcript as it happens (`watc
 | `reason` | text |  | `end`: why, kept in the call's log |
 | `after` | a whole number 0 or more |  | `watch`: the `next` the answer before ended at; the call's beginning when left out |
 | `wait_s` | a whole number 0–50 |  | how long to wait before answering what is known so far, in seconds; 25 when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {

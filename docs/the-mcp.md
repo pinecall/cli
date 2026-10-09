@@ -28,7 +28,6 @@ its config when it started. No key is written anywhere: the server reads the ope
 |---|---|
 | `--list` | every assistant, whether it is installed, and whether Pinecall is in it; changes nothing |
 | `--remove` | takes Pinecall out of every assistant |
-| `--prod` | writes `--prod` into each entry, so a tool asked with `prod: true` acts in production; your org's switch still decides |
 
 | assistant | file |
 |---|---|
@@ -52,8 +51,8 @@ the one `pinecall` itself reads: `PINECALL_KEY` from the environment, else from 
 ## The tools
 
 Every tool acts in the sandbox. The tools that open the project's door take `prod: true` to act
-in production instead: a server installed with `--prod` does, and any other refuses it in one
-sentence that names the flag. The tools that act on the agent held (`chat`, `test`, `simulate`,
+in production instead, on any server: the org's own switch, and the key's rights, decide there, as
+they do for `pinecall … --prod`. The tools that act on the agent held (`chat`, `test`, `simulate`,
 `remember`) follow the world it was started in. A long one (`login`, `test`, `simulate`,
 `deploy`) answers within `wait_s` seconds (25 unless asked, at most 50) with what it has and says
 how to keep waiting, so no host gives up on it.

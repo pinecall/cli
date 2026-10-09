@@ -30,11 +30,11 @@ export interface Serving {
   trace?: Trace;
 }
 
-/** A server over these tools, its session in the sandbox unless `production` was allowed. */
-export function serverOf(version: string, env: NodeJS.ProcessEnv, production: boolean, how: Serving = {}): McpServer {
+/** A server over these tools, one session for its life. */
+export function serverOf(version: string, env: NodeJS.ProcessEnv, how: Serving = {}): McpServer {
   const stages = how.stages ?? STAGES;
   const server = new McpServer({ name: "pinecall", version }, { instructions: instructions(stages) });
-  const session = how.session ?? new Session(env, production, () => declaredRoots(server));
+  const session = how.session ?? new Session(env, () => declaredRoots(server));
   const trace = how.trace ?? (() => undefined);
   for (const one of stages.flatMap((stage) => stage.tools)) {
     // The manual rides the description: the one place a host shows the model what a tool is for.
@@ -46,9 +46,9 @@ export function serverOf(version: string, env: NodeJS.ProcessEnv, production: bo
 }
 
 /** Serve on this process's stdin and stdout until the host closes them: stdout is the protocol, and nothing else writes to it. */
-export async function serve(version: string, env: NodeJS.ProcessEnv, production: boolean, transport: Transport = onStdio()): Promise<void> {
-  const session = new Session(env, production, () => declaredRoots(server));
-  const server = serverOf(version, env, production, { session, trace: (line) => process.stderr.write(`${line}\n`) });
+export async function serve(version: string, env: NodeJS.ProcessEnv, transport: Transport = onStdio()): Promise<void> {
+  const session = new Session(env, () => declaredRoots(server));
+  const server = serverOf(version, env, { session, trace: (line) => process.stderr.write(`${line}\n`) });
   const closed = new Promise<void>((ended) => (server.server.onclose = ended));
   await server.connect(transport);
   await closed;

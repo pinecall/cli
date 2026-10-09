@@ -16,7 +16,7 @@ Run the project on Pinecall: a release uploaded and followed until live; the app
 | `note` | text |  | `deploy`: a note kept with the release |
 | `release` | a whole number 1 or more |  | `wait`: the release to wait for; `rollback`: the release whose sources are sent again |
 | `wait_s` | a whole number 0–50 |  | how long to wait before answering what is known so far, in seconds; 25 when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {

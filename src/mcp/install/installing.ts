@@ -11,13 +11,13 @@ export interface Done {
 }
 
 /** Write (or remove) Pinecall's entry in every installed assistant; an absent one is skipped, a broken file reported. */
-export function installEverywhere(production: boolean, remove: boolean, home?: string): Done[] {
+export function installEverywhere(remove: boolean, home?: string): Done[] {
   return hosts(home).map((host): Done => {
     if (!installed(host)) return { host, did: "not installed" };
     const was = registered(host);
     if (remove && !was) return { host, did: "not there" };
     try {
-      written(host, remove ? null : entryFor(host, production));
+      written(host, remove ? null : entryFor(host));
       return { host, did: remove ? "removed" : was ? "replaced" : "added" };
     } catch (failed) {
       return { host, did: "failed", why: failed instanceof Error ? failed.message : String(failed) };

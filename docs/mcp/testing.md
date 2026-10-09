@@ -114,7 +114,7 @@ The suites the gateway kept: the newest, one run's matrix, what moved between tw
 | `window_days` | a number 1 or more |  | `drift`: the recent window, 7 days when left out |
 | `baseline_days` | a number 1 or more |  | `drift`: the days before it compared against, 30 when left out; longer than the window |
 | `threshold` | a number 0 or more |  | `drift`: the drop in points that counts, 10 when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -167,7 +167,7 @@ The org's dataset: real calls kept as cases — the inbox, one case whole, appro
 | `held_out` | true or false |  | `keep`: played only when a run names it, never by the nightly |
 | `judge_was_wrong` | text |  | `dismiss`: the judge that broke and should have held, kept as a calibration label of the call |
 | `note` | text |  | `dismiss`: why, kept on that label; only beside judge_was_wrong |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -325,7 +325,7 @@ The agent's simulated callers: listed, shown, written (a goal, a manner, facts, 
 | `llm` | text |  | the model that plays them; the runtime's when left out |
 | `voice` | text |  | their voice on a spoken call |
 | `rename` | text |  | `edit`: a new name |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -380,7 +380,7 @@ Your own judges: a question asked of the agent's calls (or every agent's, with `
 | `name` | text |  | the judge's name: lowercase letters, digits and dashes |
 | `asks` | text |  | `add`: the question, settled held or broken with the whole call in front of the judge model |
 | `on` | `every-call` · `simulations` |  | `add`: which calls it reads; every call when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {
@@ -415,7 +415,7 @@ Check one finished call again by code: consent, banned words, errors, latency, t
 | `call` | text | required | the call's id |
 | `banned` | a list of texts |  | words the agent must not say |
 | `budget` | an object |  | seconds per latency (e2e_latency, llm_node_ttft, tts_node_ttfb), talk_share 0..1; replaces the defaults whole |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {

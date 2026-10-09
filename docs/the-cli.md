@@ -1519,13 +1519,14 @@ gateway https://cloud.pinecall.io · key from .env · sandbox
 ## `mcp`
 
 ```
-pinecall mcp [--prod]
-pinecall mcp install [--list | --remove] [--prod]
+pinecall mcp
+pinecall mcp install [--list | --remove]
 ```
 
 With nothing after it, the MCP server on stdin and stdout, for an assistant to launch. Its tools
 sign this machine in, link a project and write a new one; they act in the sandbox, and in
-production only on a server started with `--prod`. It starts no process of its own, and no answer
+production when a tool is asked with `prod: true` — the org's switch still decides. It starts no
+process of its own, and no answer
 carries a key. `install` writes `npx -y pinecall@latest mcp` into every assistant installed here, copying
 each file to `.bak` first and leaving every other entry and comment as it was; `--list` changes
 nothing, `--remove` takes it out. Every tool, and every assistant's file:

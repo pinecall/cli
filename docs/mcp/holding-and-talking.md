@@ -12,7 +12,7 @@ Hold the project's agent so it answers calls: in a thread of this server, reload
 | parameter | takes | | what it is |
 |---|---|---|---|
 | `agent` | text |  | the agent's name; the project's only agent when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {}
@@ -226,7 +226,7 @@ A link that opens the console signed in, on the org's floor or on one agent: goo
 | parameter | takes | | what it is |
 |---|---|---|---|
 | `agent` | text |  | open on this agent's screens; the org's floor when left out |
-| `prod` | true or false |  | act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides |
+| `prod` | true or false |  | act in production instead of the sandbox; the org's own switch decides whether this key may |
 
 ```json title="called with"
 {

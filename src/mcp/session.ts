@@ -1,4 +1,4 @@
-/** One MCP server's state: the project it works in, the door it knocks at, and whether production was allowed. */
+/** One MCP server's state: the project it works in, the door it knocks at, and what it holds. */
 
 import { existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -18,8 +18,6 @@ export const NO_PROJECT =
   "no project open: call `project` with action `open` and the folder's path, or `new` to write one";
 export const NO_KEY_HERE = (root: string): string =>
   `no PINECALL_KEY for ${root}: call \`link\` to write one into its .env (it asks you to \`login\` first when this machine is not signed in)`;
-export const NO_PRODUCTION =
-  "this server acts in the sandbox only: production needs `pinecall mcp install --prod`, typed by a person in a terminal";
 export const STOP_FIRST = (held: string[]): string => `stop the agents held first (${held.join(", ")}): a project is opened with nothing running`;
 
 /** A sign-in in flight: the link a person opens, and how it ended once it did. */
@@ -47,8 +45,6 @@ export class Session {
 
   constructor(
     readonly env: NodeJS.ProcessEnv,
-    /** The server was started with --prod: a tool may then act in production. */
-    readonly production: boolean,
     /** The roots the host declared, asked once and only when the host supports them. */
     private readonly declared: () => Promise<string[]>,
     /** What answers the console beside an agent held in a thread; the server's companion unless a test says otherwise. */
@@ -110,9 +106,8 @@ export class Session {
     await Promise.allSettled([...this.held.values()].map((held) => held.stop()));
   }
 
-  /** The project's door: its key, in the sandbox unless production was asked and allowed. */
+  /** The project's door: its key, in the sandbox, or in production when the tool asked; the org's switch decides there. */
   async door(prod = false): Promise<Open> {
-    if (prod && !this.production) throw new Refused(NO_PRODUCTION);
     const root = await this.project();
     const { apiKey, ...held } = keyFrom(this.env, root);
     if (apiKey === undefined) throw new Refused(NO_KEY_HERE(root));

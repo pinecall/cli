@@ -62,8 +62,8 @@ describe("installing everywhere", () => {
     writeFileSync(join(home, ".claude.json"), JSON.stringify({ theme: "dark" }));
     mkdirSync(join(home, ".codex"));
 
-    const first = installEverywhere(false, false, home);
-    const again = installEverywhere(false, false, home);
+    const first = installEverywhere(false, home);
+    const again = installEverywhere(false, home);
 
     expect(first.filter((one) => one.did === "added").map((one) => one.host.name).sort()).toEqual(["claude", "codex"]);
     expect(again.filter((one) => one.did === "replaced").map((one) => one.host.name).sort()).toEqual(["claude", "codex"]);
@@ -75,32 +75,32 @@ describe("installing everywhere", () => {
   it("names the newest published CLI, never the bare name a project's older copy would answer to", () => {
     const [claude] = hosts(mkdtempSync(join(tmpdir(), "pinecall-hosts-")));
 
-    expect(entryFor(claude!, false).args[1]).toBe("pinecall@latest");
+    expect(entryFor(claude!).args[1]).toBe("pinecall@latest");
   });
 
   it("gives a desktop app npx by its full path and node's folder on its PATH, which it launches without", () => {
     const desktop = hosts(mkdtempSync(join(tmpdir(), "pinecall-hosts-"))).find((one) => one.name === "claude-desktop")!;
 
-    const entry = entryFor(desktop, false);
+    const entry = entryFor(desktop);
 
     expect(entry.command).toBe(join(dirname(process.execPath), "npx"));
     expect(entry.env?.PATH.split(":")[0]).toBe(dirname(process.execPath));
   });
 
-  it("never writes a key, and carries --prod only when a person asked for it", () => {
+  it("never writes a key, and starts the server with nothing but mcp: it acts in both worlds", () => {
     const [claude] = hosts(mkdtempSync(join(tmpdir(), "pinecall-hosts-")));
 
-    expect(JSON.stringify(entryFor(claude!, false))).not.toMatch(/KEY|key/);
-    expect(entryFor(claude!, true).args).toEqual(["-y", "pinecall@latest", "mcp", "--prod"]);
+    expect(JSON.stringify(entryFor(claude!))).not.toMatch(/KEY|key/);
+    expect(entryFor(claude!).args).toEqual(["-y", "pinecall@latest", "mcp"]);
   });
 
   it("takes Pinecall out again, and lists every assistant with its state", () => {
     const home = mkdtempSync(join(tmpdir(), "pinecall-hosts-"));
     mkdirSync(join(home, ".cursor"));
-    installEverywhere(false, false, home);
+    installEverywhere(false, home);
 
     expect(listed(home).find((line) => line.includes("Cursor"))).toContain("registered");
-    expect(installEverywhere(false, true, home).find((one) => one.host.name === "cursor")?.did).toBe("removed");
+    expect(installEverywhere(true, home).find((one) => one.host.name === "cursor")?.did).toBe("removed");
     expect(listed(home).find((line) => line.includes("Cursor"))).toContain("not registered");
   });
 });

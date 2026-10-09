@@ -12,8 +12,8 @@ the agent → \`chat\` talks to it, \`test\` runs its goldens, \`simulate\` play
 \`supervise\` watches a live call and moves on it → \`console_url\` opens the console for the person.
 \`docs_search\` and \`get_doc\` read docs.pinecall.io: read a page whole before writing code from it.
 
-Every tool acts in the sandbox. A server a person installed with \`pinecall mcp install --prod\`
-takes \`prod: true\` on a tool, and the org's own switch still decides; any other server refuses it.
+Every tool acts in the sandbox, and in production when asked with \`prod: true\`; the org's own
+switch still decides whether the key may.
 
 A tool that runs long (\`login\`, \`test\`, \`simulate\`, \`deploy\`) answers within \`wait_s\` seconds
 (25 unless asked, at most 50) with what it has, and says how to keep waiting.

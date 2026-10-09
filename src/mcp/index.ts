@@ -7,7 +7,8 @@ import { version } from "../version.js";
 import { PRODUCTION, theChosenWorld } from "../world.js";
 import { installEverywhere, listed, reported } from "./install/installing.js";
 
-const USAGE = "usage: pinecall mcp [--prod]\n       pinecall mcp install [--list | --remove] [--prod]";
+const BOTH_WORLDS = "pinecall mcp acts in both worlds: a tool asks for production with prod: true";
+const USAGE = "usage: pinecall mcp\n       pinecall mcp install [--list | --remove]";
 
 export const group: Group = {
   purpose: "the MCP server an assistant runs this CLI as, and `install`, which adds it to every assistant here",
@@ -15,8 +16,8 @@ export const group: Group = {
 
   With nothing after it, the MCP server on stdin and stdout, for an assistant to launch: the tools
   sign this machine in, link a project, and (as they land) hold the agent, chat with it, test it.
-  It starts no process of its own. Every tool acts in the sandbox; started with --prod, a tool
-  may ask for production, and your org's switch still decides.
+  It starts no process of its own. Every tool acts in the sandbox, and in production when asked
+  with prod: true; your org's switch still decides.
 
   install writes \`npx -y pinecall@latest mcp\` into every assistant installed here — Claude Code,
   Claude Desktop, Codex, Cursor, Windsurf, Antigravity, Gemini CLI — replacing an older entry,
@@ -24,20 +25,22 @@ export const group: Group = {
   is written: the server reads the project's .env.
 
   --list     every assistant, and whether Pinecall is in it; changes nothing
-  --remove   take Pinecall out of every assistant
-  --prod     the server may act in production (install writes the flag into each entry)`,
+  --remove   take Pinecall out of every assistant`,
   run,
 };
 
 export async function run(argv: string[], out: NodeJS.WritableStream = process.stdout): Promise<number> {
-  const production = theChosenWorld() === PRODUCTION;
+  if (theChosenWorld() === PRODUCTION) {
+    process.stderr.write(`${BOTH_WORLDS}\n`);
+    return 2;
+  }
   if (argv[0] === "install") {
     const { values } = parseArgs({ args: argv.slice(1), options: { list: { type: "boolean" }, remove: { type: "boolean" } } });
     if (values.list === true) {
       out.write(`assistants on this machine:\n${listed().join("\n")}\n`);
       return 0;
     }
-    const done = installEverywhere(production, values.remove === true);
+    const done = installEverywhere(values.remove === true);
     out.write(`${reported(done, values.remove === true).join("\n")}\n`);
     return done.some((one) => one.did === "failed") ? 1 : 0;
   }
@@ -47,6 +50,6 @@ export async function run(argv: string[], out: NodeJS.WritableStream = process.s
   }
   // The SDK is loaded only here: `pinecall prompt` must not pay for it.
   const { serve } = await import("./server.js");
-  await serve(version(), process.env, production);
+  await serve(version(), process.env);
   return 0;
 }

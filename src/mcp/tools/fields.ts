@@ -5,11 +5,11 @@ import { z } from "zod";
 /** Which agent of the project, when it has several. */
 export const AGENT = z.string().optional().describe("the agent's name; the project's only agent when left out");
 
-/** Production instead of the sandbox: refused by a server a person did not install with `--prod`. */
+/** Production instead of the sandbox; the org's switch says whether this key may. */
 export const PROD = z
   .boolean()
   .optional()
-  .describe("act in production instead of the sandbox; only a server installed with `pinecall mcp install --prod` may, and the org's own switch still decides");
+  .describe("act in production instead of the sandbox; the org's own switch decides whether this key may");
 
 /** How long a tool that runs long waits before answering what it has. */
 export const WAIT_S = 25;
