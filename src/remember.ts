@@ -9,7 +9,7 @@ import { whileServing, type Spawns } from "./child.js";
 
 import { theDoor } from "./env.js";
 import type { Group } from "./groups.js";
-import { AGENT_FLAG, oneHome } from "./home.js";
+import { AGENT_FLAG, agentFilesOfTheProject, oneHome } from "./home.js";
 import { servingOne } from "./language.js";
 import { extracted } from "./testing/gateway.js";
 import { CASES, casesIn, matching, NO_CASES } from "./testing/goldens.js";
@@ -61,8 +61,12 @@ export async function run(argv: string[], how: Running = {}): Promise<number> {
   });
   const door = await theDoor(how.env ?? process.env, err);
   if (door === undefined) return 2;
-  // Outside an agent folder, fall back to the default path so the error says where cases belong.
-  const home = await oneHome("remember", values.file, values.agent).catch(() => undefined);
+  // Outside an agent folder, fall back to the default path so the error says where cases belong;
+  // a project of several agents is told to name one, not where cases belong.
+  const home = await oneHome("remember", values.file, values.agent).catch((refused: unknown) => {
+    if (agentFilesOfTheProject().length > 1) throw refused;
+    return undefined;
+  });
   const folder = home?.memoryCases ?? CASES;
   const paths = positionals.length > 0 ? positionals : [folder];
   if (positionals.length === 0 && !existsSync(folder)) {

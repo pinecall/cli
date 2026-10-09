@@ -6,6 +6,11 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- `pinecall remember` in a project of several agents says to name one with `--agent`, instead of
+  claiming the project has no extraction goldens.
+
 ## [0.9.40] — a project depends on its SDK, never on the CLI
 
 ### Changed

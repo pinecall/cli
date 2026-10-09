@@ -1622,6 +1622,11 @@ holding. `forget` erases all of it, the right to be forgotten; on a terminal it 
 prints how many facts went. With nobody at a terminal — a script, CI — it erases only with
 `--yes`, as `data erase` does, and exits 2 without it; `--yes` also skips the question.
 
+`policy` alone prints what the agent remembers and forgets, corner by corner; with flags it writes
+yours (`--team` the team's). Each category is its own flag — `--remember allergies --remember
+'preferred name'` — and the policy written replaces the one before it. To take yours out so the
+team's holds again: `pinecall agent clear memory`.
+
 `eval` holds **recall** to a golden of `{holds, asks, expects}` — `test/<name>/goldens/memory.json`:
 each question brings its own facts, so no
 contact of yours is read or written — they go to a scratch contact and are deleted again.

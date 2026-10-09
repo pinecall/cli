@@ -126,6 +126,21 @@ describe("what remember needs before it can ask", () => {
     expect(code).toBe(2);
     expect(said.text()).toContain(NO_CASES);
   });
+
+  it("tells a project of several agents to name one, not where cases belong", async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), "pinecall-two-")));
+    for (const name of ["front-desk", "night-line"]) {
+      mkdirSync(join(root, "agents", name), { recursive: true });
+      writeFileSync(join(root, "agents", name, "agent.tsx"), "");
+    }
+    const previous = process.cwd();
+    process.chdir(root);
+
+    const asked = run([], { env: pointingAt(gateway.url, A_KEY) });
+
+    await expect(asked).rejects.toThrow("remember talks to one agent and this project has 2: add --agent front-desk or --agent night-line");
+    process.chdir(previous);
+  });
 });
 
 describe("the agent the extraction reads", () => {
