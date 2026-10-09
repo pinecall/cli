@@ -92,7 +92,7 @@ describe("a Python project", () => {
     ]);
     expect(readFileSync(join(root, "agents/front-desk/agent.py"), "utf8")).toContain("class FrontDesk(Agent):");
     expect(readFileSync(join(root, "agents/front-desk/views/front-desk.jinja"), "utf8")).toContain("{{ message.name }}");
-    expect(readFileSync(join(root, "pyproject.toml"), "utf8")).toContain('dependencies = ["pinecall>=0.2,<1"]');
+    expect(readFileSync(join(root, "pyproject.toml"), "utf8")).toContain('dependencies = ["pinecall>=0.1.6,<1"]');
     expect(readFileSync(join(root, ".gitignore"), "utf8")).toMatch(/^\.venv\/$/m);
     expect(agentFilesOfTheProject(root)).toEqual([join(root, "agents/front-desk/agent.py")]);
   });

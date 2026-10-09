@@ -3,7 +3,7 @@ name = "{{slug}}"
 version = "0.1.0"
 description = "{{Title}}: a Pinecall agent in Python."
 requires-python = ">=3.11"
-dependencies = ["pinecall>=0.2,<1"]
+dependencies = ["pinecall>=0.1.6,<1"]
 
 [dependency-groups]
 dev = ["pytest>=8"]

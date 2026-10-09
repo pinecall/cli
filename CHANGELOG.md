@@ -6,9 +6,11 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.39] — a Python agent, served like the other two
+
 ### Added
 
-- A Python agent: `pinecall new <name> --python` and `generate agent --python` write a uv project (`pyproject.toml`, `agents/<name>/agent.py`, its view in Jinja, a pytest ring 0), and `start`, `chat`, `test` and `prompt` serve it through `python -m pinecall.serve`, with the project's `.venv/bin/python` when it has one. `--inspect` is refused for it, as for Ruby, and `deploy` says to run it on a server of your own. The template depends on PyPI `pinecall>=0.2`, the Python SDK, which is not published yet.
+- A Python agent: `pinecall new <name> --python` and `generate agent --python` write a uv project (`pyproject.toml`, `agents/<name>/agent.py`, its view in Jinja, a pytest ring 0), and `start`, `chat`, `test` and `prompt` serve it through `python -m pinecall.serve`, with the project's `.venv/bin/python` when it has one. `--inspect` is refused for it, as for Ruby, and `deploy` says to run it on a server of your own. The template depends on PyPI `pinecall>=0.1.6`, the Python SDK.
 - `pinecall mcp`: `project new` and `generate` take `language: python`; a Python agent is attached to, as a Ruby one is.
 
 ## [0.9.38] — cases: a call a judge broke on, kept, fixed and decided
