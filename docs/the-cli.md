@@ -906,12 +906,13 @@ pinecall agent list · stop <app>
 pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--temperature n] [--language en|es|pt-BR…]
                    [--llm-builds Class] [--llm-option key=value …] [--stt-builds Class] [--stt-option key=value …]
                    [--tts-builds Class] [--tts-option key=value …]
-                   [--greeting '…' | --reply '…'] [--hangup '…'] [--endpointing-ms n] [--min-interruption-words n]
+                   [--greeting '…' | --greeting improvise[:'…']] [--greeting-interruptible on|off]
+                   [--hangup '…' | --hangup any] [--end-of-turn stt|livekit|smart-turn] [--endpointing-ms n] [--min-interruption-words n]
                    [--eot-threshold 0.5-0.9] [--eager-eot-threshold 0.3-0.9] [--record on|off]
                    [--max-duration 1-60|off]
                    [--remember '…' …] [--forget '…' …] [--team] [--note '…']
 pinecall agent knowledge [--team] · knowledge edit [--team] [--note '…']
-pinecall agent clear [voice|tts|tts-model|stt|llm|temperature|llm-builds|llm-options|stt-builds|stt-options|tts-builds|tts-options
+pinecall agent clear [voice|tts|tts-model|stt|end-of-turn|llm|temperature|llm-builds|llm-options|stt-builds|stt-options|tts-builds|tts-options
                       |language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]
 pinecall agent history [--team] · diff [--against team|production] · rollback <version> [--team]
 pinecall agent pull [--team] · push <file> [--team]
@@ -951,8 +952,17 @@ fields; the site's *Settings in the class*), and **what the class declares wins*
 refused, nothing saved, in the gateway's sentence: `voice set by the class of clinica-norte: the
 class's declaration wins over these settings, so change it there, or take it out of the class to set
 it here`. `--tts` and `--tts-model` are the class's `voice`; `--temperature`, `--llm-builds` and
-`--llm-option` its `llm`; `--stt-builds` and `--stt-option` its `stt`. Which fields are fixed is
+`--llm-option` its `llm`; `--stt-builds`, `--stt-option` and `--end-of-turn` its `stt`. Which fields are fixed is
 what the process holding the agent in that environment declared: with none holding it, none is.
+
+**How a call opens and ends is words, or the model's own.** `--greeting '…'` is said as written;
+`--greeting improvise` has the model open on its prompt, and `--greeting improvise:'…'` with an
+instruction for the opening. The caller cannot cut the opening short unless
+`--greeting-interruptible on`. `--hangup '…'` is when the model may end the call, in your words;
+`--hangup any` whenever it judges the call done. `--end-of-turn` is who says the caller's turn is
+over: `stt`, the ears themselves (Deepgram Flux; refused for ears that cannot), or `livekit` and
+`smart-turn` (Smart Turn v3), a model on the worker that runs on any key — Soniox with Smart Turn
+is `--stt soniox --end-of-turn smart-turn`.
 
 **A plugin's own class and options are three pairs of flags, one per stage.** `--llm-builds` names a
 class of the vendor's LiveKit plugin other than its default, a dot reaching into a module of it

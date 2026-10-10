@@ -5,7 +5,7 @@ import { parseArgs } from "node:util";
 import { type TuningAnswer } from "@pinecall/agents/wire";
 
 import { linesOf, readSettings } from "./agent-lines.js";
-import { clear, fraction, limitOf, NO_LANGUAGE, NOT_A_CONFIDENCE, NOT_A_LIMIT, NOT_A_TEMPERATURE, NOT_ON_OR_OFF, OPTIONS, optionsOf, set, switched, temperatureOf, type Typed } from "./agent-setting.js";
+import { clear, END_OF_TURN, fraction, limitOf, NO_LANGUAGE, NOT_A_CONFIDENCE, NOT_A_LIMIT, NOT_A_TEMPERATURE, NOT_AN_END_OF_TURN, NOT_ON_OR_OFF, OPTIONS, optionsOf, set, switched, temperatureOf, type Typed } from "./agent-setting.js";
 import { filesRun } from "./agent-files.js";
 import { knowledgeRun } from "./agent-knowledge.js";
 import { listed, stopped } from "./agent-processes.js";
@@ -23,7 +23,8 @@ const USAGE = [
   "       pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--temperature n] [--language en|es|pt-BR…]",
   "                          [--llm-builds Class] [--llm-option key=value …] [--stt-builds Class] [--stt-option key=value …]",
   "                          [--tts-builds Class] [--tts-option key=value …]",
-  "                          [--greeting '…' | --reply '…']",
+  "                          [--greeting '…' | --greeting improvise[:'…']] [--greeting-interruptible on|off]",
+  "                          [--end-of-turn stt|livekit|smart-turn]",
   "                          [--hangup '…'] [--endpointing-ms n] [--min-interruption-words n] [--record on|off]",
   "                          [--max-duration 1-60|off]",
   "                          [--eot-threshold 0.5-0.9] [--eager-eot-threshold 0.3-0.9]",
@@ -53,9 +54,12 @@ export const group: Group = {
   name that means no model at all is refused rather than written. --language is the tag the voice
   and the ears are set to — \`en\`, \`es\`, \`pt-BR\` — and a blank one is refused; the prompt's
   own rules are English either way, and the agent answers in the language the caller speaks.
-  --greeting sets the words said as the call opens; --reply what the model reads before it finds
-  its own. --remember and --forget replace those lists whole. A field nobody names is left as it
-  stands. --temperature is the model's, in its vendor's range. --llm-builds names a class of the
+  --greeting sets the words said as the call opens; \`--greeting improvise\` has the model open on
+  its prompt, and \`--greeting improvise:'…'\` with an instruction. The caller cannot cut the opening
+  short unless --greeting-interruptible on. --hangup any lets the model end the call whenever it
+  judges it done. --end-of-turn is who says the caller's turn is over: stt (the ears themselves,
+  where they can), livekit or smart-turn (Smart Turn v3). --remember and --forget replace those
+  lists whole. A field nobody names is left as it stands. --temperature is the model's, in its vendor's range. --llm-builds names a class of the
   vendor's plugin other than its default (\`responses.LLM\`), and --llm-option key=value one of its
   keyword arguments, repeated, the value read as JSON when it is JSON; --stt-… and --tts-… are the
   same for the ears and the voice. Those two run only on your org's own key for the vendor.
@@ -146,6 +150,16 @@ export async function run(argv: string[], how: Setting = {}): Promise<number> {
   }
   if (values.language !== undefined && values.language.trim() === "") {
     err.write(`${NO_LANGUAGE}\n`);
+    return 2;
+  }
+  const ending = values["end-of-turn"];
+  if (ending !== undefined && !(END_OF_TURN as readonly string[]).includes(ending)) {
+    err.write(`${NOT_AN_END_OF_TURN(ending)}\n`);
+    return 2;
+  }
+  const interruptible = values["greeting-interruptible"];
+  if (interruptible !== undefined && switched(interruptible) === undefined) {
+    err.write(`--greeting-interruptible ${interruptible} is not on or off\n`);
     return 2;
   }
   if (values.temperature !== undefined && temperatureOf(values.temperature) === undefined) {

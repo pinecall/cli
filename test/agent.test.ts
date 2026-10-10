@@ -272,6 +272,17 @@ describe("the versions", () => {
     expect(gateway.heard.filter((one) => one.method === "PUT")).toEqual([]);
   });
 
+  it("draws an improvised opening and an interruptible one as what they are", () => {
+    const lines = linesOf(AGENT, {
+      world: "sandbox",
+      yours: { ...YOURS, config: { greeting: { reply: "" } } },
+      team: { ...TEAM, config: { greeting: { say: "Buenas.", allow_interruptions: true } } },
+      production: null,
+      fixed: [],
+    });
+    expect(lines.find((line) => line.startsWith("  greeting"))).toMatch(/greeting\s+improvise\s+"Buenas\." · interruptible/);
+  });
+
   it("refuses anything but on or off, before anything is written", async () => {
     const said = written();
     const code = await run(["set", "--agent", AGENT, "--record", "sometimes"], { out: written().stream, err: said.stream, env: environment() });

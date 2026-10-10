@@ -12,8 +12,8 @@ importers:
         specifier: ^1.32.1
         version: 1.32.1(zod@4.6.5)
       '@pinecall/agents':
-        specifier: ^0.9.25
-        version: 0.9.25
+        specifier: ^0.9.26
+        version: link:../agents
       ignore:
         specifier: ^7.0.12
         version: 7.0.12
@@ -435,10 +435,6 @@ packages:
 
   '@oxc-project/types@0.152.0':
     resolution: {integrity: sha512-oM/5rLBm2tPkg0iBgkH/FOeR3PCDpY19GTgAZjMFM8h9WI9VW7cLgzp6nwtarYKmovavIQZ+Fe/RKX/8C8O/Rw==}
-
-  '@pinecall/agents@0.9.25':
-    resolution: {integrity: sha512-OSx8psaDZkGIVcPqVdkQpSZq04xCRDfgRrPomY3YtXd06hTyJDAecnYkRPMtu2nO1OCkjh47ejWzKgbmtyXtpw==}
-    engines: {node: '>=24'}
 
   '@pinojs/redact@0.4.0':
     resolution: {integrity: sha512-k2ENnmBugE/rzQfEcdWHcCY+/FM3VLzH9cYEsbdsoqrvzAKRhUZeRNhAZvB8OitQJ1TBed3yqWtdjzS6wJKBwg==}
@@ -1639,16 +1635,6 @@ snapshots:
   '@oxc-project/types@0.148.0': {}
 
   '@oxc-project/types@0.152.0': {}
-
-  '@pinecall/agents@0.9.25':
-    dependencies:
-      oxc-parser: 0.148.0
-      tsx: 4.23.15
-      ws: 8.22.0
-      zod: 4.6.5
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   '@pinojs/redact@0.4.0':
     optional: true

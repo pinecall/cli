@@ -6,6 +6,15 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.50] — 2026-10-10
+
+- `pinecall agent set --greeting improvise` (the model opens on its prompt) and `--greeting
+  improvise:'…'` (with an instruction) replace `--reply`; `--greeting-interruptible on|off`, since
+  an opening is no longer cut short unless it says so.
+- `--hangup any`: the model ends the call whenever it judges it done.
+- `--end-of-turn stt|livekit|smart-turn`: who says the caller's turn is over. The table shows it,
+  and `class` when the agent's `@stt` declares it. Needs runtime 0.1.43 and @pinecall/agents 0.9.26.
+
 ## [0.9.49] — 2026-10-10
 
 - `pinecall agent set --temperature n`, `--llm-builds Class` and `--llm-option key=value` (repeated,

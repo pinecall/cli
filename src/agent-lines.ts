@@ -91,6 +91,7 @@ export const FIELDS = [
   "stt",
   "stt-builds",
   "stt-options",
+  "end-of-turn",
   "llm",
   "temperature",
   "llm-builds",
@@ -117,6 +118,7 @@ export const WIRE: Record<Field, keyof TuningBody> = {
   stt: "stt",
   "stt-builds": "stt_builds",
   "stt-options": "stt_options",
+  "end-of-turn": "end_of_turn",
   llm: "llm",
   temperature: "temperature",
   "llm-builds": "llm_builds",
@@ -142,6 +144,7 @@ export const DECLARED_AS: Partial<Record<Field, string>> = {
   stt: "stt",
   "stt-builds": "stt",
   "stt-options": "stt",
+  "end-of-turn": "stt",
   llm: "llm",
   temperature: "llm",
   "llm-builds": "llm",
@@ -166,7 +169,9 @@ export function shown(config: TuningBody, field: Field): string | undefined {
     const greeting = config.greeting ?? undefined;
     if (greeting === undefined) return undefined;
     const say = greeting.say ?? undefined;
-    return say !== undefined ? `"${say}"` : `reply: ${greeting.reply ?? ""}`;
+    const reply = greeting.reply ?? "";
+    const opening = say !== undefined ? `"${say}"` : reply === "" ? "improvise" : `improvise: ${reply}`;
+    return greeting.allow_interruptions === true ? `${opening} · interruptible` : opening;
   }
   if (field === "hangup") {
     const hangup = config.hangup ?? undefined;

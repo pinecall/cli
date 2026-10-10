@@ -26,8 +26,9 @@ export const OPTIONS = {
   "tts-option": { type: "string", multiple: true },
   language: { type: "string" },
   greeting: { type: "string" },
-  reply: { type: "string" },
+  "greeting-interruptible": { type: "string" },
   hangup: { type: "string" },
+  "end-of-turn": { type: "string" },
   "endpointing-ms": { type: "string" },
   "eot-threshold": { type: "string" },
   "eager-eot-threshold": { type: "string" },
@@ -55,6 +56,21 @@ export function switched(said: string | undefined): boolean | undefined {
 // Minutes 1-60 (the runtime's range) or `off`; sent as seconds, with 0 meaning no limit.
 export const NOT_A_LIMIT = (said: string): string => `--max-duration ${said} is not 1 to 60 minutes, or off`;
 const LONGEST_MINUTES = 60;
+
+// `improvise` alone opens on the prompt; `improvise:…` with an instruction; anything else is words.
+const IMPROVISE = "improvise";
+
+export const END_OF_TURN = ["stt", "livekit", "smart-turn"] as const;
+
+export const NOT_AN_END_OF_TURN = (said: string): string =>
+  `--end-of-turn ${said} is not who ends the turn: stt (the ears themselves), livekit or smart-turn`;
+
+/** The opening a `--greeting` names: words, or the model's own with or without an instruction. */
+export function openingOf(said: string): { say: string } | { reply: string } {
+  if (said === IMPROVISE) return { reply: "" };
+  if (said.startsWith(`${IMPROVISE}:`)) return { reply: said.slice(IMPROVISE.length + 1).trim() };
+  return { say: said };
+}
 
 export const NOT_A_TEMPERATURE = (said: string): string => `--temperature ${said} is not a number from 0`;
 
@@ -139,9 +155,13 @@ export function typed(values: Typed, standing: TuningBody): Partial<TuningBody> 
     const options = optionsOf(`${stage}-option`, values[`${stage}-option`]);
     if (options !== undefined) wanted[`${stage}_options`] = options;
   }
-  if (values.greeting !== undefined) wanted.greeting = { say: values.greeting };
-  else if (values.reply !== undefined) wanted.greeting = { reply: values.reply };
-  if (values.hangup !== undefined) wanted.hangup = { when: values.hangup };
+  const interruptible = switched(values["greeting-interruptible"]);
+  if (values.greeting !== undefined) wanted.greeting = openingOf(values.greeting);
+  if (interruptible !== undefined) wanted.greeting = { ...(wanted.greeting ?? standing.greeting ?? {}), allow_interruptions: interruptible };
+  // `any`: the model ends the call whenever it judges it done.
+  if (values.hangup !== undefined) wanted.hangup = { when: values.hangup === "any" ? "" : values.hangup };
+  const ending = values["end-of-turn"];
+  if (ending !== undefined) wanted.end_of_turn = ending as (typeof END_OF_TURN)[number];
   const endpointing = numberOf(values["endpointing-ms"]);
   const words = numberOf(values["min-interruption-words"]);
   // Confidences are fractions, not integers.

@@ -1,6 +1,6 @@
 {
   "name": "pinecall",
-  "version": "0.9.49",
+  "version": "0.9.50",
   "description": "The pinecall CLI: an agent's project in any language — prompt, chat, test, simulate, start, deploy — against the Pinecall gateway",
   "license": "Apache-2.0",
   "author": "Pinecall <hello@pinecall.io>",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
-    "@pinecall/agents": "^0.9.25",
+    "@pinecall/agents": "^0.9.26",
     "ignore": "^7.0.12",
     "tsx": "^4.20.6",
     "ws": "^8.21.3",
