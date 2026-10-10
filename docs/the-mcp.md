@@ -140,7 +140,7 @@ Every parameter, and a real call of each: [Testing](mcp/testing.md).
 | `cases` | `list` · `show` · `approve` · `dismiss` · `reopen` · `pull` · `keep` | the org's dataset — real calls kept as cases, the pending ones a judge broke on: the inbox, one whole, approved into the nightly, dismissed (`judge_was_wrong` labels the judge), reopened, pulled into `test/<agent>/goldens/` and marked kept in the repository, a finished call kept, by name; forgetting one is `pinecall cases forget` |
 | `simulate` | `run` · `wait` | a persona's call against the agent held, the conversation and every judge's verdict; past `wait_s`, the transcript so far, and `wait` picks the rest up. One per agent at a time |
 | `personas` | `list` · `show` · `add` · `edit` · `rm` | the callers a model plays: a goal, a manner, facts, a rule for hanging up satisfied |
-| `judges` | `list` · `add` · `rm` | your own questions asked of the agent's calls, or every agent's with `org` |
+| `judges` | `list` · `add` · `on` · `off` · `rm` · `try` | every judge the agent's calls meet: Pinecall's switched on or off, your own written whole — a verdict, a score or a choice, on every call, simulations or a trigger — dropped, and one tried on finished calls, writing nothing; every agent's with `org` |
 | `eval` | — | one finished call checked again by code, with `banned` words and a latency `budget` |
 
 ### Knowledge and memory

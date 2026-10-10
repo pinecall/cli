@@ -1,8 +1,9 @@
 /** The caller tools: a persona's call (`simulate`), the agent's `personas`, and the `judges` asked of calls at hang-up. */
 
-import type { JudgeList, JudgePut } from "@pinecall/agents/wire";
+import type { JudgeList, JudgeRequest, JudgeTried, JudgeTry } from "@pinecall/agents/wire";
 import { z } from "zod";
 
+import { judgeRequestOf, judgesPath, nameRefused, type Asking } from "../../judge-lines.js";
 import { aSimulation, TURNS } from "../../simulation.js";
 import { asked } from "../../testing/gateway.js";
 import { NOT_A_MODEL, theModelNamed } from "../../testing/models.js";
@@ -137,29 +138,51 @@ export const personas = tool({
 
 export const judges = tool({
   name: "judges",
-  description: "Your own judges: a question asked of the agent's calls (or every agent's, with `org`) at hang-up, on every call or on simulations only.",
+  description: "Every judge the agent's calls meet: Pinecall's, switched on or off; the org's own and the agent's own, written or dropped; and one tried on finished calls.",
   schema: {
-    action: z.enum(["list", "add", "rm"]).describe("list the judges, add one (the same name again replaces it), rm one"),
+    action: z.enum(["list", "add", "on", "off", "rm", "try"]).describe("list every judge; add one of your own (the same name again replaces it); on/off one of Pinecall's; rm one of your own; try one on finished calls, writing nothing"),
     agent: AGENT,
-    org: z.boolean().optional().describe("the org's judges, asked of every agent's calls"),
+    org: z.boolean().optional().describe("the org's list: Pinecall's switched for every agent, and the org's own"),
     name: z.string().optional().describe("the judge's name: lowercase letters, digits and dashes"),
-    asks: z.string().optional().describe("`add`: the question, settled held or broken with the whole call in front of the judge model"),
-    on: z.enum(["every-call", "simulations"]).optional().describe("`add`: which calls it reads; every call when left out"),
+    asks: z.string().optional().describe("`add`, or `try` of one not yet saved: the question asked of the whole call"),
+    answer: z.string().optional().describe("`verdict` (held or broken, the default), `score` (1 to 5), or `choice:a,b,c`"),
+    when: z.string().optional().describe("`always` (the default), `simulations`, or `trigger:…` (a yes-or-no asked first; a no is N/A)"),
+    reads: z.array(z.enum(["prompt", "evidence", "facts"])).optional().describe("what the judge reads beside the call"),
+    last: z.number().int().min(1).max(50).optional().describe("`try`: the agent's newest finished calls"),
+    calls: z.array(z.string()).optional().describe("`try`: the calls, by id, instead of `last`"),
     prod: PROD,
   },
   manual:
-    "`judges` writes the questions about your business a model answers of every finished call — held or broken, citing the turns. The platform's own (consent, grounded, promises, disclosed, identified, honoured_stop, persona, heard) run anyway, and their names are taken.",
+    "`judges` is every question a model answers of the agent's finished calls, citing the turns. Pinecall's library (consent, grounded, promises, disclosed, identified, honoured-stop, ended-well, expected-outcome on by default; relevance, repetition, sentiment off) is switched with `on`/`off`, for the org (`org`) or one agent, and never dropped. Your own are written whole with `add`: a verdict, a score or a choice, on every call, simulations only or a trigger, reading the prompt, the evidence or the facts on request. Any judge may answer N/A, never billed; each that answers is one eval, not billed when the judge model is on the org's own key. `try` asks one judge — written, Pinecall's, or one only in this call's fields — of the agent's last calls and writes nothing.",
   handler: async (args, session) => {
     const door = await session.door(args.prod);
+    if (args.org === true && args.action === "try") throw new Refused("try asks one agent's calls: name the agent, not the org");
     const whose = args.org === true ? null : (await session.home(args.agent)).name;
-    const path = (name?: string): string =>
-      `${whose === null ? "/v1/org/judges" : `/v1/agents/${encodeURIComponent(whose)}/judges`}${name === undefined ? "" : `/${encodeURIComponent(name)}`}`;
-    if (args.action === "list") return await asked<JudgeList>(door, path());
+    if (args.action === "list") return await asked<JudgeList>(door, judgesPath(whose));
     const name = args.name;
-    if (name === undefined || !A_NAME.test(name)) throw new Refused("a judge's name is lowercase letters and digits joined by dashes");
-    if (args.action === "rm") return await asked<JudgeList>(door, path(name), { method: "DELETE" });
-    if (args.asks === undefined || args.asks.trim() === "") throw new Refused("add takes the question the judge asks");
-    const body: JudgePut = { question: args.asks.trim(), runs_on: args.on ?? "every-call" };
-    return await asked<JudgeList>(door, path(name), { method: "PUT", body });
+    const wrong = name === undefined ? "the judge's name is needed" : nameRefused(name);
+    if (wrong !== undefined) throw new Refused(wrong);
+    const asking: Asking = { asks: args.asks, answer: args.answer, when: args.when, reads: args.reads?.join(",") };
+    if (args.action === "rm") return await asked<JudgeList>(door, judgesPath(whose, name), { method: "DELETE" });
+    if (args.action === "on" || args.action === "off") {
+      return await asked<JudgeList>(door, judgesPath(whose, name), { method: "PUT", body: { on: args.action === "on" } });
+    }
+    if (args.action === "add") return await asked<JudgeList>(door, judgesPath(whose, name), { method: "PUT", body: requestOf(asking) });
+    if ((args.last === undefined) === (args.calls === undefined)) throw new Refused("try takes `last` or `calls`, one of them");
+    const body: JudgeTry = {
+      name: name!,
+      ...(args.asks === undefined ? {} : requestOf(asking)),
+      ...(args.calls === undefined ? { last: args.last! } : { calls: args.calls }),
+    };
+    return await asked<JudgeTried>(door, `${judgesPath(whose)}/try`, { method: "POST", body });
   },
 });
+
+// The flags' own sentences, as the CLI says them, are a refusal of the call.
+function requestOf(asking: Asking): JudgeRequest {
+  try {
+    return judgeRequestOf(asking);
+  } catch (refused) {
+    throw new Refused((refused as Error).message);
+  }
+}

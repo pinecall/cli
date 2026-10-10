@@ -29,7 +29,7 @@ export function theModelNamed(value: string): string | undefined {
   return value.includes("/") || SHORT_NAMES[value] !== undefined ? `${model.provider}/${model.model}` : value;
 }
 
-// Shared refusal for every verb taking `--llm` (`agent set`, `personas add|edit`).
-export const NOT_A_MODEL = (said: string): string =>
-  `--llm ${said} names no model: vendor/model, a vendor alone, a model alone, ` +
+// Shared refusal for every verb taking a model (`--llm`, `--judge`), named by its flag.
+export const NOT_A_MODEL = (said: string, flag = "--llm"): string =>
+  `${flag} ${said} names no model: vendor/model, a vendor alone, a model alone, ` +
   `or one of ${Object.keys(SHORT_NAMES).join(" · ")}`;

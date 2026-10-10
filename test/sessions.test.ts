@@ -85,6 +85,18 @@ describe("the score", () => {
   it("says a call carries no score rather than pretending it passed", () => {
     expect(scoreLines(undefined)[0]).toContain("not judged");
   });
+
+  it("says what a classification answered and marks an N/A apart, counting the evals and who pays them", () => {
+    const chose = { name: "call-reason", verdict: "classified", criteria: "Why did they call?", reason: "They wanted Thursday.", choice: "book" };
+    const missed = { name: "identified", verdict: "na", criteria: "Did it say who it called for?", reason: "the call came in" };
+    const lines = scoreLines({ judges: [chose, missed], judge_calls: 2, evals: 1, own_key: true });
+
+    expect(lines[0]).toContain("– no judge held or broke");
+    expect(lines[0]).toContain("1 eval · own key: evals not billed");
+    expect(lines.join("\n")).toContain("= call-reason");
+    expect(lines.join("\n")).toContain("book: They wanted Thursday.");
+    expect(lines.join("\n")).toContain("– identified");
+  });
 });
 
 describe("the small stuff", () => {

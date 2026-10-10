@@ -262,6 +262,20 @@ describe("the versions", () => {
     });
   });
 
+  it("names the model its calls are judged on, a local one through its plugin's options, as --llm names its model", async () => {
+    gateway.yours = null;
+    gateway.team = null;
+    const argv = ["set", "--agent", AGENT, "--judge", "openai/qwen3-32b", "--judge-builds", "LLM", "--judge-option", "base_url=http://gpu:8000/v1"];
+
+    await run(argv, { out: written().stream, env: environment() });
+
+    expect((gateway.written as { config: Record<string, unknown> }).config).toEqual({
+      judge: "openai/qwen3-32b",
+      judge_builds: "LLM",
+      judge_options: { base_url: "http://gpu:8000/v1" },
+    });
+  });
+
   it("refuses a temperature below zero and an option with no key, before anything is written", async () => {
     const cold = written();
     expect(await run(["set", "--agent", AGENT, "--temperature=-1"], { out: written().stream, err: cold.stream, env: environment() })).toBe(2);

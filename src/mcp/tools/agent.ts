@@ -26,6 +26,9 @@ const SETTINGS = z
     "stt-options": z.record(z.string(), z.unknown()),
     "tts-builds": z.string(),
     "tts-options": z.record(z.string(), z.unknown()),
+    judge: z.string(),
+    "judge-builds": z.string(),
+    "judge-options": z.record(z.string(), z.unknown()),
     language: z.string().min(1),
     greeting: z.string(),
     "greeting-interruptible": z.enum(["on", "off"]),
@@ -58,7 +61,7 @@ export const agent = tool({
     prod: PROD,
   },
   manual:
-    "`agent` reads and writes the agent's settings in the sandbox — the voice, the models, the language, the greeting, the memory policy, what it knows by heart — each change a new version, changed without a deploy. They are your own settings unless `team` writes the team's. `history`, `diff` and `rollback` read and undo versions. A model is named as `vendor/model`, a vendor, a model, or a tier (`haiku`). `greeting` is the words, `improvise` for the model's own opening, or `improvise:…` with an instruction; `hangup` is when, in words, or `any`; `end-of-turn` is who ends the caller's turn. `temperature` is the model's; `llm-builds` and `llm-options` (and the `stt` and `tts` twins) are a class of the vendor's plugin and its keyword arguments, run only on the org's own key for that vendor. A field the class declares itself is listed in `fixed`, and setting it is refused naming the class.",
+    "`agent` reads and writes the agent's settings in the sandbox — the voice, the models, the language, the greeting, the memory policy, what it knows by heart — each change a new version, changed without a deploy. They are your own settings unless `team` writes the team's. `history`, `diff` and `rollback` read and undo versions. A model is named as `vendor/model`, a vendor, a model, or a tier (`haiku`). `greeting` is the words, `improvise` for the model's own opening, or `improvise:…` with an instruction; `hangup` is when, in words, or `any`; `end-of-turn` is who ends the caller's turn. `temperature` is the model's; `llm-builds` and `llm-options` (and the `stt`, `tts` and `judge` twins) are a class of the vendor's plugin and its keyword arguments, run only on the org's own key for that vendor. `judge` is the model this agent's calls are judged on, named as `llm` is, over the org's (`judging`); on the org's own key for the vendor — a local model's server through `judge-options` `{\"base_url\": …}` — its evals are never billed. A field the class declares itself is listed in `fixed`, and setting it is refused naming the class.",
   handler: async (args, session) => {
     const name = (await session.home(args.agent)).name;
     const door = await session.door(args.prod);
@@ -87,7 +90,7 @@ export const agent = tool({
 function flagsOf(settings: z.infer<typeof SETTINGS>, team: boolean, note: string | undefined): Typed {
   const flags: Typed = { team, json: false };
   if (note !== undefined) flags.note = note;
-  for (const field of ["voice", "tts", "tts-model", "stt", "llm-builds", "stt-builds", "tts-builds", "language", "greeting", "greeting-interruptible", "end-of-turn", "hangup", "record"] as const) {
+  for (const field of ["voice", "tts", "tts-model", "stt", "llm-builds", "stt-builds", "tts-builds", "judge-builds", "language", "greeting", "greeting-interruptible", "end-of-turn", "hangup", "record"] as const) {
     const value = settings[field];
     if (value !== undefined) flags[field] = value;
   }
@@ -96,16 +99,18 @@ function flagsOf(settings: z.infer<typeof SETTINGS>, team: boolean, note: string
     if (value !== undefined) flags[field] = String(value);
   }
   // Each option travels as the CLI's own `key=value`, its value as JSON.
-  for (const stage of ["llm", "stt", "tts"] as const) {
+  for (const stage of ["llm", "stt", "tts", "judge"] as const) {
     const options = settings[`${stage}-options`];
     if (options !== undefined) flags[`${stage}-option`] = Object.entries(options).map(([key, value]) => `${key}=${JSON.stringify(value)}`);
   }
   if (settings.remember !== undefined) flags.remember = settings.remember;
   if (settings.forget !== undefined) flags.forget = settings.forget;
-  if (settings.llm !== undefined) {
-    const llm = theModelNamed(settings.llm);
-    if (llm === undefined) throw new Refused(NOT_A_MODEL(settings.llm));
-    flags.llm = llm;
+  for (const field of ["llm", "judge"] as const) {
+    const said = settings[field];
+    if (said === undefined) continue;
+    const named = theModelNamed(said);
+    if (named === undefined) throw new Refused(NOT_A_MODEL(said, `--${field}`));
+    flags[field] = named;
   }
   for (const flag of ["eot-threshold", "eager-eot-threshold"] as const) {
     if (flags[flag] !== undefined && fraction(flags[flag]) === undefined) throw new Refused(`${flag} ${flags[flag]} is not a confidence: a number above 0 and no higher than 1`);

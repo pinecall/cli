@@ -96,6 +96,9 @@ export const FIELDS = [
   "temperature",
   "llm-builds",
   "llm-options",
+  "judge",
+  "judge-builds",
+  "judge-options",
   "language",
   "greeting",
   "hangup",
@@ -123,6 +126,9 @@ export const WIRE: Record<Field, keyof TuningBody> = {
   temperature: "temperature",
   "llm-builds": "llm_builds",
   "llm-options": "llm_options",
+  judge: "judge",
+  "judge-builds": "judge_builds",
+  "judge-options": "judge_options",
   language: "language",
   greeting: "greeting",
   hangup: "hangup",
@@ -149,6 +155,9 @@ export const DECLARED_AS: Partial<Record<Field, string>> = {
   temperature: "llm",
   "llm-builds": "llm",
   "llm-options": "llm",
+  judge: "judge",
+  "judge-builds": "judge",
+  "judge-options": "judge",
   language: "language",
   greeting: "greeting",
   hangup: "hangup",
@@ -207,7 +216,7 @@ export function shown(config: TuningBody, field: Field): string | undefined {
     const temperature = config.temperature ?? undefined;
     return temperature === undefined ? undefined : String(temperature);
   }
-  if (field === "llm-options" || field === "stt-options" || field === "tts-options") {
+  if (field === "llm-options" || field === "stt-options" || field === "tts-options" || field === "judge-options") {
     const options = config[WIRE[field] as "llm_options"] ?? undefined;
     if (options === undefined) return undefined;
     return Object.entries(options).map(([key, value]) => `${key}=${JSON.stringify(value)}`).join(" · ");

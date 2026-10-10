@@ -61,14 +61,35 @@ describe("what the asking cost", () => {
   it("counts the questions that reached a model and prices them when the entry has a price", () => {
     const lines = linesOfScore(score({ passed: true, judges: [], judge_calls: 2, judge_cost_usd: 0.0013 }));
 
-    expect(lines.at(-1)).toBe("  2 judge calls · $0.0013");
+    expect(lines.at(-1)).toBe("  2 judge calls · 0 evals · $0.0013");
   });
 
   // Unknown cost is omitted, not shown as zero.
   it("says nothing at all about a bill it was not given", () => {
     const lines = linesOfScore(score({ passed: true, judges: [], judge_calls: 0 }));
 
-    expect(lines.at(-1)).toBe("  0 judge calls");
+    expect(lines.at(-1)).toBe("  0 judge calls · 0 evals");
+  });
+});
+
+describe("what is answered beside a verdict", () => {
+  it("says a classification's choice or score, and an N/A, before the reason", () => {
+    const chose = { ...judgment("call-reason", "classified", "They wanted Thursday."), choice: "book" };
+    const scored = { ...judgment("warmth", "classified", "Polite, brief."), score: 4 };
+    const missed = judgment("identified", "na", "the call came in");
+
+    const lines = linesOfScore(score({ judges: [chose, scored, missed] }));
+
+    expect(lines[0]).toBe("– no judge held or broke: the rest classified the call or did not apply");
+    expect(lines[1]).toContain("= call-reason book: They wanted Thursday.");
+    expect(lines[2]).toContain("= warmth     4/5: Polite, brief.");
+    expect(lines[3]).toContain("– identified n/a: the call came in");
+  });
+
+  it("counts the evals, and says those on the org's own key are not billed", () => {
+    const lines = linesOfScore(score({ passed: true, judge_calls: 3, evals: 2, own_key: true }));
+
+    expect(lines.at(-1)).toBe("  3 judge calls · 2 evals · own key: evals not billed");
   });
 });
 

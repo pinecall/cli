@@ -6,6 +6,20 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.51] — judges are one list, switched, written whole and tried; the judge model is yours to pick
+
+- `pinecall judges` lists every judge a call meets — Pinecall's library first, with on/off, then
+  the org's own and the agent's own — and gains `on` / `off` (a library judge, for the org with
+  `--org` or one agent), `add --answer verdict|score|choice:a,b,c --when always|simulations|
+  trigger:'…' --reads prompt,evidence,facts`, and `try <name> --last N | --calls a,b`, which asks
+  one judge of finished calls and writes nothing. `--on every-call|simulations` is gone (`--when`).
+- `pinecall judging [on|off] [--model vendor/model --option key=value … | --platform]`: whether the
+  org's calls are judged, and the model they are judged on; on the org's own key its evals are not
+  billed. `pinecall agent set --judge x --judge-builds Class --judge-option key=value` names one agent's.
+- A call's score prints N/A (`–`), a classification's choice or score (`=`), the evals and whether
+  the org's own key answered them. The MCP's `judges` tool takes the same actions; `agent` takes
+  `judge`, `judge-builds`, `judge-options`. Needs runtime 0.1.45 and @pinecall/agents 0.9.27.
+
 ## [0.9.50] — 2026-10-10
 
 - `pinecall agent set --greeting improvise` (the model opens on its prompt) and `--greeting

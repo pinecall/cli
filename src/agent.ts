@@ -23,6 +23,7 @@ const USAGE = [
   "       pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--temperature n] [--language en|es|pt-BR…]",
   "                          [--llm-builds Class] [--llm-option key=value …] [--stt-builds Class] [--stt-option key=value …]",
   "                          [--tts-builds Class] [--tts-option key=value …]",
+  "                          [--judge x] [--judge-builds Class] [--judge-option key=value …]",
   "                          [--greeting '…' | --greeting improvise[:'…']] [--greeting-interruptible on|off]",
   "                          [--end-of-turn stt|livekit|smart-turn]",
   "                          [--hangup '…'] [--endpointing-ms n] [--min-interruption-words n] [--record on|off]",
@@ -31,6 +32,7 @@ const USAGE = [
   "                          [--remember '…' …] [--forget '…' …] [--team] [--note '…']",
   "       pinecall agent knowledge [--team] · knowledge edit [--team] [--note '…']",
   "       pinecall agent clear [voice|tts|tts-model|stt|llm|temperature|llm-builds|llm-options|stt-builds|stt-options|tts-builds|tts-options",
+  "                             |judge|judge-builds|judge-options",
   "                             |language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]",
   "       pinecall agent history [--team] · diff [--against team|production] · rollback <version> [--team]",
   "       pinecall agent pull [--team] · push <file> [--team]",
@@ -63,6 +65,10 @@ export const group: Group = {
   vendor's plugin other than its default (\`responses.LLM\`), and --llm-option key=value one of its
   keyword arguments, repeated, the value read as JSON when it is JSON; --stt-… and --tts-… are the
   same for the ears and the voice. Those two run only on your org's own key for the vendor.
+  --judge is the model this agent's calls are judged on, named as --llm is, over the org's
+  (\`pinecall judging --model\`) and Pinecall's; --judge-builds and --judge-option are its plugin's,
+  as --llm's are — \`--judge openai/qwen3-32b --judge-option base_url=http://gpu:8000/v1\` judges on
+  a model of your own. On your org's own key for the vendor its evals are never billed.
 
   A field the class declares itself (@voice, @llm, @stt, a static field) says \`class\` in every
   corner: the class wins, and a set or clear of it is refused naming the class.
@@ -132,6 +138,11 @@ export async function run(argv: string[], how: Setting = {}): Promise<number> {
     err.write(`${NOT_A_MODEL(values.llm)}\n`);
     return 2;
   }
+  const judge = values.judge === undefined ? undefined : theModelNamed(values.judge);
+  if (values.judge !== undefined && judge === undefined) {
+    err.write(`${NOT_A_MODEL(values.judge, "--judge")}\n`);
+    return 2;
+  }
   // Validate before any request, so nothing is read or written.
   for (const flag of ["eot-threshold", "eager-eot-threshold"] as const) {
     const said = values[flag];
@@ -166,7 +177,7 @@ export async function run(argv: string[], how: Setting = {}): Promise<number> {
     err.write(`${NOT_A_TEMPERATURE(values.temperature)}\n`);
     return 2;
   }
-  for (const stage of ["llm", "stt", "tts"] as const) {
+  for (const stage of ["llm", "stt", "tts", "judge"] as const) {
     try {
       optionsOf(`${stage}-option`, values[`${stage}-option`]);
     } catch (refused) {
@@ -192,7 +203,8 @@ export async function run(argv: string[], how: Setting = {}): Promise<number> {
     }
     if (verb === undefined) return said(agent, await readSettings(door, agent), values.json === true, out);
     if (verb === "set") {
-      return said(agent, await set(door, agent, { ...values, ...(llm === undefined ? {} : { llm }) }), values.json === true, out);
+      const named = { ...(llm === undefined ? {} : { llm }), ...(judge === undefined ? {} : { judge }) };
+      return said(agent, await set(door, agent, { ...values, ...named }), values.json === true, out);
     }
     if (verb === "clear") return said(agent, await clear(door, agent, rest, values.team === true), values.json === true, out);
     if (verb === "history" || verb === "diff" || verb === "rollback") {

@@ -28,6 +28,9 @@ const PAGES = 6;
 // Max characters of a judge's text per line; `--json` has the full text.
 const ROOM = 96;
 
+// N/A did not apply, = a classification (a choice or a score), · never asked, ? not settled.
+const MARKS: Record<string, string> = { held: HELD, broken: BROKEN, na: "–", classified: "=", skipped: "·", deferred: "?" };
+
 export const group: Group = {
   purpose: "list | show a call's log, with what it cost and how it was judged",
   usage: `${USAGE}
@@ -150,26 +153,30 @@ async function shown(door: Door, call: string, asJson: boolean): Promise<string[
   return lines;
 }
 
-/** Format a call.score: the verdict, then one line per judge, with the reason for failures. */
+/** Format a call.score: the verdict, then one line per judge, with the reason for failures and what a classification answered. */
 export function scoreLines(score: Record<string, unknown> | undefined): string[] {
   if (score === undefined) return ["  score     not judged: this call carries no call.score"];
   const why = score["not_judged"];
   if (typeof why === "string" && why !== "") return [`  score     not judged: ${why}`];
-  const judges = (score["judges"] ?? []) as { name: string; verdict: string; criteria: string; reason: string }[];
-  const held = score["passed"] === true;
+  const judges = (score["judges"] ?? []) as { name: string; verdict: string; criteria: string; reason: string; choice?: string | null; score?: number | null }[];
+  const passed = score["passed"];
   const asked = Number(score["judge_calls"] ?? 0);
+  const evals = Number(score["evals"] ?? 0);
   const cost = score["judge_cost_usd"];
   const paid = typeof cost === "number" ? ` · $${cost.toFixed(4)}` : "";
+  const billed = score["own_key"] === true ? " · own key: evals not billed" : "";
+  const headline = passed === true ? `${HELD} every judge held` : passed === false ? `${BROKEN} a judge answered broken` : "– no judge held or broke";
   const lines = [
-    `  score     ${held ? HELD : BROKEN} ${held ? "every judge held" : "a judge answered broken"} · ${judges.length} judges · ${asked} model call${asked === 1 ? "" : "s"}${paid}`,
+    `  score     ${headline} · ${judges.length} judges · ${asked} model call${asked === 1 ? "" : "s"} · ${evals} eval${evals === 1 ? "" : "s"}${paid}${billed}`,
     "",
   ];
   const width = Math.max(0, ...judges.map((one) => one.name.length));
   for (const judge of judges) {
-    const mark = judge.verdict === "held" ? HELD : BROKEN;
     // Folded: some judges put their whole evidence in `criteria`.
-    lines.push(`  ${mark} ${judge.name.padEnd(width)}  ${onOneLine(judge.criteria, ROOM)}`);
-    if (judge.verdict !== "held") lines.push(`    ${" ".repeat(width)}  ${onOneLine(judge.reason, ROOM)}`);
+    lines.push(`  ${MARKS[judge.verdict] ?? "·"} ${judge.name.padEnd(width)}  ${onOneLine(judge.criteria, ROOM)}`);
+    const answered = judge.choice ?? (judge.score === null || judge.score === undefined ? undefined : `${judge.score}/5`);
+    if (answered !== undefined) lines.push(`    ${" ".repeat(width)}  ${answered}: ${onOneLine(judge.reason, ROOM)}`);
+    else if (judge.verdict !== "held") lines.push(`    ${" ".repeat(width)}  ${onOneLine(judge.reason, ROOM)}`);
   }
   return lines;
 }

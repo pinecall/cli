@@ -24,6 +24,9 @@ export const OPTIONS = {
   "stt-option": { type: "string", multiple: true },
   "tts-builds": { type: "string" },
   "tts-option": { type: "string", multiple: true },
+  judge: { type: "string" },
+  "judge-builds": { type: "string" },
+  "judge-option": { type: "string", multiple: true },
   language: { type: "string" },
   greeting: { type: "string" },
   "greeting-interruptible": { type: "string" },
@@ -144,14 +147,14 @@ export async function clear(door: Door, agent: string, named: string[], team: bo
 /** The fields this command line sets, under wire names, merged over the current row where nested. */
 export function typed(values: Typed, standing: TuningBody): Partial<TuningBody> {
   const wanted: Partial<TuningBody> = {};
-  for (const field of ["voice", "tts", "tts-model", "stt", "llm", "llm-builds", "stt-builds", "tts-builds", "language"] as const) {
+  for (const field of ["voice", "tts", "tts-model", "stt", "llm", "llm-builds", "stt-builds", "tts-builds", "judge", "judge-builds", "language"] as const) {
     const value = values[field];
     if (typeof value === "string") (wanted as Record<string, unknown>)[WIRE[field]] = value;
   }
   const temperature = temperatureOf(values.temperature);
   if (values.temperature !== undefined && temperature === undefined) throw new Error(NOT_A_TEMPERATURE(values.temperature));
   if (temperature !== undefined) wanted.temperature = temperature;
-  for (const stage of ["llm", "stt", "tts"] as const) {
+  for (const stage of ["llm", "stt", "tts", "judge"] as const) {
     const options = optionsOf(`${stage}-option`, values[`${stage}-option`]);
     if (options !== undefined) wanted[`${stage}_options`] = options;
   }

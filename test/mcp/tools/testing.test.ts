@@ -27,22 +27,34 @@ describe("judges", () => {
   it("refuses a name that is no slug, and an add with no question", async () => {
     const client = await opened();
 
-    expect((await called(client, "judges", { action: "add", name: "Offers A Callback", asks: "x" })).text).toContain("lowercase letters and digits joined by dashes");
-    expect((await called(client, "judges", { action: "add", name: "offers-a-callback" })).text).toBe("add takes the question the judge asks");
+    expect((await called(client, "judges", { action: "add", name: "Offers A Callback", asks: "x" })).text).toContain("lower-case letters and digits joined by hyphens");
+    expect((await called(client, "judges", { action: "add", name: "offers-a-callback" })).text).toContain("a judge needs --asks");
   });
 
-  it("puts the question on the agent's judges, or the org's", async () => {
+  it("puts the question on the agent's judges, or the org's, with how it answers and when it runs", async () => {
     gateway.doors.set("PUT /v1/agents/front-desk/judges/offers-a-callback", [200, { judges: [] }]);
     gateway.doors.set("PUT /v1/org/judges/no-medical-advice", [200, { judges: [] }]);
     const client = await opened();
 
     await called(client, "judges", { action: "add", name: "offers-a-callback", asks: " The agent offered a call back. " });
-    await called(client, "judges", { action: "add", name: "no-medical-advice", asks: "No medical advice.", org: true, on: "simulations" });
+    await called(client, "judges", { action: "add", name: "no-medical-advice", asks: "No medical advice.", org: true, when: "simulations", answer: "score", reads: ["prompt"] });
 
     expect(gateway.asked.map((one) => one.body)).toEqual([
-      { question: "The agent offered a call back.", runs_on: "every-call" },
-      { question: "No medical advice.", runs_on: "simulations" },
+      { question: "The agent offered a call back.", answer: "verdict", when: "always" },
+      { question: "No medical advice.", answer: "score", when: "simulations", reads: ["prompt"] },
     ]);
+  });
+
+  it("switches one of Pinecall's with nothing but on, and tries one on the last calls", async () => {
+    gateway.doors.set("PUT /v1/agents/front-desk/judges/relevance", [200, { judges: [] }]);
+    gateway.doors.set("POST /v1/agents/front-desk/judges/try", [200, { rows: [], evals: 0, cost_usd: 0 }]);
+    const client = await opened();
+
+    await called(client, "judges", { action: "on", name: "relevance" });
+    await called(client, "judges", { action: "try", name: "relevance", last: 5 });
+
+    expect(gateway.asked.map((one) => one.body)).toEqual([{ on: true }, { name: "relevance", last: 5 }]);
+    expect((await called(client, "judges", { action: "try", name: "relevance" })).text).toBe("try takes `last` or `calls`, one of them");
   });
 });
 

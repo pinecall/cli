@@ -1,4 +1,4 @@
-// `pinecall judges`: the org's judges and the agent's own at their doors, the refusals before any request, `--json`.
+// `pinecall judges`: the library switched, own judges written whole, a try, the refusals before any request, `--json`.
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { run } from "../src/judges.js";
-import type { Judge } from "@pinecall/agents/wire";
+import type { JudgeRow, JudgeTried } from "@pinecall/agents/wire";
 import { pointingAt } from "./home.js";
 import { written } from "./said.js";
 
@@ -18,7 +18,43 @@ const CLINIC = fileURLToPath(new URL("./clinic", import.meta.url));
 /** A project whose agent is called `sales` and whose class is called `bidfire-sales`. */
 const BIDFIRE = fileURLToPath(new URL("./bidfire", import.meta.url));
 
-const SLOT: Judge = { name: "offers-next-slot", question: "The agent offered the next free slot.", runs_on: "every-call", author: "m_ana", set_at: 1758300000 };
+const CONSENT: JudgeRow = {
+  name: "consent",
+  owner: "pinecall",
+  on: true,
+  question: "Did every irreversible tool run after the caller agreed?",
+  answer: "verdict",
+  choices: [],
+  when: "always",
+  trigger: "",
+  reads: ["facts"],
+  summary: "Every irreversible tool ran only after the caller agreed to that action.",
+  version: 1,
+};
+
+const SLOT: JudgeRow = {
+  name: "offers-next-slot",
+  owner: "clinica-norte",
+  on: true,
+  question: "The agent offered the next free slot.",
+  answer: "verdict",
+  choices: [],
+  when: "always",
+  trigger: "",
+  reads: [],
+  author: "m_ana",
+  set_at: 1758300000,
+};
+
+const TRIED: JudgeTried = {
+  rows: [
+    { call: "CA_one", judgment: { name: SLOT.name, verdict: "held", criteria: SLOT.question, reason: "Offered Thursday.", evidence: { seqs: [14] } } },
+    { call: "CA_two", judgment: { name: SLOT.name, verdict: "na", criteria: SLOT.question, reason: "Only the address.", evidence: { seqs: [] } } },
+    { call: "CA_three", judgment: null, not_judged: "the call has not finished" },
+  ],
+  evals: 1,
+  cost_usd: 0.0021,
+};
 
 /** One request as the gateway received it. */
 interface Heard {
@@ -27,10 +63,10 @@ interface Heard {
   body: unknown;
 }
 
-/** A gateway with the three judge doors and one list per agent. */
+/** A gateway with the judge doors: the library first, then the judges written, and a try. */
 class FakeGateway {
   readonly heard: Heard[] = [];
-  judges: Judge[] = [];
+  judges: JudgeRow[] = [];
   #server!: Server;
   url = "";
 
@@ -51,12 +87,18 @@ class FakeGateway {
     const text = Buffer.concat(chunks).toString("utf8");
     const heard: Heard = { method: request.method ?? "", path: request.url ?? "", body: text === "" ? null : JSON.parse(text) };
     this.heard.push(heard);
+    if (heard.path.endsWith("/try")) return this.#said(response, 200, TRIED);
     const name = decodeURIComponent(heard.path.split("/").at(-1) ?? "");
-    if (heard.method === "PUT") {
-      const body = heard.body as { question: string; runs_on: Judge["runs_on"] };
+    const body = heard.body as Partial<JudgeRow> | null;
+    if (heard.method === "PUT" && name === CONSENT.name) {
+      if (body?.question !== undefined) return this.#said(response, 409, { detail: "consent is one of Pinecall's judges: only whether it runs is written" });
+      this.judges = this.judges.map((judge) => (judge.name === name ? { ...judge, on: body?.on === true } : judge));
+    } else if (heard.method === "PUT") {
+      if (body?.on !== undefined) return this.#said(response, 409, { detail: `${name} is a judge of your own: it runs while it is written, and DELETE stops it` });
       this.judges = [...this.judges.filter((judge) => judge.name !== name), { ...SLOT, ...body, name }];
     }
     if (heard.method === "DELETE") {
+      if (name === CONSENT.name) return this.#said(response, 409, { detail: "consent is one of Pinecall's judges and is never deleted" });
       if (!this.judges.some((judge) => judge.name === name)) return this.#said(response, 404, { detail: `clinica-norte has no judge called ${name}` });
       this.judges = this.judges.filter((judge) => judge.name !== name);
     }
@@ -75,7 +117,7 @@ let was: string;
 
 beforeEach(async () => {
   gateway.heard.length = 0;
-  gateway.judges = [];
+  gateway.judges = [CONSENT];
   await gateway.open();
   env = pointingAt(gateway.url, A_KEY);
   was = process.cwd();
@@ -104,14 +146,13 @@ describe("whose judges", () => {
 
   it("asks the org's door with --org, from anywhere and with no class in sight", async () => {
     process.chdir(was);
-    const out = written();
 
-    expect(await run(["add", "never-medical-advice", "--org", "--asks", "No medical advice."], { out: out.stream, env })).toBe(0);
-    expect(await run(["list", "--org"], { out: written().stream, env })).toBe(0);
+    expect(await run(["add", "never-medical-advice", "--org", "--asks", "No medical advice."], { out: written().stream, env })).toBe(0);
+    expect(await run(["off", "consent", "--org"], { out: written().stream, env })).toBe(0);
 
     expect(gateway.heard.map((one) => `${one.method} ${one.path}`)).toEqual([
       "PUT /v1/org/judges/never-medical-advice",
-      "GET /v1/org/judges",
+      "PUT /v1/org/judges/consent",
     ]);
   });
 
@@ -124,49 +165,130 @@ describe("whose judges", () => {
   });
 });
 
-describe("the verbs it answers to", () => {
+describe("the list", () => {
+  it("prints Pinecall's with its summary and yours with its question, whose each is and whether it runs", async () => {
+    gateway.judges = [{ ...CONSENT, on: false }, { ...SLOT, answer: "choice", choices: ["offered", "asked"], when: "trigger", trigger: "A slot was discussed." }];
+    const out = written();
+
+    expect(await run([], { out: out.stream, env })).toBe(0);
+    expect(out.text().split("\n")).toEqual([
+      `consent           pinecall       off  verdict                always        ${CONSENT.summary}`,
+      `offers-next-slot  clinica-norte  on   choice: offered|asked  on a trigger  ${SLOT.question}`,
+      "",
+    ]);
+  });
+
   it("says the agent has none yet rather than printing an empty page", async () => {
+    gateway.judges = [];
     const out = written();
 
     expect(await run([], { out: out.stream, env })).toBe(0);
     expect(out.text()).toContain("clinica-norte has no judges yet");
   });
 
-  it("writes one on every call unless told otherwise, and lists it with its question", async () => {
+  it("answers --json with the judges as the gateway sent them", async () => {
+    const out = written();
+
+    expect(await run(["list", "--json"], { out: out.stream, env })).toBe(0);
+    expect(JSON.parse(out.text())).toEqual({ judges: [CONSENT] });
+  });
+});
+
+describe("writing one of your own", () => {
+  it("writes a verdict on every call unless told otherwise", async () => {
     const out = written();
 
     expect(await run(["add", "offers-next-slot", "--asks", SLOT.question], { out: out.stream, env })).toBe(0);
-    expect(out.text()).toBe("offers-next-slot written · 1 judge(s)\n");
-    expect(gateway.heard[0]).toEqual({ method: "PUT", path: "/v1/agents/clinica-norte/judges/offers-next-slot", body: { question: SLOT.question, runs_on: "every-call" } });
-
-    const listed = written();
-    expect(await run(["list"], { out: listed.stream, env })).toBe(0);
-    expect(listed.text()).toBe(`offers-next-slot  every call   ${SLOT.question}\n`);
+    expect(out.text()).toBe("offers-next-slot written · 2 judge(s)\n");
+    expect(gateway.heard[0]).toEqual({
+      method: "PUT",
+      path: "/v1/agents/clinica-norte/judges/offers-next-slot",
+      body: { question: SLOT.question, answer: "verdict", when: "always" },
+    });
   });
 
-  it("writes one that reads only simulations when --on says so", async () => {
-    expect(await run(["add", "names-the-doctor", "--asks", "Named the doctor.", "--on", "simulations"], { out: written().stream, env })).toBe(0);
+  it("writes a choice on a trigger that reads the prompt and the facts", async () => {
+    const argv = ["add", "call-reason", "--asks", "Why did they call?", "--answer", "choice:book, cancel,question", "--when", "trigger:A booking was asked for.", "--reads", "prompt,facts"];
 
-    expect(gateway.heard[0]?.body).toEqual({ question: "Named the doctor.", runs_on: "simulations" });
+    expect(await run(argv, { out: written().stream, env })).toBe(0);
+    expect(gateway.heard[0]?.body).toEqual({
+      question: "Why did they call?",
+      answer: "choice",
+      choices: ["book", "cancel", "question"],
+      when: "trigger",
+      trigger: "A booking was asked for.",
+      reads: ["prompt", "facts"],
+    });
   });
 
-  it("drops one, and says the gateway's sentence for a name nobody wrote", async () => {
-    gateway.judges = [SLOT];
+  it("writes a score on simulations only", async () => {
+    expect(await run(["add", "warmth", "--asks", "How warm was it?", "--answer", "score", "--when", "simulations"], { out: written().stream, env })).toBe(0);
+
+    expect(gateway.heard[0]?.body).toEqual({ question: "How warm was it?", answer: "score", when: "simulations" });
+  });
+
+  it("says a name of Pinecall's is switched, not written", async () => {
+    const err = written();
+
+    expect(await run(["add", "consent", "--asks", "q"], { out: written().stream, err: err.stream, env })).toBe(1);
+    expect(err.text()).toContain("pinecall judges on|off consent");
+  });
+});
+
+describe("switching and dropping", () => {
+  it("turns one of Pinecall's off with nothing but on: false", async () => {
+    const out = written();
+
+    expect(await run(["off", "consent"], { out: out.stream, env })).toBe(0);
+    expect(out.text()).toBe("consent off · 1 judge(s)\n");
+    expect(gateway.heard[0]).toEqual({ method: "PUT", path: "/v1/agents/clinica-norte/judges/consent", body: { on: false } });
+  });
+
+  it("says one of your own is dropped, not switched", async () => {
+    const err = written();
+
+    expect(await run(["on", "offers-next-slot"], { out: written().stream, err: err.stream, env })).toBe(1);
+    expect(err.text()).toContain("pinecall judges rm offers-next-slot");
+  });
+
+  it("drops one of your own, and says the gateway's sentence for a name nobody wrote", async () => {
+    gateway.judges = [CONSENT, SLOT];
     const out = written();
     const err = written();
 
     expect(await run(["rm", "offers-next-slot"], { out: out.stream, env })).toBe(0);
-    expect(out.text()).toBe("offers-next-slot dropped · 0 judge(s)\n");
+    expect(out.text()).toBe("offers-next-slot dropped · 1 judge(s)\n");
     expect(await run(["rm", "offers-next-slot"], { out: written().stream, err: err.stream, env })).toBe(1);
     expect(err.text()).toContain("clinica-norte has no judge called offers-next-slot");
   });
 
-  it("answers --json with the agent's judges as the gateway sent them", async () => {
-    gateway.judges = [SLOT];
+  it("says Pinecall's are switched off, never dropped", async () => {
+    const err = written();
+
+    expect(await run(["rm", "consent"], { out: written().stream, err: err.stream, env })).toBe(1);
+    expect(err.text()).toContain("pinecall judges off consent turns it off");
+  });
+});
+
+describe("trying one", () => {
+  it("asks a written one of the agent's last calls by its name, and prints each call's answer", async () => {
     const out = written();
 
-    expect(await run(["list", "--json"], { out: out.stream, env })).toBe(0);
-    expect(JSON.parse(out.text())).toEqual({ judges: [SLOT] });
+    expect(await run(["try", "offers-next-slot", "--last", "3"], { out: out.stream, env })).toBe(0);
+    expect(gateway.heard[0]).toEqual({ method: "POST", path: "/v1/agents/clinica-norte/judges/try", body: { name: "offers-next-slot", last: 3 } });
+    expect(out.text().split("\n")).toEqual([
+      "CA_one    ✓ held  Offered Thursday.  [seq 14]",
+      "CA_two    – n/a  Only the address.",
+      "CA_three  · not judged: the call has not finished",
+      "1 eval · $0.0021 · nothing was written",
+      "",
+    ]);
+  });
+
+  it("sends one not yet saved whole, on the calls named", async () => {
+    expect(await run(["try", "warmth", "--asks", "How warm?", "--answer", "score", "--calls", "CA_one,CA_two"], { out: written().stream, env })).toBe(0);
+
+    expect(gateway.heard[0]?.body).toEqual({ name: "warmth", question: "How warm?", answer: "score", when: "always", calls: ["CA_one", "CA_two"] });
   });
 });
 
@@ -178,7 +300,15 @@ describe("what is refused before the gateway is asked", () => {
     [["add", "Offers_Slot", "--asks", "q"], "is no name for a judge"],
     [["add", "offers-next-slot"], "a judge needs --asks"],
     [["add", "offers-next-slot", "--asks", "  "], "a judge needs --asks"],
-    [["add", "offers-next-slot", "--asks", "q", "--on", "sometimes"], "--on sometimes: every-call or simulations"],
+    [["add", "x", "--asks", "q", "--answer", "choice:one"], "two choices at least"],
+    [["add", "x", "--asks", "q", "--answer", "maybe"], "--answer maybe"],
+    [["add", "x", "--asks", "q", "--when", "sometimes"], "--when sometimes"],
+    [["add", "x", "--asks", "q", "--when", "trigger:"], "--when trigger:"],
+    [["add", "x", "--asks", "q", "--reads", "prompt,mood"], "--reads mood"],
+    [["try", "x"], "try needs the calls"],
+    [["try", "x", "--last", "3", "--calls", "CA_one"], "try needs the calls"],
+    [["try", "x", "--last", "51"], "--last 51 is not 1 to 50 calls"],
+    [["try", "x", "--last", "3", "--org"], "try asks one agent's calls"],
   ])("%j", async (argv, sentence) => {
     const err = written();
 

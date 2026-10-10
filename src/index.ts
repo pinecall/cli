@@ -10,7 +10,7 @@ import { version } from "./version.js";
 import { inTheWorld, withoutTheWorldFlag } from "./world.js";
 
 // Order is the help order: first-day verbs first.
-const BUILT = ["new", "generate", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "cases", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "telemetry", "monitors", "webhook", "login", "whoami", "mcp"] as const;
+const BUILT = ["new", "generate", "link", "start", "console", "chat", "prompt", "test", "simulate", "eval", "sessions", "runs", "cases", "agent", "lexicon", "pipeline", "line", "numbers", "carriers", "personas", "judges", "judging", "docs", "memory", "remember", "supervise", "providers", "voices", "callbacks", "data", "deploy", "secrets", "telemetry", "monitors", "webhook", "login", "whoami", "mcp"] as const;
 
 /** Every group name, built and planned, in help order. */
 export function groupNames(): string[] {
@@ -91,6 +91,7 @@ export async function groupFor(name: string, out: NodeJS.WritableStream = proces
   if (name === "line") return (await import("./line.js")).group;
   if (name === "personas") return (await import("./personas.js")).group;
   if (name === "judges") return (await import("./judges.js")).group;
+  if (name === "judging") return (await import("./judging.js")).group;
   if (name === "docs") return (await import("./docs.js")).group;
   if (name === "memory") return (await import("./memory.js")).group;
   if (name === "remember") return (await import("./remember.js")).group;
@@ -138,7 +139,8 @@ export function usage(): string {
     "  numbers   list | import | drop the numbers the org answers at",
     "  carriers  list | show | add | drop the org's carrier accounts: Twilio, a SIP peer, WhatsApp",
     "  personas  list | show | add | edit | rm | try an agent's synthetic callers",
-    "  judges    list | add | rm the org's judges and the agent's own: a question asked of calls at hang-up",
+    "  judges    list | add | on | off | rm | try every judge a call meets: Pinecall's, the org's own, the agent's own",
+    "  judging   whether the org's calls are judged, and the model the judges run on: Pinecall's or yours",
     "  docs      the documents the agent searches: push | list | drop | eval | attach",
     "  memory    what memory kept about a contact, forget it, and hold recall to a golden",
     "  remember  the goldens memory.remember is held to: what a call teaches, and what it never keeps",

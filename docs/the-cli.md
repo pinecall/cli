@@ -50,7 +50,8 @@ path end to end, with every output under it.
 | [`numbers`](#numbers) | which number reaches which agent, in the environment it answers in, and which the org's accounts own free | yes |
 | [`carriers`](#carriers) | the org's carrier accounts — a Twilio account, a SIP peer, a WhatsApp number — where its numbers live | yes |
 | [`personas`](#personas) | an agent's synthetic callers, kept by the gateway: list, show, add, edit, rm, try, push | yes |
-| [`judges`](#judges) | the org's judges and the agent's own, a question asked of calls at hang-up: list, add, rm | yes |
+| [`judges`](#judges) | every judge a call meets — Pinecall's switched on or off, the org's own, the agent's own: list, add, on, off, rm, try | yes |
+| [`judging`](#judging) | whether the org's calls are judged, and the model the judges run on: Pinecall's, or one of yours | yes |
 | [`docs`](#docs) | the documents the agent searches: push, list, drop, eval, attach, detach, attached | yes |
 | [`memory`](#memory) | what memory kept about a contact, forgetting it, and recall's golden | yes |
 | [`remember`](#remember) | the extraction goldens: what a hang-up makes of a call | yes |
@@ -189,7 +190,7 @@ or on the one `--agent <name>` names — by its folder's name, which is its slug
 | `pinecall docs push` · `eval` | every agent that has `docs/<name>/` · `test/<name>/goldens/docs.json`; the rest are named and skipped |
 | `pinecall personas` | every verb, since a caller is one agent's: `--agent <name>` when the project holds several |
 | `pinecall chat` · `simulate` · `prompt` · `remember` · `memory eval` · `line` · `start --ui` | one agent: `--agent <name>` is required when there are several |
-| `pinecall judges` | one agent's own judges: `--agent <name>` when the project holds several |
+| `pinecall judges` | one agent's judges: `--agent <name>` when the project holds several |
 
 A project of several with nobody named is refused with the names: `chat talks to one agent and
 this project has 2: add --agent dispatch or --agent sales`. A directory with no `agents/` at all is one somebody
@@ -687,48 +688,101 @@ undone, and pushing again once it is fixed finishes the migration.
 
 ```
 pinecall judges [list] [--org | --agent <name>] [--json]
-pinecall judges add <name> --asks '…' [--on every-call|simulations] [--org | --agent <name>] [--json]
+pinecall judges add <name> --asks '…' [--answer verdict|score|choice:a,b,c] [--when always|simulations|trigger:'…']
+                    [--reads prompt,evidence,facts] [--org | --agent <name>] [--json]
+pinecall judges on|off <name> [--org | --agent <name>] [--json]
 pinecall judges rm <name> [--org | --agent <name>] [--json]
+pinecall judges try <name> (--last <n> | --calls <id,id…>) [--asks '…' and add's flags] [--agent <name>] [--json]
 ```
 
-The runtime judges every finished call on its own panel — `consent`, `grounded`, `promises`, the
-compliance judges (`identified` on an outbound call, `disclosed`, `honoured_stop`), and `persona`
-on a simulation whose caller wrote a rule. Beside it, two lists the org writes, each
-judge one more question the judge model answers held or broken with the whole call in front of it,
-the tool calls between the turns included: **the org's** (`--org`), asked of every agent's calls,
-and **an agent's own**, about its job alone. Both are kept by the gateway for both environments: the
-console's Judges shows the same ones, and a change needs no deploy.
+Every judge is one question a model answers about a finished call, with the whole call in front of
+it — both sides' turns, the tool calls between them, each line under its log position, which the
+answer cites. A call meets three lists, in this order: **Pinecall's library** — `consent`,
+`grounded`, `promises`, `disclosed`, `identified`, `honoured-stop`, `ended-well` and
+`expected-outcome` on by default, `relevance`, `repetition` and `sentiment` off — switched `on` or
+`off` for the org (`--org`) or for one agent, the agent's switch winning; **the org's own**
+(`--org`), asked of every agent's calls; and **an agent's own**, about its job alone. The gateway
+keeps all of it for both environments: the console's Judges shows the same, and a change needs no
+deploy.
 
 ```console
 $ pinecall judges add offers-next-slot --asks "The agent offered the next free slot before the caller asked twice."
-offers-next-slot written · 1 judge(s)
+offers-next-slot written · 12 judge(s)
 
-$ pinecall judges add names-the-doctor --asks "The agent named the doctor of the appointment." --on simulations
-names-the-doctor written · 2 judge(s)
+$ pinecall judges add call-reason --asks "Why did the person call?" --answer choice:book,cancel,question
+call-reason written · 13 judge(s)
+
+$ pinecall judges off relevance --org
+relevance off · 11 judge(s)
 
 $ pinecall judges
-names-the-doctor  simulations  The agent named the doctor of the appointment.
-offers-next-slot  every call   The agent offered the next free slot before the caller asked twice.
+consent           pinecall       on  verdict                       always  Every irreversible tool ran only after the caller agreed to that action.
+…
+offers-next-slot  clinica-norte  on  verdict                       always  The agent offered the next free slot before the caller asked twice.
+call-reason       clinica-norte  on  choice: book|cancel|question  always  Why did the person call?
 
-$ pinecall judges add never-medical-advice --org --asks "The agent gave no medical advice: it booked or referred."
-never-medical-advice written · 1 judge(s)
+$ pinecall judges try offers-next-slot --last 3
+CA_8f4a2c  ✓ held  Offered Thursday at 09:30 unasked.  [seq 14]
+CA_2b91d0  – n/a  The caller only asked the address.
+CA_77e1aa  ✗ broken  Asked twice before a slot came.  [seq 9, 17]
+3 evals · $0.0031 · nothing was written
 ```
 
-`add` writes one whole, and the same name again replaces it; `rm` drops it, and a name nobody
-wrote is the gateway's sentence and **exit 1**. `--on every-call` (the default) reads every call the
-org judges at hang-up; `--on simulations` only a call a persona played — `simulate`, the console's
-Simulations, `test --voice` excepted, since a suite's calls are judged by the suite — so it costs
-nothing on real traffic. Each judge is one more request to the judge model per call it reads,
-under the platform's judging ceiling. Its verdict lands in `call.score` beside the panel's, under the
-judge's name; `sessions <call>` and `simulate --judge` print it.
+`add` writes one of your own whole, and the same name again replaces it. `--answer` is how it
+answers: `verdict` (held or broken, the default, and the only answer that can fail a call), `score`
+(1 to 5) or `choice:a,b,c` (one of two or more). `--when` is which calls it reads: `always` (the
+default), `simulations` (only a call a simulated caller played) or `trigger:'…'` — a short yes-or-no
+asked first, and a no is N/A without the question. `--reads` adds what the judge reads beside the
+call: `prompt` (the agent's prompt as the call ran it), `evidence` (what the call carried: the text
+searched, the tool answers, the states) and `facts` (the org, the direction, the irreversible tools
+and their confirmations, an opt-out, how the call ended). Any judge may answer N/A — the question
+did not apply — and N/A is never billed. Each judge that answers is one **eval**; on a judge model
+of your org's own key ([`judging`](#judging)) evals are not billed.
 
-The agent is the project's one, or the one `--agent` names by its folder's name; `--org`
-names the org's list instead, needs no project, and beside `--agent` is refused. One of the
-platform's own names — `consent`, `grounded`, `promises`, `persona`, `identified`, `disclosed`,
-`honoured_stop`, `heard` — a name the org and an agent would share, or a question left blank is the gateway's refusal. A name is
-lower-case letters and digits joined by hyphens, as a verdict names it; anything else, an `add`
-without `--asks`, or an `--on` that is neither word is refused here with **exit 2**, before it
-travels. `--json` prints what the gateway answered, `{"judges": […]}`, for every verb.
+`on` and `off` switch one of Pinecall's; one of your own runs while it is written, and the gateway
+refuses a switch of it with **exit 1**, the hint naming `rm`. `rm` drops one of your own; Pinecall's
+are never dropped, and the hint names `off`. `try` asks one judge of the agent's newest finished
+calls (`--last`, 1 to 50) or of the calls named (`--calls`), and writes nothing: a judge already
+written, or Pinecall's, by its name alone; one not yet saved, written whole with `--asks` and
+`add`'s flags. Each line is a call and what the judge answered; the last, the evals and what they
+cost.
+
+The agent is the project's one, or the one `--agent` names by its folder's name; `--org` names the
+org's list instead, needs no project, and beside `--agent` is refused; `try` is always an agent's.
+A name is lower-case letters and digits joined by hyphens, as a verdict names it; anything else, an
+`add` without `--asks`, an `--answer`, `--when` or `--reads` that is none of its words, or a `try`
+naming neither or both of `--last` and `--calls`, is refused here with **exit 2**, before it
+travels. A name the org and an agent would share is the gateway's refusal. `--json` prints what the
+gateway answered — `{"judges": […]}`, or the try's `{rows, evals, cost_usd}` — for every verb.
+
+## `judging`
+
+```
+pinecall judging                                             whether calls are judged, and on what
+pinecall judging [on|off] [--model <vendor/model> [--option key=value …] | --platform] [--json]
+```
+
+Every finished call of the org is judged at hang-up unless judging is `off`. The judges run on
+Pinecall's judge model, and each judge that answers is one eval on the org's bill. `--model` names
+a model of your own instead, for every agent's calls (an agent's own `pinecall agent set --judge`
+wins over it); the gateway tries it on the org's keys before it keeps it. On the org's own key for
+its vendor (`pinecall providers add`) the model's bill is yours and **its evals are never billed**;
+a local model is your vendor's plugin pointed at your server — `--option base_url=…`, repeated
+`key=value` like `agent set`'s, run on your own key alone. On a key Pinecall lends the evals are
+billed as on Pinecall's, under the platform's ceiling per call. `--platform` goes back to
+Pinecall's model. The judge is asked for a tool call, so the model must call tools.
+
+```console
+$ pinecall judging
+judging on · Pinecall's judge model · evals billed · ceiling $0.05 a call
+
+$ pinecall judging --model openai/qwen3-32b --option base_url=http://gpu.internal:8000/v1
+judging on · openai/qwen3-32b · base_url="http://gpu.internal:8000/v1" · your own openai key: evals not billed
+```
+
+`on` and `off` keep the model; `--model` keeps on or off. A model with no vendor (`qwen3`), `--model`
+beside `--platform`, or `--option` with no `--model` is refused with **exit 2** before anything is
+asked; a model the org's keys cannot run is the gateway's refusal, **exit 1**.
 
 ## `eval`
 
@@ -808,7 +862,7 @@ pinecall cases keep <call-id> --name x [--held-out]
 **pending** case — its caller's lines, the state it opened in, the facts the app gave it, what
 memory recalled, the day it ran — with an `expect` that says what must not happen again: the tool
 a broken `consent` ran unasked in `not_tools`, `grounded: true`, and every other judge that broke
-(`promises`, the compliance judges, the org's and the agent's own) in `judges`, asked again of
+(Pinecall's others, the org's own and the agent's own) in `judges`, asked again of
 the replay by name. A person reads it, reproduces it, fixes the agent, and approves it into the
 nightly or dismisses it:
 
@@ -906,6 +960,7 @@ pinecall agent list · stop <app>
 pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--temperature n] [--language en|es|pt-BR…]
                    [--llm-builds Class] [--llm-option key=value …] [--stt-builds Class] [--stt-option key=value …]
                    [--tts-builds Class] [--tts-option key=value …]
+                   [--judge x] [--judge-builds Class] [--judge-option key=value …]
                    [--greeting '…' | --greeting improvise[:'…']] [--greeting-interruptible on|off]
                    [--hangup '…' | --hangup any] [--end-of-turn stt|livekit|smart-turn] [--endpointing-ms n] [--min-interruption-words n]
                    [--eot-threshold 0.5-0.9] [--eager-eot-threshold 0.3-0.9] [--record on|off]
@@ -913,7 +968,7 @@ pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--
                    [--remember '…' …] [--forget '…' …] [--team] [--note '…']
 pinecall agent knowledge [--team] · knowledge edit [--team] [--note '…']
 pinecall agent clear [voice|tts|tts-model|stt|end-of-turn|llm|temperature|llm-builds|llm-options|stt-builds|stt-options|tts-builds|tts-options
-                      |language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]
+                      |judge|judge-builds|judge-options|language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]
 pinecall agent history [--team] · diff [--against team|production] · rollback <version> [--team]
 pinecall agent pull [--team] · push <file> [--team]
                                         … and any of them with --prod, in production
@@ -952,7 +1007,8 @@ fields; the site's *Settings in the class*), and **what the class declares wins*
 refused, nothing saved, in the gateway's sentence: `voice set by the class of clinica-norte: the
 class's declaration wins over these settings, so change it there, or take it out of the class to set
 it here`. `--tts` and `--tts-model` are the class's `voice`; `--temperature`, `--llm-builds` and
-`--llm-option` its `llm`; `--stt-builds`, `--stt-option` and `--end-of-turn` its `stt`. Which fields are fixed is
+`--llm-option` its `llm`; `--stt-builds`, `--stt-option` and `--end-of-turn` its `stt`; `--judge-builds` and
+`--judge-option` its `judge` (`@judge`). Which fields are fixed is
 what the process holding the agent in that environment declared: with none holding it, none is.
 
 **How a call opens and ends is words, or the model's own.** `--greeting '…'` is said as written;
@@ -976,6 +1032,13 @@ Pinecall lends, the set is refused with `llm options and builds run on the org's
 this agent's llm would run on the platform's: add yours with pinecall providers add openai, or take them
 out` — an option can point a plugin at another server, and a lent key never goes anywhere but the
 vendor. `--temperature` is the model's, in the vendor's own range, and runs on any key.
+
+**The model the agent's calls are judged on is `--judge`**, named as `--llm` is — `vendor/model`, a
+vendor, a model, a tier — with `--judge-builds` and `--judge-option` beside it as the `--llm` pair
+is. It wins over the org's (`pinecall judging --model`), which wins over Pinecall's. On the org's
+own key for the vendor its evals are never billed, and a local model is that vendor's plugin
+pointed at your server: `--judge openai/qwen3-32b --judge-option base_url=http://gpu:8000/v1`. The
+options run on your own key alone, as every stage's do. `clear judge` goes back to the org's.
 
 **How a turn is decided is four numbers, and two of them are confidences.** `--endpointing-ms` is
 the longest silence a caller is left in before the turn is called finished, and
@@ -1950,7 +2013,8 @@ code can call — over HTTP, in any language, with the same key.
 | `voices` | `GET /v1/voices` · `POST /v1/voices/sample` |
 | `callbacks` | `GET /v1/callbacks[?agent=&after=]` |
 | `personas` | `GET /v1/agents/{slug}/personas` · `PUT`·`DELETE /v1/agents/{slug}/personas/{name}` — and `push` reads the agent's remaining files before sending them |
-| `judges` | `GET /v1/agents/{slug}/judges` · `PUT`·`DELETE /v1/agents/{slug}/judges/{name}` |
+| `judges` | `GET /v1/agents/{slug}/judges` · `PUT`·`DELETE /v1/agents/{slug}/judges/{name}` · `POST /v1/agents/{slug}/judges/try`, and the same at `/v1/org/judges` with `--org` |
+| `judging` | `GET`·`PUT /v1/org/judging` · `GET /v1/provider-keys` to say whose key the model runs on |
 | `line` | `GET`·`POST`·`DELETE /v1/agents/{slug}/line`, `PUT`·`DELETE /v1/line/from` |
 | `console` | `POST /v1/login/codes` in the environment asked — the one-use code the browser spends for a key of its own. Every other endpoint the console asks, it asks for itself |
 | `login` | `POST /v1/login/pairings`, `GET …/{code}/key` — then `GET /v1/whoami` to prove what it got |
