@@ -961,8 +961,8 @@ instruction for the opening. The caller cannot cut the opening short unless
 `--greeting-interruptible on`. `--hangup '…'` is when the model may end the call, in your words;
 `--hangup any` whenever it judges the call done. `--end-of-turn` is who says the caller's turn is
 over: `stt`, the ears themselves (Deepgram Flux; refused for ears that cannot), or `livekit` and
-`smart-turn` (Smart Turn v3), a model on the worker that runs on any key — Soniox with Smart Turn
-is `--stt soniox --end-of-turn smart-turn`.
+`smart-turn` (Smart Turn v3), a model on the worker that runs on any key. Unset, ears that do not
+end the turn themselves run Smart Turn v3 (runtime 0.1.44), so Soniox needs no flag for it.
 
 **A plugin's own class and options are three pairs of flags, one per stage.** `--llm-builds` names a
 class of the vendor's LiveKit plugin other than its default, a dot reaching into a module of it
