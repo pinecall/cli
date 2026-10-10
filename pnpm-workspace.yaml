@@ -8,3 +8,8 @@ linkWorkspacePackages: true
 
 allowBuilds:
   esbuild: true
+
+# Our own framework, released minutes before the CLI that needs it, and linked from its checkout in
+# CI: the day's wait is for third-party packages.
+minimumReleaseAgeExclude:
+  - "@pinecall/agents"
