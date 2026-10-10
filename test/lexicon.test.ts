@@ -68,7 +68,7 @@ afterEach(async () => {
 
 describe("an agent's words", () => {
   it("prints what the corner reads and where every corner is", () => {
-    const lines = linesOf({ world: "sandbox", yours: null, team: TEAM, production: null });
+    const lines = linesOf({ world: "sandbox", yours: null, team: TEAM, production: null, fixed: [] });
 
     expect(lines[0]).toBe("lexicon · sandbox");
     expect(lines).toContain('  said     GSA → "G S A"');

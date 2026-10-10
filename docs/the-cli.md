@@ -903,13 +903,16 @@ call_5b1f0e9d2c7a4e8f9a1b3c5d7e9f1a2b
 ```
 pinecall agent [--agent <slug>] [--json]
 pinecall agent list · stop <app>
-pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--language en|es|pt-BR…]
+pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--temperature n] [--language en|es|pt-BR…]
+                   [--llm-builds Class] [--llm-option key=value …] [--stt-builds Class] [--stt-option key=value …]
+                   [--tts-builds Class] [--tts-option key=value …]
                    [--greeting '…' | --reply '…'] [--hangup '…'] [--endpointing-ms n] [--min-interruption-words n]
                    [--eot-threshold 0.5-0.9] [--eager-eot-threshold 0.3-0.9] [--record on|off]
                    [--max-duration 1-60|off]
                    [--remember '…' …] [--forget '…' …] [--team] [--note '…']
 pinecall agent knowledge [--team] · knowledge edit [--team] [--note '…']
-pinecall agent clear [voice|tts|tts-model|stt|llm|language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]
+pinecall agent clear [voice|tts|tts-model|stt|llm|temperature|llm-builds|llm-options|stt-builds|stt-options|tts-builds|tts-options
+                      |language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]
 pinecall agent history [--team] · diff [--against team|production] · rollback <version> [--team]
 pinecall agent pull [--team] · push <file> [--team]
                                         … and any of them with --prod, in production
@@ -920,7 +923,7 @@ $ pinecall agent
 clinica-norte · sandbox
 
                 yours           team                        production
-  voice         amelia          carolina                    carolina
+  voice         class           class                       class
   tts           —               —                           —
   tts model     —               —                           —
   stt           —               deepgram                    deepgram
@@ -937,14 +940,32 @@ clinica-norte · sandbox
   yours: v3 · m_ana · 2026-09-19 14:32 · "flat on the phone" · team: v11 · m_bruno · 2026-09-18 10:04 · production: v11 · m_ana · 2026-09-12 …
 ```
 
-**What an agent runs on is the org's, not the class's** — per environment, per corner, a version a row
-(the runtime's `docs/protocol/settings-api.md`). The class declares the contract: its tools, its
-state, its `render()`. The language, the endpoints, the voice, the models, the opening, how a call
-ends, how a turn is cut, what is remembered, what is known by heart and which bases are searched
-are **settings**, kept by the gateway and laid over the class at the one place every session is
-built. A class that still declares one of them is refused at load — before a prompt is printed or
-a gateway is knocked at — and the refusal names the verb: `` `voice` is the environment's now, not the
-class's: pinecall agent set --voice <name> — remove it from the class``.
+**What an agent runs on is its settings', unless its class declares it** — per environment, per
+corner, a version a row (the runtime's `docs/protocol/settings-api.md`). The class declares the
+contract: its tools, its state, its `render()`. The language, the voice, the models, the opening,
+how a call ends, how a turn is cut, what is remembered, what is known by heart and which bases are
+searched are **settings**, kept by the gateway and laid over the class at the one place every
+session is built. A class may declare any of them itself (`@voice`, `@llm`, `@stt` and its static
+fields; the site's *Settings in the class*), and **what the class declares wins**: the table prints
+`class` for that field in every corner — `voice` above — and a `set` or a `clear` that changes it is
+refused, nothing saved, in the gateway's sentence: `voice set by the class of clinica-norte: the
+class's declaration wins over these settings, so change it there, or take it out of the class to set
+it here`. `--tts` and `--tts-model` are the class's `voice`; `--temperature`, `--llm-builds` and
+`--llm-option` its `llm`; `--stt-builds` and `--stt-option` its `stt`. Which fields are fixed is
+what the process holding the agent in that environment declared: with none holding it, none is.
+
+**A plugin's own class and options are three pairs of flags, one per stage.** `--llm-builds` names a
+class of the vendor's LiveKit plugin other than its default, a dot reaching into a module of it
+(`responses.LLM`); `--llm-option key=value` passes one keyword argument as the plugin names it, and
+repeats — the value read as JSON when it is JSON (`true`, `1000`, `[1,2]`), as text otherwise. The
+options a row sets replace the whole list it had; `clear llm-options` takes them out. Each one
+replaces Pinecall's option of the same name for the vendor. A set that changes them tries the stage
+once before anything is kept, so a class the plugin does not export, or an argument it does not
+take, is refused in its own words. **They run only on the org's own key for the vendor**: on a key
+Pinecall lends, the set is refused with `llm options and builds run on the org's own openai key, and
+this agent's llm would run on the platform's: add yours with pinecall providers add openai, or take them
+out` — an option can point a plugin at another server, and a lent key never goes anywhere but the
+vendor. `--temperature` is the model's, in the vendor's own range, and runs on any key.
 
 **How a turn is decided is four numbers, and two of them are confidences.** `--endpointing-ms` is
 the longest silence a caller is left in before the turn is called finished, and

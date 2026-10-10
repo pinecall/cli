@@ -6,6 +6,16 @@ The format is [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.9.49] — 2026-10-10
+
+- `pinecall agent set --temperature n`, `--llm-builds Class` and `--llm-option key=value` (repeated,
+  the value read as JSON when it is JSON), and their `--stt-…` and `--tts-…` twins: a plugin's own
+  class and keyword arguments, run only on the org's own key for the vendor. `clear` takes
+  `temperature`, `llm-builds`, `llm-options` and the rest by the same names.
+- `pinecall agent` prints `class` in every corner of a field the agent's class declares itself; a
+  set or clear of it is refused in the gateway's sentence. The MCP `agent` tool takes the same.
+  Needs @pinecall/agents 0.9.25 and runtime 0.1.42.
+
 ## [0.9.48] — 2026-10-09
 
 ### Fixed

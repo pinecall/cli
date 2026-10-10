@@ -5,7 +5,7 @@ import { parseArgs } from "node:util";
 import { type TuningAnswer } from "@pinecall/agents/wire";
 
 import { linesOf, readSettings } from "./agent-lines.js";
-import { clear, fraction, limitOf, NO_LANGUAGE, NOT_A_CONFIDENCE, NOT_A_LIMIT, NOT_ON_OR_OFF, OPTIONS, set, switched, type Typed } from "./agent-setting.js";
+import { clear, fraction, limitOf, NO_LANGUAGE, NOT_A_CONFIDENCE, NOT_A_LIMIT, NOT_A_TEMPERATURE, NOT_ON_OR_OFF, OPTIONS, optionsOf, set, switched, temperatureOf, type Typed } from "./agent-setting.js";
 import { filesRun } from "./agent-files.js";
 import { knowledgeRun } from "./agent-knowledge.js";
 import { listed, stopped } from "./agent-processes.js";
@@ -20,14 +20,17 @@ import { refusal } from "./whoami.js";
 const USAGE = [
   "usage: pinecall agent [--agent <slug>] [--json]",
   "       pinecall agent list · stop <app>",
-  "       pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--language en|es|pt-BR…]",
+  "       pinecall agent set [--voice x] [--tts x] [--tts-model x] [--stt x] [--llm x] [--temperature n] [--language en|es|pt-BR…]",
+  "                          [--llm-builds Class] [--llm-option key=value …] [--stt-builds Class] [--stt-option key=value …]",
+  "                          [--tts-builds Class] [--tts-option key=value …]",
   "                          [--greeting '…' | --reply '…']",
   "                          [--hangup '…'] [--endpointing-ms n] [--min-interruption-words n] [--record on|off]",
   "                          [--max-duration 1-60|off]",
   "                          [--eot-threshold 0.5-0.9] [--eager-eot-threshold 0.3-0.9]",
   "                          [--remember '…' …] [--forget '…' …] [--team] [--note '…']",
   "       pinecall agent knowledge [--team] · knowledge edit [--team] [--note '…']",
-  "       pinecall agent clear [voice|tts|tts-model|stt|llm|language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]",
+  "       pinecall agent clear [voice|tts|tts-model|stt|llm|temperature|llm-builds|llm-options|stt-builds|stt-options|tts-builds|tts-options",
+  "                             |language|greeting|hangup|turn|memory|record|max-duration|knowledge|bases …] [--team]",
   "       pinecall agent history [--team] · diff [--against team|production] · rollback <version> [--team]",
   "       pinecall agent pull [--team] · push <file> [--team]",
 ].join("\n");
@@ -52,7 +55,13 @@ export const group: Group = {
   own rules are English either way, and the agent answers in the language the caller speaks.
   --greeting sets the words said as the call opens; --reply what the model reads before it finds
   its own. --remember and --forget replace those lists whole. A field nobody names is left as it
-  stands.
+  stands. --temperature is the model's, in its vendor's range. --llm-builds names a class of the
+  vendor's plugin other than its default (\`responses.LLM\`), and --llm-option key=value one of its
+  keyword arguments, repeated, the value read as JSON when it is JSON; --stt-… and --tts-… are the
+  same for the ears and the voice. Those two run only on your org's own key for the vendor.
+
+  A field the class declares itself (@voice, @llm, @stt, a static field) says \`class\` in every
+  corner: the class wins, and a set or clear of it is refused naming the class.
 
   knowledge is what the agent knows by heart — the business as the org describes it, in Markdown,
   read whole on every call. Alone it prints the corner's text; \`edit\` opens it in $EDITOR and
@@ -138,6 +147,18 @@ export async function run(argv: string[], how: Setting = {}): Promise<number> {
   if (values.language !== undefined && values.language.trim() === "") {
     err.write(`${NO_LANGUAGE}\n`);
     return 2;
+  }
+  if (values.temperature !== undefined && temperatureOf(values.temperature) === undefined) {
+    err.write(`${NOT_A_TEMPERATURE(values.temperature)}\n`);
+    return 2;
+  }
+  for (const stage of ["llm", "stt", "tts"] as const) {
+    try {
+      optionsOf(`${stage}-option`, values[`${stage}-option`]);
+    } catch (refused) {
+      err.write(`${(refused as Error).message}\n`);
+      return 2;
+    }
   }
   const door = await theDoor(how.env ?? process.env, err);
   if (door === undefined) return 2;

@@ -82,7 +82,29 @@ export function theCornerCalled(standing: TuningAnswer, team: boolean, door: Doo
 }
 
 /** Settings fields in display order, as typed on the command line. */
-export const FIELDS = ["voice", "tts", "tts-model", "stt", "llm", "language", "greeting", "hangup", "turn", "memory", "record", "max-duration", "knowledge", "bases"] as const;
+export const FIELDS = [
+  "voice",
+  "tts",
+  "tts-model",
+  "tts-builds",
+  "tts-options",
+  "stt",
+  "stt-builds",
+  "stt-options",
+  "llm",
+  "temperature",
+  "llm-builds",
+  "llm-options",
+  "language",
+  "greeting",
+  "hangup",
+  "turn",
+  "memory",
+  "record",
+  "max-duration",
+  "knowledge",
+  "bases",
+] as const;
 export type Field = (typeof FIELDS)[number];
 
 /** Command-line field name to wire field name. */
@@ -90,8 +112,15 @@ export const WIRE: Record<Field, keyof TuningBody> = {
   voice: "voice",
   tts: "tts",
   "tts-model": "tts_model",
+  "tts-builds": "tts_builds",
+  "tts-options": "tts_options",
   stt: "stt",
+  "stt-builds": "stt_builds",
+  "stt-options": "stt_options",
   llm: "llm",
+  temperature: "temperature",
+  "llm-builds": "llm_builds",
+  "llm-options": "llm_options",
   language: "language",
   greeting: "greeting",
   hangup: "hangup",
@@ -101,6 +130,30 @@ export const WIRE: Record<Field, keyof TuningBody> = {
   "max-duration": "max_duration_s",
   knowledge: "knowledge",
   bases: "bases",
+};
+
+/** What the class calls the setting a field is part of: a field it declares is fixed, and set by it. */
+export const DECLARED_AS: Partial<Record<Field, string>> = {
+  voice: "voice",
+  tts: "voice",
+  "tts-model": "voice",
+  "tts-builds": "voice",
+  "tts-options": "voice",
+  stt: "stt",
+  "stt-builds": "stt",
+  "stt-options": "stt",
+  llm: "llm",
+  temperature: "llm",
+  "llm-builds": "llm",
+  "llm-options": "llm",
+  language: "language",
+  greeting: "greeting",
+  hangup: "hangup",
+  turn: "turn",
+  memory: "memory",
+  record: "record",
+  knowledge: "knowledge",
+  bases: "docs",
 };
 
 // Max cell width; longer values are truncated so three columns fit.
@@ -145,6 +198,15 @@ export function shown(config: TuningBody, field: Field): string | undefined {
     const seconds = config.max_duration_s ?? undefined;
     return seconds === undefined ? undefined : seconds === 0 ? "no limit" : `${seconds / 60} min`;
   }
+  if (field === "temperature") {
+    const temperature = config.temperature ?? undefined;
+    return temperature === undefined ? undefined : String(temperature);
+  }
+  if (field === "llm-options" || field === "stt-options" || field === "tts-options") {
+    const options = config[WIRE[field] as "llm_options"] ?? undefined;
+    if (options === undefined) return undefined;
+    return Object.entries(options).map(([key, value]) => `${key}=${JSON.stringify(value)}`).join(" · ");
+  }
   if (field === "knowledge") {
     const text = config.knowledge ?? undefined;
     return text === undefined ? undefined : `${text.length.toLocaleString("en-US")} chars`;
@@ -167,7 +229,8 @@ export function versionLine(row: TuningRow): string {
 
 /**
  * Render the settings table: one column per corner, one row per field, then each corner's
- * version. An unset corner shows what it falls back to, e.g. `(team's)`.
+ * version. An unset corner shows what it falls back to, e.g. `(team's)`; a field the class fixes
+ * says `class` in every corner, since no corner's value is read for it.
  */
 export function linesOf(agent: string, answer: TuningAnswer): string[] {
   const corners: { name: string; row: TuningRow | null; fallsTo: string }[] = [
@@ -175,7 +238,10 @@ export function linesOf(agent: string, answer: TuningAnswer): string[] {
     { name: "team", row: answer.team, fallsTo: "—" },
     { name: "production", row: answer.production, fallsTo: "—" },
   ];
+  const fixed = new Set(answer.fixed);
   const cell = (corner: (typeof corners)[number], field: Field): string => {
+    const declared = DECLARED_AS[field];
+    if (declared !== undefined && fixed.has(declared)) return "class";
     if (corner.row === null) return corner.fallsTo;
     const value = shown(corner.row.config, field);
     if (value === undefined) return "—";

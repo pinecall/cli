@@ -7,14 +7,14 @@ tool's own schema, as the assistant sees it — and one real call, answered by P
 
 The agent's settings — voice, models, language, greeting, memory policy, knowledge by heart: read, set, cleared, history, diff, rollback.
 
-`agent` reads and writes the agent's settings in the sandbox — the voice, the models, the language, the greeting, the memory policy, what it knows by heart — each change a new version, changed without a deploy. They are your own settings unless `team` writes the team's. `history`, `diff` and `rollback` read and undo versions. A model is named as `vendor/model`, a vendor, a model, or a tier (`haiku`).
+`agent` reads and writes the agent's settings in the sandbox — the voice, the models, the language, the greeting, the memory policy, what it knows by heart — each change a new version, changed without a deploy. They are your own settings unless `team` writes the team's. `history`, `diff` and `rollback` read and undo versions. A model is named as `vendor/model`, a vendor, a model, or a tier (`haiku`). `temperature` is the model's; `llm-builds` and `llm-options` (and the `stt` and `tts` twins) are a class of the vendor's plugin and its keyword arguments, run only on the org's own key for that vendor. A field the class declares itself is listed in `fixed`, and setting it is refused naming the class.
 
 | parameter | takes | | what it is |
 |---|---|---|---|
 | `action` | `show` · `set` · `clear` · `history` · `diff` · `rollback` · `knowledge` | required | show reads the settings; set writes the fields named as a new version; clear takes fields out; history lists the versions; diff compares with the team's or production's; rollback brings a version back; knowledge reads or writes what the agent knows by heart |
 | `agent` | text |  | the agent's name; the project's only agent when left out |
-| `settings` | an object of `voice` · `tts` · `tts-model` · `stt` · `llm` · `language` · `greeting` · `reply` · `hangup` · `endpointing-ms` · `min-interruption-words` · `eot-threshold` · `eager-eot-threshold` · `record` · `max-duration` · `remember` · `forget` |  | `set`: the fields to set, named as `pinecall agent set` names its flags |
-| `fields` | a list of `voice` · `tts` · `tts-model` · `stt` · `llm` · `language` · `greeting` · `hangup` · `turn` · `memory` · `record` · `max-duration` · `knowledge` · `bases` |  | `clear`: the fields to take out; every one when left out |
+| `settings` | an object of `voice` · `tts` · `tts-model` · `stt` · `llm` · `temperature` · `llm-builds` · `llm-options` · `stt-builds` · `stt-options` · `tts-builds` · `tts-options` · `language` · `greeting` · `reply` · `hangup` · `endpointing-ms` · `min-interruption-words` · `eot-threshold` · `eager-eot-threshold` · `record` · `max-duration` · `remember` · `forget` |  | `set`: the fields to set, named as `pinecall agent set` names its flags |
+| `fields` | a list of `voice` · `tts` · `tts-model` · `tts-builds` · `tts-options` · `stt` · `stt-builds` · `stt-options` · `llm` · `temperature` · `llm-builds` · `llm-options` · `language` · `greeting` · `hangup` · `turn` · `memory` · `record` · `max-duration` · `knowledge` · `bases` |  | `clear`: the fields to take out; every one when left out |
 | `team` | true or false |  | write the team's settings (the org's own) instead of your own |
 | `against` | `team` · `production` |  | `diff`: what yours are compared with; production when left out |
 | `version` | a whole number 1 or more |  | `rollback`: the version to bring back |

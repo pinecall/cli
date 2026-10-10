@@ -35,7 +35,7 @@ const A_LIVE_KEY = "pc_live_the_orgs_key";
 
 describe("the page", () => {
   it("draws the three corners, a row per field, and which version each is at", () => {
-    const lines = linesOf(AGENT, { world: "sandbox", yours: YOURS, team: TEAM, production: null });
+    const lines = linesOf(AGENT, { world: "sandbox", yours: YOURS, team: TEAM, production: null, fixed: [] });
 
     expect(lines[0]).toBe("clinica-norte · sandbox");
     expect(lines.find((line) => line.startsWith("  voice"))).toMatch(/voice\s+amelia\s+carolina\s+—/);
@@ -48,9 +48,18 @@ describe("the page", () => {
   });
 
   it("reads your column as the team's when you set nothing", () => {
-    const lines = linesOf(AGENT, { world: "sandbox", yours: null, team: TEAM, production: null });
+    const lines = linesOf(AGENT, { world: "sandbox", yours: null, team: TEAM, production: null, fixed: [] });
 
     expect(lines.find((line) => line.startsWith("  voice"))).toMatch(/voice\s+\(team's\)\s+carolina/);
+  });
+
+  it("says class in every corner of a field the class declares, whatever the corners hold", () => {
+    const lines = linesOf(AGENT, { world: "sandbox", yours: YOURS, team: TEAM, production: null, fixed: ["voice", "llm"] });
+
+    expect(lines.find((line) => line.startsWith("  voice"))).toMatch(/voice\s+class\s+class\s+class$/);
+    expect(lines.find((line) => line.startsWith("  tts model"))).toMatch(/tts model\s+class\s+class\s+class$/);
+    expect(lines.find((line) => line.startsWith("  temperature"))).toMatch(/temperature\s+class\s+class\s+class$/);
+    expect(lines.find((line) => line.startsWith("  language"))).toMatch(/language\s+—\s+es\s+—/);
   });
 
   it("prints it, and the door's own JSON when asked", async () => {
@@ -176,10 +185,10 @@ describe("setting", () => {
   it("refuses a field nobody has, naming the ten", async () => {
     const err = written();
 
-    const code = await run(["clear", "temperature", "--agent", AGENT], { out: written().stream, err: err.stream, env: environment() });
+    const code = await run(["clear", "warmth", "--agent", AGENT], { out: written().stream, err: err.stream, env: environment() });
 
     expect(code).toBe(1);
-    expect(err.text()).toContain("no field called temperature");
+    expect(err.text()).toContain("no field called warmth");
     expect(err.text()).toContain("tts-model");
   });
 
@@ -234,6 +243,33 @@ describe("the versions", () => {
     await run(["set", "--agent", AGENT, "--record", "off"], { out: written().stream, env: environment() });
 
     expect(gateway.written).toEqual({ config: { record: false }, if_version: 0, note: null, team: false });
+  });
+
+  it("sets the temperature and a plugin's class and options, each value read as JSON when it is JSON", async () => {
+    gateway.yours = null;
+    gateway.team = null;
+    const argv = ["set", "--agent", AGENT, "--llm", "openai/gpt-5.4-mini", "--temperature", "0.3", "--llm-builds", "responses.LLM"];
+    argv.push("--llm-option", "use_websocket=true", "--llm-option", "service_tier=flex", "--stt-option", "eot_timeout_ms=900");
+
+    await run(argv, { out: written().stream, env: environment() });
+
+    expect((gateway.written as { config: Record<string, unknown> }).config).toEqual({
+      llm: "openai/gpt-5.4-mini",
+      temperature: 0.3,
+      llm_builds: "responses.LLM",
+      llm_options: { use_websocket: true, service_tier: "flex" },
+      stt_options: { eot_timeout_ms: 900 },
+    });
+  });
+
+  it("refuses a temperature below zero and an option with no key, before anything is written", async () => {
+    const cold = written();
+    expect(await run(["set", "--agent", AGENT, "--temperature=-1"], { out: written().stream, err: cold.stream, env: environment() })).toBe(2);
+    expect(cold.text()).toContain("--temperature -1 is not a number from 0");
+    const bare = written();
+    expect(await run(["set", "--agent", AGENT, "--tts-option", "speed"], { out: written().stream, err: bare.stream, env: environment() })).toBe(2);
+    expect(bare.text()).toContain("--tts-option speed is not key=value");
+    expect(gateway.heard.filter((one) => one.method === "PUT")).toEqual([]);
   });
 
   it("refuses anything but on or off, before anything is written", async () => {

@@ -17,6 +17,13 @@ export const OPTIONS = {
   "tts-model": { type: "string" },
   stt: { type: "string" },
   llm: { type: "string" },
+  temperature: { type: "string" },
+  "llm-builds": { type: "string" },
+  "llm-option": { type: "string", multiple: true },
+  "stt-builds": { type: "string" },
+  "stt-option": { type: "string", multiple: true },
+  "tts-builds": { type: "string" },
+  "tts-option": { type: "string", multiple: true },
   language: { type: "string" },
   greeting: { type: "string" },
   reply: { type: "string" },
@@ -48,6 +55,38 @@ export function switched(said: string | undefined): boolean | undefined {
 // Minutes 1-60 (the runtime's range) or `off`; sent as seconds, with 0 meaning no limit.
 export const NOT_A_LIMIT = (said: string): string => `--max-duration ${said} is not 1 to 60 minutes, or off`;
 const LONGEST_MINUTES = 60;
+
+export const NOT_A_TEMPERATURE = (said: string): string => `--temperature ${said} is not a number from 0`;
+
+// `key=value`, the value read as JSON when it is JSON (`true`, `900`, `[1,2]`) and as text otherwise.
+export const NOT_AN_OPTION = (flag: string, said: string): string =>
+  `--${flag} ${said} is not key=value: one keyword argument of the plugin, as the plugin names it`;
+
+export function temperatureOf(said: string | undefined): number | undefined {
+  if (said === undefined) return undefined;
+  const number = Number(said);
+  return said.trim() !== "" && Number.isFinite(number) && number >= 0 ? number : undefined;
+}
+
+/** The keyword arguments `--<stage>-option key=value` names, or undefined when it names none. */
+export function optionsOf(flag: string, said: string[] | undefined): Record<string, unknown> | undefined {
+  if (said === undefined) return undefined;
+  const options: Record<string, unknown> = {};
+  for (const item of said) {
+    const at = item.indexOf("=");
+    if (at <= 0) throw new Error(NOT_AN_OPTION(flag, item));
+    options[item.slice(0, at)] = jsonOrText(item.slice(at + 1));
+  }
+  return options;
+}
+
+function jsonOrText(text: string): unknown {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+}
 
 // A blank tag would read as set while leaving every vendor on its own default; `clear` says that.
 export const NO_LANGUAGE = "--language needs a tag, such as en, es or pt-BR: pinecall agent clear language takes it out";
@@ -89,9 +128,16 @@ export async function clear(door: Door, agent: string, named: string[], team: bo
 /** The fields this command line sets, under wire names, merged over the current row where nested. */
 export function typed(values: Typed, standing: TuningBody): Partial<TuningBody> {
   const wanted: Partial<TuningBody> = {};
-  for (const field of ["voice", "tts", "tts-model", "stt", "llm", "language"] as const) {
+  for (const field of ["voice", "tts", "tts-model", "stt", "llm", "llm-builds", "stt-builds", "tts-builds", "language"] as const) {
     const value = values[field];
     if (typeof value === "string") (wanted as Record<string, unknown>)[WIRE[field]] = value;
+  }
+  const temperature = temperatureOf(values.temperature);
+  if (values.temperature !== undefined && temperature === undefined) throw new Error(NOT_A_TEMPERATURE(values.temperature));
+  if (temperature !== undefined) wanted.temperature = temperature;
+  for (const stage of ["llm", "stt", "tts"] as const) {
+    const options = optionsOf(`${stage}-option`, values[`${stage}-option`]);
+    if (options !== undefined) wanted[`${stage}_options`] = options;
   }
   if (values.greeting !== undefined) wanted.greeting = { say: values.greeting };
   else if (values.reply !== undefined) wanted.greeting = { reply: values.reply };
